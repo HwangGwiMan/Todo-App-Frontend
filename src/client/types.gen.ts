@@ -180,8 +180,8 @@ export type ApiResponsePageTodoResponse = {
 };
 
 export type PageTodoResponse = {
-    totalElements?: number;
     totalPages?: number;
+    totalElements?: number;
     size?: number;
     content?: Array<TodoResponse>;
     number?: number;
@@ -197,8 +197,8 @@ export type PageableObject = {
     offset?: number;
     sort?: SortObject;
     paged?: boolean;
-    pageNumber?: number;
     pageSize?: number;
+    pageNumber?: number;
     unpaged?: boolean;
 };
 

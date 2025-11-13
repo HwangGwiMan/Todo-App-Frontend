@@ -3,6 +3,7 @@
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
 import type { CreateTodoData, CreateTodoResponses, DeleteTodoData, DeleteTodoResponses, GetTodoData, GetTodoResponses, GetTodosData, GetTodosResponses, GetUserStatsData, GetUserStatsResponses, LoginData, LoginErrors, LoginResponses, SignupData, SignupResponses, TestData, TestResponses, UpdateTodoData, UpdateTodoResponses, UpdateTodoStatusData, UpdateTodoStatusResponses } from './types.gen';
+import { zCreateTodoData, zCreateTodoResponse, zDeleteTodoData, zDeleteTodoResponse, zGetTodoData, zGetTodoResponse, zGetTodosData, zGetTodosResponse, zGetUserStatsData, zGetUserStatsResponse, zLoginData, zLoginResponse, zSignupData, zSignupResponse, zTestData, zTestResponse, zUpdateTodoData, zUpdateTodoResponse, zUpdateTodoStatusData, zUpdateTodoStatusResponse } from './zod.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -25,7 +26,9 @@ export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends 
  */
 export const deleteTodo = <ThrowOnError extends boolean = false>(options: Options<DeleteTodoData, ThrowOnError>) => {
     return (options.client ?? client).delete<DeleteTodoResponses, unknown, ThrowOnError>({
+        requestValidator: async (data) => await zDeleteTodoData.parseAsync(data),
         responseType: 'json',
+        responseValidator: async (data) => await zDeleteTodoResponse.parseAsync(data),
         security: [
             {
                 scheme: 'bearer',
@@ -44,7 +47,9 @@ export const deleteTodo = <ThrowOnError extends boolean = false>(options: Option
  */
 export const getTodo = <ThrowOnError extends boolean = false>(options: Options<GetTodoData, ThrowOnError>) => {
     return (options.client ?? client).get<GetTodoResponses, unknown, ThrowOnError>({
+        requestValidator: async (data) => await zGetTodoData.parseAsync(data),
         responseType: 'json',
+        responseValidator: async (data) => await zGetTodoResponse.parseAsync(data),
         security: [
             {
                 scheme: 'bearer',
@@ -63,7 +68,9 @@ export const getTodo = <ThrowOnError extends boolean = false>(options: Options<G
  */
 export const updateTodo = <ThrowOnError extends boolean = false>(options: Options<UpdateTodoData, ThrowOnError>) => {
     return (options.client ?? client).put<UpdateTodoResponses, unknown, ThrowOnError>({
+        requestValidator: async (data) => await zUpdateTodoData.parseAsync(data),
         responseType: 'json',
+        responseValidator: async (data) => await zUpdateTodoResponse.parseAsync(data),
         security: [
             {
                 scheme: 'bearer',
@@ -86,7 +93,9 @@ export const updateTodo = <ThrowOnError extends boolean = false>(options: Option
  */
 export const getTodos = <ThrowOnError extends boolean = false>(options: Options<GetTodosData, ThrowOnError>) => {
     return (options.client ?? client).get<GetTodosResponses, unknown, ThrowOnError>({
+        requestValidator: async (data) => await zGetTodosData.parseAsync(data),
         responseType: 'json',
+        responseValidator: async (data) => await zGetTodosResponse.parseAsync(data),
         security: [
             {
                 scheme: 'bearer',
@@ -105,7 +114,9 @@ export const getTodos = <ThrowOnError extends boolean = false>(options: Options<
  */
 export const createTodo = <ThrowOnError extends boolean = false>(options: Options<CreateTodoData, ThrowOnError>) => {
     return (options.client ?? client).post<CreateTodoResponses, unknown, ThrowOnError>({
+        requestValidator: async (data) => await zCreateTodoData.parseAsync(data),
         responseType: 'json',
+        responseValidator: async (data) => await zCreateTodoResponse.parseAsync(data),
         security: [
             {
                 scheme: 'bearer',
@@ -128,7 +139,9 @@ export const createTodo = <ThrowOnError extends boolean = false>(options: Option
  */
 export const signup = <ThrowOnError extends boolean = false>(options: Options<SignupData, ThrowOnError>) => {
     return (options.client ?? client).post<SignupResponses, unknown, ThrowOnError>({
+        requestValidator: async (data) => await zSignupData.parseAsync(data),
         responseType: 'json',
+        responseValidator: async (data) => await zSignupResponse.parseAsync(data),
         security: [
             {
                 scheme: 'bearer',
@@ -151,7 +164,9 @@ export const signup = <ThrowOnError extends boolean = false>(options: Options<Si
  */
 export const login = <ThrowOnError extends boolean = false>(options: Options<LoginData, ThrowOnError>) => {
     return (options.client ?? client).post<LoginResponses, LoginErrors, ThrowOnError>({
+        requestValidator: async (data) => await zLoginData.parseAsync(data),
         responseType: 'json',
+        responseValidator: async (data) => await zLoginResponse.parseAsync(data),
         security: [
             {
                 scheme: 'bearer',
@@ -174,7 +189,9 @@ export const login = <ThrowOnError extends boolean = false>(options: Options<Log
  */
 export const updateTodoStatus = <ThrowOnError extends boolean = false>(options: Options<UpdateTodoStatusData, ThrowOnError>) => {
     return (options.client ?? client).patch<UpdateTodoStatusResponses, unknown, ThrowOnError>({
+        requestValidator: async (data) => await zUpdateTodoStatusData.parseAsync(data),
         responseType: 'json',
+        responseValidator: async (data) => await zUpdateTodoStatusResponse.parseAsync(data),
         security: [
             {
                 scheme: 'bearer',
@@ -193,7 +210,9 @@ export const updateTodoStatus = <ThrowOnError extends boolean = false>(options: 
  */
 export const getUserStats = <ThrowOnError extends boolean = false>(options?: Options<GetUserStatsData, ThrowOnError>) => {
     return (options?.client ?? client).get<GetUserStatsResponses, unknown, ThrowOnError>({
+        requestValidator: async (data) => await zGetUserStatsData.parseAsync(data),
         responseType: 'json',
+        responseValidator: async (data) => await zGetUserStatsResponse.parseAsync(data),
         security: [
             {
                 scheme: 'bearer',
@@ -212,7 +231,9 @@ export const getUserStats = <ThrowOnError extends boolean = false>(options?: Opt
  */
 export const test = <ThrowOnError extends boolean = false>(options?: Options<TestData, ThrowOnError>) => {
     return (options?.client ?? client).get<TestResponses, unknown, ThrowOnError>({
+        requestValidator: async (data) => await zTestData.parseAsync(data),
         responseType: 'json',
+        responseValidator: async (data) => await zTestResponse.parseAsync(data),
         security: [
             {
                 scheme: 'bearer',

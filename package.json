@@ -15,7 +15,8 @@
     "date-fns": "^3.0.0",
     "pinia": "^2.1.7",
     "vue": "^3.4.0",
-    "vue-router": "^4.2.5"
+    "vue-router": "^4.2.5",
+    "zod": "^4.1.12"
   },
   "devDependencies": {
     "@hey-api/openapi-ts": "0.87.4",
