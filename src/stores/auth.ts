@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { Service } from '@/api'
-import type { LoginRequest, SignupRequest, AuthResponse } from '@/api'
+import { login as loginApi, signup as signupApi } from '@/client'
+import type { LoginRequest, SignupRequest, AuthResponse } from '@/client'
 
 export const useAuthStore = defineStore('auth', () => {
   // State
@@ -18,8 +18,11 @@ export const useAuthStore = defineStore('auth', () => {
   // Actions
   const login = async (credentials: LoginRequest) => {
     try {
-      const response = await Service.login(credentials)
-      const authData = response.data
+      const response = await loginApi({
+        body: credentials,
+        throwOnError: true
+      })
+      const authData = response.data?.data
       
       if (authData && authData.token) {
         token.value = authData.token
@@ -38,8 +41,11 @@ export const useAuthStore = defineStore('auth', () => {
 
   const signup = async (data: SignupRequest) => {
     try {
-      const response = await Service.signup(data)
-      const authData = response.data
+      const response = await signupApi({
+        body: data,
+        throwOnError: true
+      })
+      const authData = response.data?.data
       
       if (authData && authData.token) {
         token.value = authData.token
