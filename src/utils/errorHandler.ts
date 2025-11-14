@@ -1,4 +1,4 @@
-import { ApiError } from '@/api/core/ApiError'
+import type { AxiosError } from 'axios'
 
 /**
  * 백엔드 ApiResponse 형식의 에러 응답 파싱
@@ -11,22 +11,26 @@ export interface ParsedError {
 }
 
 /**
- * ApiError를 파싱하여 사용하기 쉬운 형태로 변환
+ * AxiosError를 파싱하여 사용하기 쉬운 형태로 변환
  */
 export function parseApiError(error: unknown): ParsedError {
-  // ApiError인지 확인
-  if (error instanceof ApiError) {
-    const errorBody = error.body
+  // AxiosError인지 확인
+  if (isAxiosError(error)) {
+    const response = error.response
+    const errorData = response?.data
     
     // ApiResponse 형식인지 확인 (success, message, data 필드 존재)
-    if (errorBody && typeof errorBody === 'object') {
+    if (errorData && typeof errorData === 'object' && 'message' in errorData) {
+      // 타입 단언을 위한 타입 가드
+      const apiResponse = errorData as { message?: string; data?: unknown }
+      
       // 필드별 에러가 있는 경우 (validation 에러)
-      if (errorBody.data && typeof errorBody.data === 'object' && !Array.isArray(errorBody.data)) {
+      if (apiResponse.data && typeof apiResponse.data === 'object' && !Array.isArray(apiResponse.data)) {
         const fieldErrors: Record<string, string> = {}
         let firstMessage = ''
         
         // 필드별 에러 메시지 추출
-        Object.entries(errorBody.data).forEach(([field, message]) => {
+        Object.entries(apiResponse.data).forEach(([field, message]) => {
           if (typeof message === 'string') {
             fieldErrors[field] = message
             if (!firstMessage) {
@@ -36,26 +40,26 @@ export function parseApiError(error: unknown): ParsedError {
         })
 
         return {
-          message: errorBody.message || firstMessage || '입력 정보를 확인해주세요.',
+          message: (typeof apiResponse.message === 'string' ? apiResponse.message : '') || firstMessage || '입력 정보를 확인해주세요.',
           fieldErrors: Object.keys(fieldErrors).length > 0 ? fieldErrors : undefined,
-          status: error.status,
-          statusText: error.statusText
+          status: response?.status || 0,
+          statusText: response?.statusText || 'Unknown Error'
         }
       }
       
       // 단일 에러 메시지
       return {
-        message: errorBody.message || error.message || '요청 처리 중 오류가 발생했습니다.',
-        status: error.status,
-        statusText: error.statusText
+        message: (typeof apiResponse.message === 'string' ? apiResponse.message : '') || error.message || '요청 처리 중 오류가 발생했습니다.',
+        status: response?.status || 0,
+        statusText: response?.statusText || 'Unknown Error'
       }
     }
     
     // ApiResponse 형식이 아닌 경우
     return {
       message: error.message || '요청 처리 중 오류가 발생했습니다.',
-      status: error.status,
-      statusText: error.statusText
+      status: response?.status || 0,
+      statusText: response?.statusText || 'Unknown Error'
     }
   }
   
@@ -74,6 +78,18 @@ export function parseApiError(error: unknown): ParsedError {
     status: 0,
     statusText: 'Unknown Error'
   }
+}
+
+/**
+ * AxiosError 타입 가드
+ */
+function isAxiosError(error: unknown): error is AxiosError {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    'isAxiosError' in error &&
+    (error as AxiosError).isAxiosError === true
+  )
 }
 
 /**
