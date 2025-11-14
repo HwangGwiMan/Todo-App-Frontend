@@ -44,6 +44,15 @@ src/
 │   ├── types.gen.ts       # TypeScript 타입 정의
 │   └── index.ts           # 통합 export
 │
+├── components/            # 재사용 가능한 컴포넌트
+│   ├── TodoCard.vue       # TODO 카드 컴포넌트
+│   ├── TodoCreateModal.vue # TODO 생성 모달
+│   ├── TodoEditModal.vue  # TODO 수정 모달
+│   ├── FilterSortBar.vue  # 필터/정렬 바
+│   ├── Pagination.vue      # 페이지네이션
+│   ├── LoadingSpinner.vue # 로딩 스피너
+│   └── ToastNotification.vue # 토스트 알림
+│
 ├── config/                # 설정 파일
 │   └── client.ts          # API 클라이언트 설정 (인증 토큰 자동 주입)
 │
@@ -51,7 +60,8 @@ src/
 │   └── main.css           # Tailwind CSS + 커스텀 스타일
 │
 ├── composables/           # Vue 컴포저블
-│   └── useErrorHandler.ts
+│   ├── useErrorHandler.ts # 에러 처리 컴포저블
+│   └── useToast.ts        # 토스트 알림 컴포저블
 │
 ├── router/                # Vue Router 설정
 │   └── index.ts           # 라우트 정의 + 네비게이션 가드
@@ -64,14 +74,14 @@ src/
 │   └── index.ts           # 타입 별칭 및 재export
 │
 ├── utils/                 # 유틸리티 함수
-│   └── errorHandler.ts
+│   └── errorHandler.ts    # 에러 처리 유틸리티
 │
 ├── views/                 # 페이지 컴포넌트
-│   ├── LoginView.vue
-│   ├── SignupView.vue
-│   ├── TodoListView.vue
-│   ├── TodoDetailView.vue
-│   └── NotFoundView.vue
+│   ├── LoginView.vue      # 로그인 페이지
+│   ├── SignupView.vue     # 회원가입 페이지
+│   ├── TodoListView.vue   # TODO 목록 페이지
+│   ├── TodoDetailView.vue # TODO 상세 페이지 (Phase 2 예정)
+│   └── NotFoundView.vue  # 404 페이지
 │
 ├── App.vue                # 루트 컴포넌트
 └── main.ts                # 앱 엔트리 포인트
@@ -85,7 +95,7 @@ src/
 
 ```css
 /* 버튼 */
-.btn-primary     /* 주요 버튼 (Primary 색상) */
+.btn-primary     /* 주요 버튼 (Blue 색상) */
 .btn-secondary   /* 보조 버튼 (Gray 색상) */
 
 /* 입력 필드 */
@@ -186,6 +196,10 @@ const created = await createTodo({
 })
 ```
 
+### 쿼리 파라미터 평면화
+
+Spring의 `@ModelAttribute`는 중첩 객체가 아닌 평면 쿼리 파라미터를 기대하므로, `todo.ts` store에서 `paramsSerializer`를 사용하여 쿼리 파라미터를 평면화합니다.
+
 ## 🏪 상태 관리 (Pinia)
 
 ### Auth Store
@@ -218,20 +232,83 @@ await todoStore.fetchTodos({ status: 'TODO' })
 // TODO 생성
 await todoStore.createTodo(todoData)
 
+// TODO 수정
+await todoStore.updateTodo(todoId, todoData)
+
 // 상태 변경
 await todoStore.updateTodoStatus(todoId, 'DONE')
+
+// TODO 삭제
+await todoStore.deleteTodo(todoId)
+
+// 통계 조회
+await todoStore.fetchStats()
 ```
 
-## 🎯 다음 구현 사항 (Phase 1)
+## 🎯 개발 진행 상황
 
-- [ ] TODO 카드 컴포넌트
-- [ ] TODO 생성 모달
-- [ ] TODO 수정 모달
-- [ ] 필터/정렬 UI
-- [ ] 검색 기능
-- [ ] 페이지네이션 UI
-- [ ] 로딩 스피너
-- [ ] 에러 토스트 알림
+### ✅ Phase 1 완료 (2024)
+
+**구현 완료된 기능:**
+- [x] TODO 카드 컴포넌트 (`TodoCard.vue`)
+  - 상태 배지, 우선순위 배지
+  - 마감일 및 완료일 표시
+  - 상태 변경 버튼
+  - 수정/삭제 버튼
+- [x] TODO 생성 모달 (`TodoCreateModal.vue`)
+  - 제목, 설명, 상태, 우선순위, 마감일 입력
+  - 유효성 검사 및 에러 처리
+- [x] TODO 수정 모달 (`TodoEditModal.vue`)
+  - 기존 데이터 로드 및 수정
+  - 유효성 검사 및 에러 처리
+- [x] 필터/정렬 UI (`FilterSortBar.vue`)
+  - 검색 (제목, 설명)
+  - 상태 필터 (TODO, IN_PROGRESS, DONE)
+  - 우선순위 필터 (HIGH, MEDIUM, LOW)
+  - 정렬 (생성일, 마감일, 우선순위, 제목)
+  - 정렬 방향 (오름차순, 내림차순)
+- [x] 검색 기능
+  - 실시간 검색
+  - 필터와 연동
+- [x] 페이지네이션 UI (`Pagination.vue`)
+  - 페이지 번호 표시
+  - 이전/다음 버튼
+  - 전체 개수 표시
+- [x] 로딩 스피너 (`LoadingSpinner.vue`)
+  - 비동기 작업 중 로딩 표시
+- [x] 에러 토스트 알림 (`ToastNotification.vue`, `useToast.ts`)
+  - 성공/에러/정보 알림
+  - 자동 사라짐
+  - 여러 알림 동시 표시
+
+**추가 구현 사항:**
+- [x] 인증 시스템 (로그인, 회원가입, 로그아웃)
+- [x] API 클라이언트 자동 생성 및 연동
+- [x] 에러 처리 시스템
+- [x] 통계 대시보드 (전체, 할 일, 진행중, 완료 개수)
+- [x] 반응형 디자인 (모바일, 태블릿, 데스크톱)
+
+### 🚧 Phase 2 예정
+
+**다음 단계 구현 예정:**
+- [ ] TODO 상세 페이지 (`TodoDetailView.vue`)
+  - 상세 정보 표시
+  - 댓글 기능 (선택사항)
+  - 히스토리 표시 (선택사항)
+- [ ] 프로젝트 기능
+  - 프로젝트 생성/수정/삭제
+  - 프로젝트별 TODO 그룹화
+  - 프로젝트 필터링
+- [ ] 고급 기능
+  - TODO 드래그 앤 드롭 (순서 변경)
+  - TODO 복제
+  - TODO 템플릿
+  - 일괄 작업 (다중 선택, 일괄 삭제/상태 변경)
+- [ ] 사용자 경험 개선
+  - 키보드 단축키
+  - 다크 모드
+  - 애니메이션 효과
+  - 접근성 개선
 
 ## 🔧 환경 변수
 
@@ -293,6 +370,9 @@ npm run lint
 # http://localhost:8080/api-docs 접속 가능한지 확인
 npx @hey-api/openapi-ts
 ```
+
+### 쿼리 파라미터 에러
+Spring의 `@ModelAttribute`는 평면 쿼리 파라미터를 기대합니다. `todo.ts` store의 `fetchTodos` 함수에서 `paramsSerializer`를 사용하여 쿼리 파라미터를 평면화합니다.
 
 ## 📚 참고 문서
 
