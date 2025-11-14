@@ -65,9 +65,11 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { useErrorHandler } from '@/composables/useErrorHandler'
 
 const router = useRouter()
 const authStore = useAuthStore()
+const { error, handleError, clearError } = useErrorHandler()
 
 const form = ref({
   username: '',
@@ -75,17 +77,16 @@ const form = ref({
 })
 
 const loading = ref(false)
-const error = ref('')
 
 const handleLogin = async () => {
   loading.value = true
-  error.value = ''
+  clearError()
 
   try {
     await authStore.login(form.value)
     router.push('/todos')
   } catch (err: any) {
-    error.value = err.body?.message || err.message || '로그인에 실패했습니다.'
+    handleError(err, '로그인에 실패했습니다.')
   } finally {
     loading.value = false
   }
