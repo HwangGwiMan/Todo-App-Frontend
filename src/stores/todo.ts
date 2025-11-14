@@ -46,10 +46,30 @@ export const useTodoStore = defineStore('todo', () => {
   const fetchTodos = async (params?: TodoSearchRequest) => {
     try {
       loading.value = true
+      
+      // Zod 검증을 통과하기 위해 searchRequest 객체를 전달
+      // 하지만 실제 HTTP 요청 시에는 평면화된 쿼리 파라미터가 필요
+      const searchRequest: TodoSearchRequest = params || {}
+      
+      // 평면화된 쿼리 파라미터를 생성하는 커스텀 직렬화 함수
+      const paramsSerializer = (queryParams: any) => {
+        const search: string[] = []
+        const flatParams = queryParams.searchRequest || {}
+        
+        Object.entries(flatParams).forEach(([key, value]) => {
+          if (value !== undefined && value !== null && value !== '') {
+            search.push(`${key}=${encodeURIComponent(String(value))}`)
+          }
+        })
+        
+        return search.join('&')
+      }
+      
       const response = await getTodos({
         query: {
-          searchRequest: params || {}
+          searchRequest: searchRequest
         },
+        paramsSerializer: paramsSerializer,
         throwOnError: true
       })
       
