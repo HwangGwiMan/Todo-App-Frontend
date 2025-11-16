@@ -21,6 +21,8 @@ Vue 3 + TypeScript + Tailwind CSS로 구축된 TodoApp 프론트엔드입니다.
 npm install
 
 # API 클라이언트 코드 생성 (백엔드 서버 실행 후)
+npm run generate:api
+# 또는 직접 실행
 npx @hey-api/openapi-ts
 
 # 개발 서버 실행 (http://localhost:5173)
@@ -200,6 +202,226 @@ const created = await createTodo({
 
 Spring의 `@ModelAttribute`는 중첩 객체가 아닌 평면 쿼리 파라미터를 기대하므로, `todo.ts` store에서 `paramsSerializer`를 사용하여 쿼리 파라미터를 평면화합니다.
 
+## 🛡️ 타입 안전성 및 Null Safety
+
+### TypeScript 타입 시스템
+
+이 프로젝트는 완벽한 타입 안전성을 보장하기 위해 다층적 접근 방식을 사용합니다.
+
+#### 1. 자동 생성된 타입 정의
+
+**@hey-api/openapi-ts**로 생성된 타입들은 백엔드의 OpenAPI 스펙과 100% 일치합니다:
+
+```typescript
+// src/client/types.gen.ts
+export type TodoRequest = {
+    title: string;                    // 필수 필드
+    description?: string | null;      // 선택적 + null 허용
+    status?: 'TODO' | 'IN_PROGRESS' | 'DONE';  // 선택적 enum
+    priority?: 'HIGH' | 'MEDIUM' | 'LOW';      // 선택적 enum
+    dueDate?: string | null;          // 선택적 + null 허용 
+    position?: number;                // 선택적 필드
+    projectId?: number | null;        // 선택적 + null 허용
+};
+
+export type TodoResponse = {
+    id?: number | null;               // 생성 시 null
+    title?: string;                   // 항상 존재 (백엔드에서 보장)
+    description?: string | null;      // null 가능
+    status?: string;                  // enum이 string으로 직렬화
+    priority?: string | null;         // null 가능
+    dueDate?: string | null;          // null 가능
+    completedAt?: string | null;      // 완료되지 않은 경우 null
+    createdAt?: string;               // 항상 존재
+    updatedAt?: string;               // 항상 존재
+};
+```
+
+#### 2. Zod 스키마 검증
+
+런타임 타입 검증을 위한 Zod 스키마도 자동 생성됩니다:
+
+```typescript
+// src/client/zod.gen.ts
+export const zTodoRequest = z.object({
+    title: z.string().min(0).max(255),           // 필수 + 길이 제한
+    description: z.optional(z.union([            // 선택적 + null 허용
+        z.string(),
+        z.null()
+    ])),
+    status: z.optional(z.enum([                  // 선택적 enum
+        'TODO', 'IN_PROGRESS', 'DONE'
+    ])),
+    dueDate: z.optional(z.union([                // 선택적 + null 허용
+        z.iso.datetime(),
+        z.null()
+    ])),
+    projectId: z.optional(z.union([              // 선택적 + null 허용
+        z.coerce.bigint(),
+        z.null()
+    ]))
+});
+```
+
+#### 3. 컴포넌트에서의 안전한 Null 처리
+
+**TodoCard.vue - 안전한 데이터 접근**
+```vue
+<template>
+  <div class="card">
+    <!-- 필수 필드는 바로 사용 -->
+    <h3>{{ todo.title }}</h3>
+    
+    <!-- null 가능 필드는 조건부 렌더링 -->
+    <p v-if="todo.description" class="text-gray-600">
+      {{ todo.description }}
+    </p>
+    
+    <!-- null 가능 필드의 기본값 처리 -->
+    <span class="priority-badge">
+      {{ todo.priority || 'MEDIUM' }}
+    </span>
+    
+    <!-- Date 객체 변환 시 null 체크 -->
+    <time v-if="todo.dueDate" class="due-date">
+      {{ formatDate(todo.dueDate) }}
+    </time>
+  </div>
+</template>
+```
+
+**TodoCreateModal.vue - 폼 데이터 처리**
+```typescript
+const form = ref<TodoRequest>({
+  title: '',                    // 필수 필드
+  description: '',              // 빈 문자열로 초기화
+  status: 'TODO',               // 기본값 설정
+  priority: 'MEDIUM',           // 기본값 설정
+  dueDate: undefined            // undefined로 초기화
+})
+
+const handleSubmit = async () => {
+  const todoData: TodoRequest = {
+    title: form.value.title,
+    // 빈 문자열을 undefined로 변환 (null 대신)
+    description: form.value.description || undefined,
+    status: form.value.status,
+    priority: form.value.priority,
+    dueDate: form.value.dueDate || undefined
+  }
+  
+  emit('created', todoData)
+}
+```
+
+**TodoEditModal.vue - 데이터 로딩 시 null 처리**
+```typescript
+const loadTodoData = (todo: TodoResponse) => {
+  form.value = {
+    title: todo.title || '',                    // null-safe 기본값
+    description: todo.description || '',        // null을 빈 문자열로
+    status: (todo.status as TodoStatus) || 'TODO',
+    priority: (todo.priority as Priority) || 'MEDIUM',
+    dueDate: todo.dueDate ? formatDateForInput(todo.dueDate) : undefined
+  }
+}
+
+// 날짜 변환 시 try-catch로 안전 처리
+const formatDateForInput = (dateString: string): string => {
+  try {
+    const date = new Date(dateString)
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    const hours = String(date.getHours()).padStart(2, '0')
+    const minutes = String(date.getMinutes()).padStart(2, '0')
+    return `${year}-${month}-${day}T${hours}:${minutes}`
+  } catch {
+    return ''  // 파싱 실패 시 빈 문자열 반환
+  }
+}
+```
+
+#### 4. Store에서의 타입 안전성
+
+**todo.ts - Computed 속성에서의 null 처리**
+```typescript
+// Getters에서 null-safe 접근
+const todoCount = computed(() => stats.value?.todoCount || 0)
+const inProgressCount = computed(() => stats.value?.inProgressCount || 0)
+const doneCount = computed(() => stats.value?.doneCount || 0)
+const completionRate = computed(() => stats.value?.completionRate || 0)
+
+// API 응답 처리 시 null 체크
+const fetchTodos = async (params?: TodoSearchRequest) => {
+  const response = await getTodos({...})
+  const pageData = response.data?.data  // Optional chaining
+  
+  if (pageData) {
+    todos.value = pageData.content || []  // null-safe 배열 할당
+    totalPages.value = pageData.totalPages || 0
+    totalElements.value = pageData.totalElements || 0
+    currentPage.value = pageData.number || 0
+  }
+}
+```
+
+#### 5. 에러 처리에서의 타입 안전성
+
+**errorHandler.ts - 안전한 에러 객체 파싱**
+```typescript
+export function parseApiError(error: unknown): ParsedError {
+  if (isAxiosError(error)) {
+    const response = error.response
+    const errorData = response?.data
+    
+    // 타입 가드를 통한 안전한 접근
+    if (errorData && typeof errorData === 'object' && 'message' in errorData) {
+      const apiResponse = errorData as { message?: string; data?: unknown }
+      
+      // null-safe 메시지 추출
+      const message = (typeof apiResponse.message === 'string' ? 
+        apiResponse.message : '') || 
+        '요청 처리 중 오류가 발생했습니다.'
+      
+      return {
+        message,
+        status: response?.status || 0,  // null-safe 기본값
+        statusText: response?.statusText || 'Unknown Error'
+      }
+    }
+  }
+  
+  // 폴백 처리
+  return {
+    message: '알 수 없는 오류가 발생했습니다.',
+    status: 0,
+    statusText: 'Unknown Error'
+  }
+}
+```
+
+### TypeScript 설정
+
+**tsconfig.json**에서 엄격한 null 체크 활성화:
+```json
+{
+  "compilerOptions": {
+    "strict": true,              // 엄격 모드
+    "strictNullChecks": true,    // null 체크 강화
+    "noUncheckedIndexedAccess": true  // 배열/객체 접근 시 undefined 체크
+  }
+}
+```
+
+### 장점
+
+1. **컴파일 타임 안전성**: TypeScript가 null/undefined 접근을 컴파일 시점에 검증
+2. **런타임 검증**: Zod 스키마로 API 응답 데이터 검증
+3. **자동 동기화**: 백엔드 스키마 변경 시 프론트엔드 타입 자동 업데이트
+4. **IDE 지원**: 자동완성과 타입 힌트로 개발 생산성 향상
+5. **에러 방지**: null/undefined 관련 런타임 에러 사전 방지
+
 ## 🏪 상태 관리 (Pinia)
 
 ### Auth Store
@@ -247,7 +469,7 @@ await todoStore.fetchStats()
 
 ## 🎯 개발 진행 상황
 
-### ✅ Phase 1 완료 (2024)
+### ✅ Phase 1 완료 (2025년 11월)
 
 **구현 완료된 기능:**
 - [x] TODO 카드 컴포넌트 (`TodoCard.vue`)
