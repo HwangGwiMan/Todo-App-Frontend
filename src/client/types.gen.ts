@@ -15,7 +15,7 @@ export type TodoRequest = {
     /**
      * TODO 설명
      */
-    description?: string;
+    description?: string | null;
     /**
      * TODO 상태
      */
@@ -27,7 +27,7 @@ export type TodoRequest = {
     /**
      * 마감일
      */
-    dueDate?: string;
+    dueDate?: string | null;
     /**
      * 정렬 순서
      */
@@ -35,13 +35,25 @@ export type TodoRequest = {
     /**
      * 프로젝트 ID (Phase 2)
      */
-    projectId?: number;
+    projectId?: number | null;
 };
 
+/**
+ * API 공통 응답
+ */
 export type ApiResponseTodoResponse = {
+    /**
+     * 성공 여부
+     */
     success?: boolean;
-    message?: string;
-    data?: TodoResponse;
+    /**
+     * 메시지
+     */
+    message?: string | null;
+    /**
+     * 응답 데이터
+     */
+    data?: TodoResponse | null;
 };
 
 /**
@@ -51,7 +63,7 @@ export type TodoResponse = {
     /**
      * TODO ID
      */
-    id?: number;
+    id?: number | null;
     /**
      * 사용자 ID
      */
@@ -67,7 +79,7 @@ export type TodoResponse = {
     /**
      * TODO 설명
      */
-    description?: string;
+    description?: string | null;
     /**
      * TODO 상태
      */
@@ -75,15 +87,15 @@ export type TodoResponse = {
     /**
      * 우선순위
      */
-    priority?: string;
+    priority?: string | null;
     /**
      * 마감일
      */
-    dueDate?: string;
+    dueDate?: string | null;
     /**
      * 완료일
      */
-    completedAt?: string;
+    completedAt?: string | null;
     /**
      * 정렬 순서
      */
@@ -91,7 +103,7 @@ export type TodoResponse = {
     /**
      * 프로젝트 ID (Phase 2)
      */
-    projectId?: number;
+    projectId?: number | null;
     /**
      * 생성일
      */
@@ -102,28 +114,79 @@ export type TodoResponse = {
     updatedAt?: string;
 };
 
+/**
+ * 회원가입 요청
+ */
 export type SignupRequest = {
+    /**
+     * 사용자 이름
+     */
     username: string;
+    /**
+     * 이메일
+     */
     email: string;
+    /**
+     * 비밀번호
+     */
     password: string;
 };
 
+/**
+ * API 공통 응답
+ */
 export type ApiResponseAuthResponse = {
+    /**
+     * 성공 여부
+     */
     success?: boolean;
-    message?: string;
-    data?: AuthResponse;
+    /**
+     * 메시지
+     */
+    message?: string | null;
+    /**
+     * 응답 데이터
+     */
+    data?: AuthResponse | null;
 };
 
+/**
+ * 인증 응답
+ */
 export type AuthResponse = {
+    /**
+     * JWT 토큰
+     */
     token?: string;
+    /**
+     * 토큰 타입
+     */
     type?: string;
+    /**
+     * 사용자 이름
+     */
     username?: string;
+    /**
+     * 이메일
+     */
     email?: string;
+    /**
+     * 사용자 역할
+     */
     role?: string;
 };
 
+/**
+ * 로그인 요청
+ */
 export type LoginRequest = {
+    /**
+     * 사용자 이름
+     */
     username: string;
+    /**
+     * 비밀번호
+     */
     password: string;
 };
 
@@ -134,7 +197,7 @@ export type TodoSearchRequest = {
     /**
      * 검색 키워드 (제목, 설명)
      */
-    keyword?: string;
+    keyword?: string | null;
     /**
      * 상태 필터
      */
@@ -146,11 +209,11 @@ export type TodoSearchRequest = {
     /**
      * 마감일 시작 범위
      */
-    dueDateStart?: string;
+    dueDateStart?: string | null;
     /**
      * 마감일 종료 범위
      */
-    dueDateEnd?: string;
+    dueDateEnd?: string | null;
     /**
      * 정렬 필드
      */
@@ -170,18 +233,30 @@ export type TodoSearchRequest = {
     /**
      * 프로젝트 ID 필터 (Phase 2)
      */
-    projectId?: number;
+    projectId?: number | null;
 };
 
+/**
+ * API 공통 응답
+ */
 export type ApiResponsePageTodoResponse = {
+    /**
+     * 성공 여부
+     */
     success?: boolean;
-    message?: string;
-    data?: PageTodoResponse;
+    /**
+     * 메시지
+     */
+    message?: string | null;
+    /**
+     * 응답 데이터
+     */
+    data?: PageTodoResponse | null;
 };
 
 export type PageTodoResponse = {
-    totalPages?: number;
     totalElements?: number;
+    totalPages?: number;
     size?: number;
     content?: Array<TodoResponse>;
     number?: number;
@@ -197,8 +272,8 @@ export type PageableObject = {
     offset?: number;
     sort?: SortObject;
     paged?: boolean;
-    pageSize?: number;
     pageNumber?: number;
+    pageSize?: number;
     unpaged?: boolean;
 };
 
@@ -208,10 +283,22 @@ export type SortObject = {
     unsorted?: boolean;
 };
 
+/**
+ * API 공통 응답
+ */
 export type ApiResponseTodoStatsResponse = {
+    /**
+     * 성공 여부
+     */
     success?: boolean;
-    message?: string;
-    data?: TodoStatsResponse;
+    /**
+     * 메시지
+     */
+    message?: string | null;
+    /**
+     * 응답 데이터
+     */
+    data?: TodoStatsResponse | null;
 };
 
 export type TodoStatsResponse = {
@@ -223,16 +310,44 @@ export type TodoStatsResponse = {
     completionRate?: number;
 };
 
+/**
+ * API 공통 응답
+ */
 export type ApiResponseString = {
+    /**
+     * 성공 여부
+     */
     success?: boolean;
-    message?: string;
-    data?: string;
+    /**
+     * 메시지
+     */
+    message?: string | null;
+    /**
+     * 응답 데이터
+     */
+    data?: string | {
+        [key: string]: unknown;
+    } | null;
 };
 
+/**
+ * API 공통 응답
+ */
 export type ApiResponseVoid = {
+    /**
+     * 성공 여부
+     */
     success?: boolean;
-    message?: string;
-    data?: unknown;
+    /**
+     * 메시지
+     */
+    message?: string | null;
+    /**
+     * 응답 데이터
+     */
+    data?: {
+        [key: string]: unknown;
+    } | null;
 };
 
 export type DeleteTodoData = {

@@ -5,7 +5,11 @@ export default defineConfig({
   output: 'src/client',
   plugins: [
     '@hey-api/client-axios',
-    'zod',
+    {
+      name: 'zod',
+      requests: true,
+      responses: true,
+    },
     {
       name: '@hey-api/sdk', 
       validator: true, 

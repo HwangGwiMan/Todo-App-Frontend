@@ -7,7 +7,10 @@ import { z } from 'zod';
  */
 export const zTodoRequest = z.object({
     title: z.string().min(0).max(255),
-    description: z.optional(z.string()),
+    description: z.optional(z.union([
+        z.string(),
+        z.null()
+    ])),
     status: z.optional(z.enum([
         'TODO',
         'IN_PROGRESS',
@@ -18,42 +21,81 @@ export const zTodoRequest = z.object({
         'MEDIUM',
         'LOW'
     ])),
-    dueDate: z.optional(z.iso.datetime()),
+    dueDate: z.optional(z.union([
+        z.iso.datetime(),
+        z.null()
+    ])),
     position: z.optional(z.int()),
-    projectId: z.optional(z.coerce.bigint())
+    projectId: z.optional(z.union([
+        z.coerce.bigint(),
+        z.null()
+    ]))
 });
 
 /**
  * TODO 응답
  */
 export const zTodoResponse = z.object({
-    id: z.optional(z.coerce.bigint()),
+    id: z.optional(z.union([
+        z.coerce.bigint(),
+        z.null()
+    ])),
     userId: z.optional(z.coerce.bigint()),
     username: z.optional(z.string()),
     title: z.optional(z.string()),
-    description: z.optional(z.string()),
+    description: z.optional(z.union([
+        z.string(),
+        z.null()
+    ])),
     status: z.optional(z.string()),
-    priority: z.optional(z.string()),
-    dueDate: z.optional(z.iso.datetime()),
-    completedAt: z.optional(z.iso.datetime()),
+    priority: z.optional(z.union([
+        z.string(),
+        z.null()
+    ])),
+    dueDate: z.optional(z.union([
+        z.iso.datetime(),
+        z.null()
+    ])),
+    completedAt: z.optional(z.union([
+        z.iso.datetime(),
+        z.null()
+    ])),
     position: z.optional(z.int()),
-    projectId: z.optional(z.coerce.bigint()),
+    projectId: z.optional(z.union([
+        z.coerce.bigint(),
+        z.null()
+    ])),
     createdAt: z.optional(z.iso.datetime()),
     updatedAt: z.optional(z.iso.datetime())
 });
 
+/**
+ * API 공통 응답
+ */
 export const zApiResponseTodoResponse = z.object({
     success: z.optional(z.boolean()),
-    message: z.optional(z.string()),
-    data: z.optional(zTodoResponse)
+    message: z.optional(z.union([
+        z.string(),
+        z.null()
+    ])),
+    data: z.optional(z.union([
+        zTodoResponse,
+        z.null()
+    ]))
 });
 
+/**
+ * 회원가입 요청
+ */
 export const zSignupRequest = z.object({
     username: z.string().min(3).max(50),
     email: z.string().min(1),
     password: z.string().min(6).max(2147483647)
 });
 
+/**
+ * 인증 응답
+ */
 export const zAuthResponse = z.object({
     token: z.optional(z.string()),
     type: z.optional(z.string()),
@@ -62,12 +104,24 @@ export const zAuthResponse = z.object({
     role: z.optional(z.string())
 });
 
+/**
+ * API 공통 응답
+ */
 export const zApiResponseAuthResponse = z.object({
     success: z.optional(z.boolean()),
-    message: z.optional(z.string()),
-    data: z.optional(zAuthResponse)
+    message: z.optional(z.union([
+        z.string(),
+        z.null()
+    ])),
+    data: z.optional(z.union([
+        zAuthResponse,
+        z.null()
+    ]))
 });
 
+/**
+ * 로그인 요청
+ */
 export const zLoginRequest = z.object({
     username: z.string().min(1),
     password: z.string().min(1)
@@ -77,7 +131,10 @@ export const zLoginRequest = z.object({
  * TODO 검색/필터링 요청
  */
 export const zTodoSearchRequest = z.object({
-    keyword: z.optional(z.string()),
+    keyword: z.optional(z.union([
+        z.string(),
+        z.null()
+    ])),
     status: z.optional(z.enum([
         'TODO',
         'IN_PROGRESS',
@@ -88,8 +145,14 @@ export const zTodoSearchRequest = z.object({
         'MEDIUM',
         'LOW'
     ])),
-    dueDateStart: z.optional(z.iso.datetime()),
-    dueDateEnd: z.optional(z.iso.datetime()),
+    dueDateStart: z.optional(z.union([
+        z.iso.datetime(),
+        z.null()
+    ])),
+    dueDateEnd: z.optional(z.union([
+        z.iso.datetime(),
+        z.null()
+    ])),
     sortBy: z.optional(z.enum([
         'createdAt',
         'dueDate',
@@ -103,7 +166,10 @@ export const zTodoSearchRequest = z.object({
     ])),
     page: z.optional(z.int()),
     size: z.optional(z.int()),
-    projectId: z.optional(z.coerce.bigint())
+    projectId: z.optional(z.union([
+        z.coerce.bigint(),
+        z.null()
+    ]))
 });
 
 export const zSortObject = z.object({
@@ -116,14 +182,14 @@ export const zPageableObject = z.object({
     offset: z.optional(z.coerce.bigint()),
     sort: z.optional(zSortObject),
     paged: z.optional(z.boolean()),
-    pageSize: z.optional(z.int()),
     pageNumber: z.optional(z.int()),
+    pageSize: z.optional(z.int()),
     unpaged: z.optional(z.boolean())
 });
 
 export const zPageTodoResponse = z.object({
-    totalPages: z.optional(z.int()),
     totalElements: z.optional(z.coerce.bigint()),
+    totalPages: z.optional(z.int()),
     size: z.optional(z.int()),
     content: z.optional(z.array(zTodoResponse)),
     number: z.optional(z.int()),
@@ -135,10 +201,19 @@ export const zPageTodoResponse = z.object({
     empty: z.optional(z.boolean())
 });
 
+/**
+ * API 공통 응답
+ */
 export const zApiResponsePageTodoResponse = z.object({
     success: z.optional(z.boolean()),
-    message: z.optional(z.string()),
-    data: z.optional(zPageTodoResponse)
+    message: z.optional(z.union([
+        z.string(),
+        z.null()
+    ])),
+    data: z.optional(z.union([
+        zPageTodoResponse,
+        z.null()
+    ]))
 });
 
 export const zTodoStatsResponse = z.object({
@@ -150,22 +225,50 @@ export const zTodoStatsResponse = z.object({
     completionRate: z.optional(z.number())
 });
 
+/**
+ * API 공통 응답
+ */
 export const zApiResponseTodoStatsResponse = z.object({
     success: z.optional(z.boolean()),
-    message: z.optional(z.string()),
-    data: z.optional(zTodoStatsResponse)
+    message: z.optional(z.union([
+        z.string(),
+        z.null()
+    ])),
+    data: z.optional(z.union([
+        zTodoStatsResponse,
+        z.null()
+    ]))
 });
 
+/**
+ * API 공통 응답
+ */
 export const zApiResponseString = z.object({
     success: z.optional(z.boolean()),
-    message: z.optional(z.string()),
-    data: z.optional(z.string())
+    message: z.optional(z.union([
+        z.string(),
+        z.null()
+    ])),
+    data: z.optional(z.union([
+        z.string(),
+        z.record(z.string(), z.unknown()),
+        z.null()
+    ]))
 });
 
+/**
+ * API 공통 응답
+ */
 export const zApiResponseVoid = z.object({
     success: z.optional(z.boolean()),
-    message: z.optional(z.string()),
-    data: z.optional(z.unknown())
+    message: z.optional(z.union([
+        z.string(),
+        z.null()
+    ])),
+    data: z.optional(z.union([
+        z.record(z.string(), z.unknown()),
+        z.null()
+    ]))
 });
 
 export const zDeleteTodoData = z.object({
