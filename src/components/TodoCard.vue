@@ -63,7 +63,7 @@
           @click.stop="handleStatusChange"
           class="w-full btn-secondary text-sm"
         >
-          {{ nextStatusText }}로 변경
+          {{ nextStatusText }}
         </button>
       </div>
     </div>
@@ -127,8 +127,8 @@
   })
   
   const nextStatusText = computed(() => {
-    if (props.todo.status === 'TODO') return '진행중'
-    if (props.todo.status === 'IN_PROGRESS') return '완료'
+    if (props.todo.status === 'TODO') return '진행중으로 변경'
+    if (props.todo.status === 'IN_PROGRESS') return '완료로 변경'
     return ''
   })
   
