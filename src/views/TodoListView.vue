@@ -68,7 +68,7 @@
         >
           <TodoCard
             v-for="todo in todoStore.todos"
-            :key="todo.id"
+            :key="todo.id || 0"
             :todo="todo"
             @edit="handleEdit"
             @delete="handleDelete"
@@ -188,6 +188,7 @@ const handleEdit = (todo: TodoResponse) => {
 
 const handleUpdate = async (id: number, todoData: TodoRequest) => {
   try {
+    console.log('handleUpdate', id, todoData)
     await todoStore.updateTodo(id, todoData)
     showEditModal.value = false
     selectedTodo.value = null

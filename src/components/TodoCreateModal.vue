@@ -83,8 +83,14 @@
                 <input
                   v-model="form.dueDate"
                   type="datetime-local"
+                  step="1"
                   class="input-field"
+                  placeholder="년-월-일 시:분:초"
+                  @input="handleDueDateChange"
                 />
+                <p v-if="form.dueDate" class="mt-1 text-xs text-gray-500">
+                  {{ formatDateDisplay(form.dueDate) }}
+                </p>
               </div>
   
               <!-- 에러 메시지 -->
@@ -161,6 +167,17 @@
     }
     clearError()
   }
+
+  const handleDueDateChange = (e: Event) => {
+    const input = e.target as HTMLInputElement
+    // 날짜/시간이 선택되면 자동으로 선택기 팝업을 닫습니다
+    if (input.value) {
+      // 약간의 지연을 두어 브라우저의 내장 처리가 완료된 후 포커스 해제
+      setTimeout(() => {
+        input.blur()
+      }, 50)
+    }
+  }
   
   const handleClose = () => {
     if (!loading.value) {
@@ -168,19 +185,56 @@
     }
   }
   
+  const formatDateDisplay = (dateTimeString: string) => {
+    if (!dateTimeString) return ''
+    
+    try {
+      // datetime-local 형식에서 Date 객체로 변환
+      const date = new Date(dateTimeString)
+      
+      const year = date.getFullYear()
+      const month = date.getMonth() + 1
+      const day = date.getDate()
+      const hours = date.getHours()
+      const minutes = date.getMinutes()
+      const seconds = date.getSeconds()
+      
+      const weekdays = ['일', '월', '화', '수', '목', '금', '토']
+      const weekday = weekdays[date.getDay()]
+      
+      return `${year}년 ${month}월 ${day}일 (${weekday}) ${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
+    } catch {
+      return '유효하지 않은 날짜'
+    }
+  }
+
+  const convertToISOString = (dateTimeString: string | null | undefined) => {
+    if (!dateTimeString) return undefined
+    
+    try {
+      // datetime-local 형식을 Date 객체로 변환 (로컬 시간대)
+      const date = new Date(dateTimeString)
+      
+      // ISO 8601 UTC 형식으로 변환 (예: 2025-11-16T22:52:55.000Z)
+      return date.toISOString()
+    } catch {
+      return undefined
+    }
+  }
+
   const handleSubmit = async () => {
     clearError()
     loading.value = true
-  
+
     try {
       const todoData: TodoRequest = {
         title: form.value.title,
         description: form.value.description || undefined,
         status: form.value.status,
         priority: form.value.priority,
-        dueDate: form.value.dueDate || undefined
+        dueDate: convertToISOString(form.value.dueDate)
       }
-  
+
       emit('created', todoData)
       handleClose()
     } catch (err) {
