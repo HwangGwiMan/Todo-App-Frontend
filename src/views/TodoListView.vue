@@ -76,7 +76,14 @@
       <!-- TODO List -->
       <div class="card">
         <div class="flex justify-between items-center mb-6">
-          <h2 class="text-xl font-bold">할 일 목록</h2>
+          <div class="flex items-center gap-2">
+            <h2 class="text-xl font-bold">할 일 목록</h2> 
+            <h2 v-if="selectedProject">{{ selectedProject.name }}</h2>
+            <!-- 프로젝트 취소 버튼 -->
+            <button v-if="selectedProject" @click="handleProjectCancel" class="btn-secondary">
+              취소
+            </button>
+          </div>
           <button @click="showCreateModal = true" class="btn-primary">
             + 새 TODO
           </button>
@@ -296,6 +303,7 @@ const handleProjectCreate = async (projectData: ProjectRequest) => {
     showSuccess('프로젝트가 생성되었습니다.')
     // 프로젝트 생성 후 TODO 목록 새로고침 (프로젝트 필터 옵션 업데이트)
     await todoStore.fetchTodos(filters.value)
+    await projectStore.fetchProjects()
   } catch (error) {
     handleError(error, '프로젝트 생성 중 오류가 발생했습니다.')
     showError('프로젝트 생성에 실패했습니다.')
@@ -345,10 +353,20 @@ const handleProjectDelete = async (project: ProjectResponse) => {
 }
 
 const handleProjectSelect = (project: ProjectResponse) => {
+  selectedProject.value = project
   // 프로젝트 필터 적용
   filters.value = {
     ...filters.value,
     projectId: project.id,
+    page: 0
+  }
+}
+
+const handleProjectCancel = () => {
+  selectedProject.value = null
+  filters.value = {
+    ...filters.value,
+    projectId: undefined,
     page: 0
   }
 }
