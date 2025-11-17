@@ -85,6 +85,50 @@ export const zApiResponseTodoResponse = z.object({
 });
 
 /**
+ * 프로젝트 생성 요청 데이터
+ */
+export const zProjectRequest = z.object({
+    name: z.string().min(0).max(100),
+    description: z.optional(z.union([
+        z.string(),
+        z.null()
+    ])),
+    color: z.optional(z.string().regex(/^#[0-9A-Fa-f]{6}$/)),
+    isDefault: z.optional(z.boolean()),
+    position: z.optional(z.int())
+});
+
+export const zProjectResponse = z.object({
+    id: z.optional(z.coerce.bigint()),
+    name: z.optional(z.string()),
+    description: z.optional(z.union([
+        z.string(),
+        z.null()
+    ])),
+    color: z.optional(z.string()),
+    isDefault: z.optional(z.boolean()),
+    position: z.optional(z.int()),
+    createdAt: z.optional(z.iso.datetime()),
+    updatedAt: z.optional(z.iso.datetime()),
+    todoCount: z.optional(z.coerce.bigint())
+});
+
+/**
+ * API 공통 응답
+ */
+export const zApiResponseProjectResponse = z.object({
+    success: z.optional(z.boolean()),
+    message: z.optional(z.union([
+        z.string(),
+        z.null()
+    ])),
+    data: z.optional(z.union([
+        zProjectResponse,
+        z.null()
+    ]))
+});
+
+/**
  * 회원가입 요청
  */
 export const zSignupRequest = z.object({
@@ -181,15 +225,15 @@ export const zSortObject = z.object({
 export const zPageableObject = z.object({
     offset: z.optional(z.coerce.bigint()),
     sort: z.optional(zSortObject),
+    pageSize: z.optional(z.int()),
     paged: z.optional(z.boolean()),
     pageNumber: z.optional(z.int()),
-    pageSize: z.optional(z.int()),
     unpaged: z.optional(z.boolean())
 });
 
 export const zPageTodoResponse = z.object({
-    totalElements: z.optional(z.coerce.bigint()),
     totalPages: z.optional(z.int()),
+    totalElements: z.optional(z.coerce.bigint()),
     size: z.optional(z.int()),
     content: z.optional(z.array(zTodoResponse)),
     number: z.optional(z.int()),
@@ -236,6 +280,22 @@ export const zApiResponseTodoStatsResponse = z.object({
     ])),
     data: z.optional(z.union([
         zTodoStatsResponse,
+        z.null()
+    ]))
+});
+
+/**
+ * API 공통 응답
+ */
+export const zApiResponseListProjectResponse = z.object({
+    success: z.optional(z.boolean()),
+    message: z.optional(z.union([
+        z.string(),
+        z.null()
+    ])),
+    data: z.optional(z.union([
+        z.array(zProjectResponse),
+        z.record(z.string(), z.unknown()),
         z.null()
     ]))
 });
@@ -310,6 +370,45 @@ export const zUpdateTodoData = z.object({
  */
 export const zUpdateTodoResponse = zApiResponseTodoResponse;
 
+export const zDeleteProjectData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        projectId: z.coerce.bigint()
+    }),
+    query: z.optional(z.never())
+});
+
+/**
+ * 프로젝트 삭제 성공
+ */
+export const zDeleteProjectResponse = zApiResponseVoid;
+
+export const zGetProjectData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        projectId: z.coerce.bigint()
+    }),
+    query: z.optional(z.never())
+});
+
+/**
+ * 프로젝트 조회 성공
+ */
+export const zGetProjectResponse = zApiResponseProjectResponse;
+
+export const zUpdateProjectData = z.object({
+    body: zProjectRequest,
+    path: z.object({
+        projectId: z.coerce.bigint()
+    }),
+    query: z.optional(z.never())
+});
+
+/**
+ * 프로젝트 수정 성공
+ */
+export const zUpdateProjectResponse = zApiResponseProjectResponse;
+
 export const zGetTodosData = z.object({
     body: z.optional(z.never()),
     path: z.optional(z.never()),
@@ -333,6 +432,28 @@ export const zCreateTodoData = z.object({
  * OK
  */
 export const zCreateTodoResponse = zApiResponseTodoResponse;
+
+export const zGetProjectsData = z.object({
+    body: z.optional(z.never()),
+    path: z.optional(z.never()),
+    query: z.optional(z.never())
+});
+
+/**
+ * 프로젝트 목록 조회 성공
+ */
+export const zGetProjectsResponse = zApiResponseListProjectResponse;
+
+export const zCreateProjectData = z.object({
+    body: zProjectRequest,
+    path: z.optional(z.never()),
+    query: z.optional(z.never())
+});
+
+/**
+ * 프로젝트 생성 성공
+ */
+export const zCreateProjectResponse = zApiResponseProjectResponse;
 
 export const zSignupData = z.object({
     body: zSignupRequest,
@@ -385,6 +506,17 @@ export const zGetUserStatsData = z.object({
  * OK
  */
 export const zGetUserStatsResponse = zApiResponseTodoStatsResponse;
+
+export const zGetDefaultProjectData = z.object({
+    body: z.optional(z.never()),
+    path: z.optional(z.never()),
+    query: z.optional(z.never())
+});
+
+/**
+ * 기본 프로젝트 조회 성공
+ */
+export const zGetDefaultProjectResponse = zApiResponseProjectResponse;
 
 export const zTestData = z.object({
     body: z.optional(z.never()),

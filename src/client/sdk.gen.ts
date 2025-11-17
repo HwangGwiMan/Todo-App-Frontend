@@ -2,8 +2,8 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { CreateTodoData, CreateTodoResponses, DeleteTodoData, DeleteTodoResponses, GetTodoData, GetTodoResponses, GetTodosData, GetTodosResponses, GetUserStatsData, GetUserStatsResponses, LoginData, LoginErrors, LoginResponses, SignupData, SignupResponses, TestData, TestResponses, UpdateTodoData, UpdateTodoResponses, UpdateTodoStatusData, UpdateTodoStatusResponses } from './types.gen';
-import { zCreateTodoData, zCreateTodoResponse, zDeleteTodoData, zDeleteTodoResponse, zGetTodoData, zGetTodoResponse, zGetTodosData, zGetTodosResponse, zGetUserStatsData, zGetUserStatsResponse, zLoginData, zLoginResponse, zSignupData, zSignupResponse, zTestData, zTestResponse, zUpdateTodoData, zUpdateTodoResponse, zUpdateTodoStatusData, zUpdateTodoStatusResponse } from './zod.gen';
+import type { CreateProjectData, CreateProjectErrors, CreateProjectResponses, CreateTodoData, CreateTodoResponses, DeleteProjectData, DeleteProjectErrors, DeleteProjectResponses, DeleteTodoData, DeleteTodoResponses, GetDefaultProjectData, GetDefaultProjectErrors, GetDefaultProjectResponses, GetProjectData, GetProjectErrors, GetProjectResponses, GetProjectsData, GetProjectsErrors, GetProjectsResponses, GetTodoData, GetTodoResponses, GetTodosData, GetTodosResponses, GetUserStatsData, GetUserStatsResponses, LoginData, LoginErrors, LoginResponses, SignupData, SignupResponses, TestData, TestResponses, UpdateProjectData, UpdateProjectErrors, UpdateProjectResponses, UpdateTodoData, UpdateTodoResponses, UpdateTodoStatusData, UpdateTodoStatusResponses } from './types.gen';
+import { zCreateProjectData, zCreateProjectResponse, zCreateTodoData, zCreateTodoResponse, zDeleteProjectData, zDeleteProjectResponse, zDeleteTodoData, zDeleteTodoResponse, zGetDefaultProjectData, zGetDefaultProjectResponse, zGetProjectData, zGetProjectResponse, zGetProjectsData, zGetProjectsResponse, zGetTodoData, zGetTodoResponse, zGetTodosData, zGetTodosResponse, zGetUserStatsData, zGetUserStatsResponse, zLoginData, zLoginResponse, zSignupData, zSignupResponse, zTestData, zTestResponse, zUpdateProjectData, zUpdateProjectResponse, zUpdateTodoData, zUpdateTodoResponse, zUpdateTodoStatusData, zUpdateTodoStatusResponse } from './zod.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -87,6 +87,73 @@ export const updateTodo = <ThrowOnError extends boolean = false>(options: Option
 };
 
 /**
+ * 프로젝트 삭제
+ *
+ * 기존 프로젝트를 삭제합니다. 기본 프로젝트는 삭제할 수 없습니다.
+ */
+export const deleteProject = <ThrowOnError extends boolean = false>(options: Options<DeleteProjectData, ThrowOnError>) => {
+    return (options.client ?? client).delete<DeleteProjectResponses, DeleteProjectErrors, ThrowOnError>({
+        requestValidator: async (data) => await zDeleteProjectData.parseAsync(data),
+        responseType: 'json',
+        responseValidator: async (data) => await zDeleteProjectResponse.parseAsync(data),
+        security: [
+            {
+                scheme: 'bearer',
+                type: 'http'
+            }
+        ],
+        url: '/api/projects/{projectId}',
+        ...options
+    });
+};
+
+/**
+ * 프로젝트 상세 조회
+ *
+ * 특정 프로젝트의 상세 정보를 조회합니다.
+ */
+export const getProject = <ThrowOnError extends boolean = false>(options: Options<GetProjectData, ThrowOnError>) => {
+    return (options.client ?? client).get<GetProjectResponses, GetProjectErrors, ThrowOnError>({
+        requestValidator: async (data) => await zGetProjectData.parseAsync(data),
+        responseType: 'json',
+        responseValidator: async (data) => await zGetProjectResponse.parseAsync(data),
+        security: [
+            {
+                scheme: 'bearer',
+                type: 'http'
+            }
+        ],
+        url: '/api/projects/{projectId}',
+        ...options
+    });
+};
+
+/**
+ * 프로젝트 수정
+ *
+ * 기존 프로젝트의 정보를 수정합니다.
+ */
+export const updateProject = <ThrowOnError extends boolean = false>(options: Options<UpdateProjectData, ThrowOnError>) => {
+    return (options.client ?? client).put<UpdateProjectResponses, UpdateProjectErrors, ThrowOnError>({
+        requestValidator: async (data) => await zUpdateProjectData.parseAsync(data),
+        responseType: 'json',
+        responseValidator: async (data) => await zUpdateProjectResponse.parseAsync(data),
+        security: [
+            {
+                scheme: 'bearer',
+                type: 'http'
+            }
+        ],
+        url: '/api/projects/{projectId}',
+        ...options,
+        headers: {
+            'Content-Type': 'application/json',
+            ...options.headers
+        }
+    });
+};
+
+/**
  * TODO 목록 조회
  *
  * TODO 목록을 조회합니다. 검색, 필터링, 정렬, 페이징을 지원합니다.
@@ -124,6 +191,52 @@ export const createTodo = <ThrowOnError extends boolean = false>(options: Option
             }
         ],
         url: '/api/todos',
+        ...options,
+        headers: {
+            'Content-Type': 'application/json',
+            ...options.headers
+        }
+    });
+};
+
+/**
+ * 프로젝트 목록 조회
+ *
+ * 현재 로그인한 사용자의 모든 프로젝트를 정렬 순서대로 조회합니다.
+ */
+export const getProjects = <ThrowOnError extends boolean = false>(options?: Options<GetProjectsData, ThrowOnError>) => {
+    return (options?.client ?? client).get<GetProjectsResponses, GetProjectsErrors, ThrowOnError>({
+        requestValidator: async (data) => await zGetProjectsData.parseAsync(data),
+        responseType: 'json',
+        responseValidator: async (data) => await zGetProjectsResponse.parseAsync(data),
+        security: [
+            {
+                scheme: 'bearer',
+                type: 'http'
+            }
+        ],
+        url: '/api/projects',
+        ...options
+    });
+};
+
+/**
+ * 프로젝트 생성
+ *
+ * 새로운 프로젝트를 생성합니다.
+ */
+export const createProject = <ThrowOnError extends boolean = false>(options: Options<CreateProjectData, ThrowOnError>) => {
+    return (options.client ?? client).post<CreateProjectResponses, CreateProjectErrors, ThrowOnError>({
+        requestValidator: async (data) => await zCreateProjectData.parseAsync(data),
+        responseType: 'json',
+        responseValidator: async (data) => await zCreateProjectResponse.parseAsync(data),
+        security: [
+            {
+                scheme: 'bearer',
+                type: 'http'
+            }
+        ],
+        url: '/api/projects',
         ...options,
         headers: {
             'Content-Type': 'application/json',
@@ -220,6 +333,27 @@ export const getUserStats = <ThrowOnError extends boolean = false>(options?: Opt
             }
         ],
         url: '/api/todos/stats',
+        ...options
+    });
+};
+
+/**
+ * 기본 프로젝트 조회
+ *
+ * 현재 사용자의 기본 프로젝트를 조회합니다.
+ */
+export const getDefaultProject = <ThrowOnError extends boolean = false>(options?: Options<GetDefaultProjectData, ThrowOnError>) => {
+    return (options?.client ?? client).get<GetDefaultProjectResponses, GetDefaultProjectErrors, ThrowOnError>({
+        requestValidator: async (data) => await zGetDefaultProjectData.parseAsync(data),
+        responseType: 'json',
+        responseValidator: async (data) => await zGetDefaultProjectResponse.parseAsync(data),
+        security: [
+            {
+                scheme: 'bearer',
+                type: 'http'
+            }
+        ],
+        url: '/api/projects/default',
         ...options
     });
 };

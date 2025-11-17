@@ -50,7 +50,10 @@ src/
 │   ├── TodoCard.vue       # TODO 카드 컴포넌트
 │   ├── TodoCreateModal.vue # TODO 생성 모달
 │   ├── TodoEditModal.vue  # TODO 수정 모달
-│   ├── FilterSortBar.vue  # 필터/정렬 바
+│   ├── ProjectCard.vue    # 프로젝트 카드 컴포넌트 (Phase 2)
+│   ├── ProjectCreateModal.vue # 프로젝트 생성 모달 (Phase 2)
+│   ├── ProjectEditModal.vue # 프로젝트 수정 모달 (Phase 2)
+│   ├── FilterSortBar.vue  # 필터/정렬 바 (프로젝트 필터 추가)
 │   ├── Pagination.vue      # 페이지네이션
 │   ├── LoadingSpinner.vue # 로딩 스피너
 │   └── ToastNotification.vue # 토스트 알림
@@ -70,7 +73,8 @@ src/
 │
 ├── stores/                # Pinia 상태 관리
 │   ├── auth.ts            # 인증 상태
-│   └── todo.ts            # TODO 상태
+│   ├── todo.ts            # TODO 상태
+│   └── project.ts         # 프로젝트 상태 (Phase 2)
 │
 ├── types/                 # 추가 타입 정의 및 재export
 │   └── index.ts           # 타입 별칭 및 재export
@@ -166,8 +170,8 @@ client.setConfig({
 ### API 사용 예시
 
 ```typescript
-import { login, signup, getTodos, createTodo } from '@/client'
-import type { LoginRequest, TodoRequest } from '@/client'
+import { login, signup, getTodos, createTodo, getProjects, createProject } from '@/client'
+import type { LoginRequest, TodoRequest, ProjectRequest } from '@/client'
 
 // 로그인
 const response = await login({
@@ -176,24 +180,43 @@ const response = await login({
 })
 const token = response.data?.data?.token
 
-// TODO 목록 조회
+// TODO 목록 조회 (프로젝트 필터 포함)
 const todosResponse = await getTodos({
   query: {
-    searchRequest: { status: 'TODO', page: 0, size: 50 }
+    searchRequest: { projectId: 1, status: 'TODO', page: 0, size: 50 }
   },
   throwOnError: true
 })
 const todos = todosResponse.data?.data?.content
 
-// TODO 생성
+// TODO 생성 (프로젝트 지정)
 const newTodo: TodoRequest = {
   title: '새 할 일',
   description: '설명',
   status: 'TODO',
-  priority: 'HIGH'
+  priority: 'HIGH',
+  projectId: 1
 }
 const created = await createTodo({
   body: newTodo,
+  throwOnError: true
+})
+
+// 프로젝트 목록 조회 (Phase 2)
+const projectsResponse = await getProjects({
+  throwOnError: true
+})
+const projects = projectsResponse.data?.data
+
+// 프로젝트 생성 (Phase 2)
+const newProject: ProjectRequest = {
+  name: '새 프로젝트',
+  description: '프로젝트 설명',
+  color: '#3B82F6',
+  isDefault: false
+}
+const createdProject = await createProject({
+  body: newProject,
   throwOnError: true
 })
 ```
@@ -448,11 +471,11 @@ import { useTodoStore } from '@/stores/todo'
 
 const todoStore = useTodoStore()
 
-// TODO 목록 조회
-await todoStore.fetchTodos({ status: 'TODO' })
+// TODO 목록 조회 (프로젝트 필터 포함)
+await todoStore.fetchTodos({ projectId: 1, status: 'TODO' })
 
-// TODO 생성
-await todoStore.createTodo(todoData)
+// TODO 생성 (프로젝트 지정)
+await todoStore.createTodo({ ...todoData, projectId: 1 })
 
 // TODO 수정
 await todoStore.updateTodo(todoId, todoData)
@@ -465,6 +488,31 @@ await todoStore.deleteTodo(todoId)
 
 // 통계 조회
 await todoStore.fetchStats()
+```
+
+### Project Store (Phase 2)
+```typescript
+import { useProjectStore } from '@/stores/project'
+
+const projectStore = useProjectStore()
+
+// 프로젝트 목록 조회
+await projectStore.fetchProjects()
+
+// 프로젝트 생성
+await projectStore.createNewProject(projectData)
+
+// 프로젝트 수정
+await projectStore.updateExistingProject(projectId, projectData)
+
+// 프로젝트 삭제
+await projectStore.deleteExistingProject(projectId)
+
+// 기본 프로젝트 조회
+await projectStore.fetchDefaultProject()
+
+// Select 옵션용 프로젝트 목록
+const projectOptions = projectStore.getProjectsForSelect
 ```
 
 ## 🎯 개발 진행 상황
@@ -510,17 +558,34 @@ await todoStore.fetchStats()
 - [x] 통계 대시보드 (전체, 할 일, 진행중, 완료 개수)
 - [x] 반응형 디자인 (모바일, 태블릿, 데스크톱)
 
-### 🚧 Phase 2 예정
+### ✅ Phase 2 완료 (2025년 11월)
+
+**구현 완료된 기능:**
+- [x] 프로젝트 관리 기능
+  - 프로젝트 카드 컴포넌트 (`ProjectCard.vue`)
+  - 프로젝트 생성 모달 (`ProjectCreateModal.vue`)
+  - 프로젝트 수정 모달 (`ProjectEditModal.vue`)
+  - 프로젝트 색상 및 기본 프로젝트 관리
+- [x] 프로젝트 상태 관리 (`project.ts` Store)
+  - CRUD 작업 및 상태 관리
+  - 에러 처리 및 로딩 상태
+  - 기본 프로젝트 관리
+- [x] 통합 프로젝트 필터링
+  - FilterSortBar에 프로젝트 필터 추가
+  - 프로젝트별 TODO 목록 조회
+  - 프로젝트 선택 시 자동 필터링
+- [x] TodoListView 통합 UI
+  - 프로젝트 관리 섹션 추가
+  - 프로젝트-TODO 연동 관리
+  - 완전한 CRUD 및 필터링 통합
+
+### 🚧 Phase 3 예정
 
 **다음 단계 구현 예정:**
 - [ ] TODO 상세 페이지 (`TodoDetailView.vue`)
   - 상세 정보 표시
   - 댓글 기능 (선택사항)
   - 히스토리 표시 (선택사항)
-- [ ] 프로젝트 기능
-  - 프로젝트 생성/수정/삭제
-  - 프로젝트별 TODO 그룹화
-  - 프로젝트 필터링
 - [ ] 고급 기능
   - TODO 드래그 앤 드롭 (순서 변경)
   - TODO 복제

@@ -115,6 +115,89 @@ export type TodoResponse = {
 };
 
 /**
+ * 프로젝트 생성 요청 데이터
+ */
+export type ProjectRequest = {
+    /**
+     * 프로젝트명
+     */
+    name: string;
+    /**
+     * 프로젝트 설명
+     */
+    description?: string | null;
+    /**
+     * 프로젝트 색상 (HEX 코드)
+     */
+    color?: string;
+    /**
+     * 기본 프로젝트 여부
+     */
+    isDefault?: boolean;
+    /**
+     * 정렬 순서
+     */
+    position?: number;
+};
+
+/**
+ * API 공통 응답
+ */
+export type ApiResponseProjectResponse = {
+    /**
+     * 성공 여부
+     */
+    success?: boolean;
+    /**
+     * 메시지
+     */
+    message?: string | null;
+    /**
+     * 응답 데이터
+     */
+    data?: ProjectResponse | null;
+};
+
+export type ProjectResponse = {
+    /**
+     * 프로젝트 ID
+     */
+    id?: number;
+    /**
+     * 프로젝트명
+     */
+    name?: string;
+    /**
+     * 프로젝트 설명
+     */
+    description?: string | null;
+    /**
+     * 프로젝트 색상 (HEX 코드)
+     */
+    color?: string;
+    /**
+     * 기본 프로젝트 여부
+     */
+    isDefault?: boolean;
+    /**
+     * 정렬 순서
+     */
+    position?: number;
+    /**
+     * 생성일시
+     */
+    createdAt?: string;
+    /**
+     * 수정일시
+     */
+    updatedAt?: string;
+    /**
+     * 프로젝트 내 TODO 개수
+     */
+    todoCount?: number;
+};
+
+/**
  * 회원가입 요청
  */
 export type SignupRequest = {
@@ -255,8 +338,8 @@ export type ApiResponsePageTodoResponse = {
 };
 
 export type PageTodoResponse = {
-    totalElements?: number;
     totalPages?: number;
+    totalElements?: number;
     size?: number;
     content?: Array<TodoResponse>;
     number?: number;
@@ -271,9 +354,9 @@ export type PageTodoResponse = {
 export type PageableObject = {
     offset?: number;
     sort?: SortObject;
+    pageSize?: number;
     paged?: boolean;
     pageNumber?: number;
-    pageSize?: number;
     unpaged?: boolean;
 };
 
@@ -308,6 +391,26 @@ export type TodoStatsResponse = {
     doneCount?: number;
     overdueCount?: number;
     completionRate?: number;
+};
+
+/**
+ * API 공통 응답
+ */
+export type ApiResponseListProjectResponse = {
+    /**
+     * 성공 여부
+     */
+    success?: boolean;
+    /**
+     * 메시지
+     */
+    message?: string | null;
+    /**
+     * 응답 데이터
+     */
+    data?: Array<ProjectResponse> | {
+        [key: string]: unknown;
+    } | null;
 };
 
 /**
@@ -413,6 +516,120 @@ export type UpdateTodoResponses = {
 
 export type UpdateTodoResponse = UpdateTodoResponses[keyof UpdateTodoResponses];
 
+export type DeleteProjectData = {
+    body?: never;
+    path: {
+        /**
+         * 프로젝트 ID
+         */
+        projectId: number;
+    };
+    query?: never;
+    url: '/api/projects/{projectId}';
+};
+
+export type DeleteProjectErrors = {
+    /**
+     * 기본 프로젝트는 삭제 불가
+     */
+    400: ApiResponseVoid;
+    /**
+     * 인증 실패
+     */
+    401: ApiResponseVoid;
+    /**
+     * 프로젝트를 찾을 수 없음
+     */
+    404: ApiResponseVoid;
+};
+
+export type DeleteProjectError = DeleteProjectErrors[keyof DeleteProjectErrors];
+
+export type DeleteProjectResponses = {
+    /**
+     * 프로젝트 삭제 성공
+     */
+    200: ApiResponseVoid;
+};
+
+export type DeleteProjectResponse = DeleteProjectResponses[keyof DeleteProjectResponses];
+
+export type GetProjectData = {
+    body?: never;
+    path: {
+        /**
+         * 프로젝트 ID
+         */
+        projectId: number;
+    };
+    query?: never;
+    url: '/api/projects/{projectId}';
+};
+
+export type GetProjectErrors = {
+    /**
+     * 인증 실패
+     */
+    401: ApiResponseProjectResponse;
+    /**
+     * 프로젝트를 찾을 수 없음
+     */
+    404: ApiResponseProjectResponse;
+};
+
+export type GetProjectError = GetProjectErrors[keyof GetProjectErrors];
+
+export type GetProjectResponses = {
+    /**
+     * 프로젝트 조회 성공
+     */
+    200: ApiResponseProjectResponse;
+};
+
+export type GetProjectResponse = GetProjectResponses[keyof GetProjectResponses];
+
+export type UpdateProjectData = {
+    body: ProjectRequest;
+    path: {
+        /**
+         * 프로젝트 ID
+         */
+        projectId: number;
+    };
+    query?: never;
+    url: '/api/projects/{projectId}';
+};
+
+export type UpdateProjectErrors = {
+    /**
+     * 잘못된 요청 데이터
+     */
+    400: ApiResponseProjectResponse;
+    /**
+     * 인증 실패
+     */
+    401: ApiResponseProjectResponse;
+    /**
+     * 프로젝트를 찾을 수 없음
+     */
+    404: ApiResponseProjectResponse;
+    /**
+     * 프로젝트명 중복
+     */
+    409: ApiResponseProjectResponse;
+};
+
+export type UpdateProjectError = UpdateProjectErrors[keyof UpdateProjectErrors];
+
+export type UpdateProjectResponses = {
+    /**
+     * 프로젝트 수정 성공
+     */
+    200: ApiResponseProjectResponse;
+};
+
+export type UpdateProjectResponse = UpdateProjectResponses[keyof UpdateProjectResponses];
+
 export type GetTodosData = {
     body?: never;
     path?: never;
@@ -449,6 +666,64 @@ export type CreateTodoResponses = {
 };
 
 export type CreateTodoResponse = CreateTodoResponses[keyof CreateTodoResponses];
+
+export type GetProjectsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/projects';
+};
+
+export type GetProjectsErrors = {
+    /**
+     * 인증 실패
+     */
+    401: ApiResponseListProjectResponse;
+};
+
+export type GetProjectsError = GetProjectsErrors[keyof GetProjectsErrors];
+
+export type GetProjectsResponses = {
+    /**
+     * 프로젝트 목록 조회 성공
+     */
+    200: ApiResponseListProjectResponse;
+};
+
+export type GetProjectsResponse = GetProjectsResponses[keyof GetProjectsResponses];
+
+export type CreateProjectData = {
+    body: ProjectRequest;
+    path?: never;
+    query?: never;
+    url: '/api/projects';
+};
+
+export type CreateProjectErrors = {
+    /**
+     * 잘못된 요청 데이터
+     */
+    400: ApiResponseProjectResponse;
+    /**
+     * 인증 실패
+     */
+    401: ApiResponseProjectResponse;
+    /**
+     * 프로젝트명 중복
+     */
+    409: ApiResponseProjectResponse;
+};
+
+export type CreateProjectError = CreateProjectErrors[keyof CreateProjectErrors];
+
+export type CreateProjectResponses = {
+    /**
+     * 프로젝트 생성 성공
+     */
+    201: ApiResponseProjectResponse;
+};
+
+export type CreateProjectResponse = CreateProjectResponses[keyof CreateProjectResponses];
 
 export type SignupData = {
     body: SignupRequest;
@@ -532,6 +807,35 @@ export type GetUserStatsResponses = {
 };
 
 export type GetUserStatsResponse = GetUserStatsResponses[keyof GetUserStatsResponses];
+
+export type GetDefaultProjectData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/projects/default';
+};
+
+export type GetDefaultProjectErrors = {
+    /**
+     * 인증 실패
+     */
+    401: ApiResponseProjectResponse;
+    /**
+     * 기본 프로젝트가 없음
+     */
+    404: ApiResponseProjectResponse;
+};
+
+export type GetDefaultProjectError = GetDefaultProjectErrors[keyof GetDefaultProjectErrors];
+
+export type GetDefaultProjectResponses = {
+    /**
+     * 기본 프로젝트 조회 성공
+     */
+    200: ApiResponseProjectResponse;
+};
+
+export type GetDefaultProjectResponse = GetDefaultProjectResponses[keyof GetDefaultProjectResponses];
 
 export type TestData = {
     body?: never;
