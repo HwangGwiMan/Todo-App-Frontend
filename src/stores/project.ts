@@ -219,12 +219,14 @@ export const useProjectStore = defineStore('project', () => {
   }
 
   const getProjectsForSelect = computed(() => {
-    return sortedProjects.value.map(project => ({
-      value: project.id,
-      label: project.name,
-      color: project.color,
-      isDefault: project.isDefault
-    }))
+    return sortedProjects.value
+      .filter(project => project.id !== undefined)
+      .map(project => ({
+        value: project.id!,
+        label: project.name || '',
+        color: project.color,
+        isDefault: project.isDefault
+      }))
   })
 
   // Reset function

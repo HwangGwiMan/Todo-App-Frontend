@@ -41,7 +41,7 @@
       <!-- Filter/Sort Bar -->
       <FilterSortBar 
         v-model:filters="filters" 
-        :project-options="projectStore.getProjectsForSelect.value"
+        :project-options="projectStore.getProjectsForSelect"
       />
 
       <!-- Project Management -->
@@ -218,6 +218,11 @@ onMounted(async () => {
 })
 
 watch(filters, async (newFilters) => {
+  // 프로젝트 필터가 초기화되면 선택된 프로젝트도 초기화
+  if (!newFilters.projectId && selectedProject.value) {
+    selectedProject.value = null
+  }
+  
   try {
     await todoStore.fetchTodos(newFilters)
   } catch (error) {
@@ -233,6 +238,10 @@ const handleLogout = () => {
 
 const handleCreate = async (todoData: TodoRequest) => {
   try {
+    // 선택된 프로젝트가 있는지 확인
+    if (selectedProject.value) {
+      todoData.projectId = selectedProject.value.id
+    }
     await todoStore.createTodo(todoData)
     showCreateModal.value = false
     showSuccess('TODO가 생성되었습니다.')
