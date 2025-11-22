@@ -20,7 +20,7 @@
   },
   "devDependencies": {
     "@hey-api/openapi-ts": "0.87.4",
-    "@types/node": "^20.10.0",
+    "@types/node": "^24.10.1",
     "@typescript-eslint/eslint-plugin": "^8.47.0",
     "@typescript-eslint/parser": "^8.47.0",
     "@vitejs/plugin-vue": "^5.0.0",
