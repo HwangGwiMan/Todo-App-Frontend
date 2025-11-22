@@ -125,9 +125,17 @@ const emit = defineEmits<{
   'update:filters': [filters: TodoSearchRequest]
 }>()
 
-const localFilters = ref<TodoSearchRequest>({
+// localFilters는 v-model과 함께 사용되므로 빈 문자열을 허용하는 별도 타입 사용
+type LocalFilters = Omit<TodoSearchRequest, 'projectId' | 'status' | 'priority'> & {
+  projectId?: number | null | string
+  keyword?: string | null
+  status?: string
+  priority?: string
+}
+
+const localFilters = ref<LocalFilters>({
   keyword: props.filters.keyword || '',
-  projectId: props.filters.projectId || '',
+  projectId: props.filters.projectId ?? '',
   status: props.filters.status || '',
   priority: props.filters.priority || '',
   sortBy: props.filters.sortBy || 'createdAt',
@@ -137,7 +145,7 @@ const localFilters = ref<TodoSearchRequest>({
 watch(() => props.filters, (newFilters) => {
   localFilters.value = {
     keyword: newFilters.keyword || '',
-    projectId: newFilters.projectId || '',
+    projectId: newFilters.projectId ?? '',
     status: newFilters.status || '',
     priority: newFilters.priority || '',
     sortBy: newFilters.sortBy || 'createdAt',
