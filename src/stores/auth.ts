@@ -17,49 +17,41 @@ export const useAuthStore = defineStore('auth', () => {
 
   // Actions
   const login = async (credentials: LoginRequest) => {
-    try {
-      const response = await loginApi({
-        body: credentials,
-        throwOnError: true
-      })
-      const authData = response.data?.data
+    const response = await loginApi({
+      body: credentials,
+      throwOnError: true
+    })
+    const authData = response.data?.data
+    
+    if (authData && authData.token) {
+      token.value = authData.token
+      user.value = authData
       
-      if (authData && authData.token) {
-        token.value = authData.token
-        user.value = authData
-        
-        // LocalStorage에 저장
-        localStorage.setItem('token', authData.token)
-        localStorage.setItem('user', JSON.stringify(authData))
-      }
-      
-      return authData
-    } catch (error) {
-      throw error
+      // LocalStorage에 저장
+      localStorage.setItem('token', authData.token)
+      localStorage.setItem('user', JSON.stringify(authData))
     }
+    
+    return authData
   }
 
   const signup = async (data: SignupRequest) => {
-    try {
-      const response = await signupApi({
-        body: data,
-        throwOnError: true
-      })
-      const authData = response.data?.data
+    const response = await signupApi({
+      body: data,
+      throwOnError: true
+    })
+    const authData = response.data?.data
+    
+    if (authData && authData.token) {
+      token.value = authData.token
+      user.value = authData
       
-      if (authData && authData.token) {
-        token.value = authData.token
-        user.value = authData
-        
-        // LocalStorage에 저장
-        localStorage.setItem('token', authData.token)
-        localStorage.setItem('user', JSON.stringify(authData))
-      }
-      
-      return authData
-    } catch (error) {
-      throw error
+      // LocalStorage에 저장
+      localStorage.setItem('token', authData.token)
+      localStorage.setItem('user', JSON.stringify(authData))
     }
+    
+    return authData
   }
 
   const logout = () => {

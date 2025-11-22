@@ -13,13 +13,7 @@ import type {
   TodoResponse, 
   TodoRequest, 
   TodoSearchRequest, 
-  TodoStatsResponse,
-  GetTodosResponse,
-  GetTodoResponse,
-  CreateTodoResponse,
-  UpdateTodoResponse,
-  UpdateTodoStatusResponse,
-  GetUserStatsResponse
+  TodoStatsResponse
 } from '@/client'
 
 // 상태 타입 정의
@@ -52,7 +46,7 @@ export const useTodoStore = defineStore('todo', () => {
       const searchRequest: TodoSearchRequest = params || {}
       
       // 평면화된 쿼리 파라미터를 생성하는 커스텀 직렬화 함수
-      const paramsSerializer = (queryParams: any) => {
+      const paramsSerializer = (queryParams: Record<string, unknown>) => {
         const search: string[] = []
         const flatParams = queryParams.searchRequest || {}
         

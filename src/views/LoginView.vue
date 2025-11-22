@@ -9,10 +9,16 @@
           TodoApp에 오신 것을 환영합니다
         </p>
       </div>
-      <form class="mt-8 space-y-6" @submit.prevent="handleLogin">
+      <form
+        class="mt-8 space-y-6"
+        @submit.prevent="handleLogin"
+      >
         <div class="rounded-md shadow-sm -space-y-px">
           <div>
-            <label for="username" class="sr-only">사용자명</label>
+            <label
+              for="username"
+              class="sr-only"
+            >사용자명</label>
             <input
               id="username"
               v-model="form.username"
@@ -21,10 +27,13 @@
               required
               class="input-field rounded-t-lg rounded-b-none"
               placeholder="사용자명"
-            />
+            >
           </div>
           <div>
-            <label for="password" class="sr-only">비밀번호</label>
+            <label
+              for="password"
+              class="sr-only"
+            >비밀번호</label>
             <input
               id="password"
               v-model="form.password"
@@ -33,11 +42,14 @@
               required
               class="input-field rounded-t-none rounded-b-lg"
               placeholder="비밀번호"
-            />
+            >
           </div>
         </div>
 
-        <div v-if="error" class="text-red-600 text-sm text-center">
+        <div
+          v-if="error"
+          class="text-red-600 text-sm text-center"
+        >
           {{ error }}
         </div>
 
@@ -52,7 +64,10 @@
         </div>
 
         <div class="text-center">
-          <router-link to="/signup" class="text-primary-600 hover:text-primary-700 text-sm">
+          <router-link
+            to="/signup"
+            class="text-primary-600 hover:text-primary-700 text-sm"
+          >
             계정이 없으신가요? 회원가입
           </router-link>
         </div>
@@ -85,7 +100,7 @@ const handleLogin = async () => {
   try {
     await authStore.login(form.value)
     router.push('/todos')
-  } catch (err: any) {
+  } catch (err: unknown) {
     handleError(err, '로그인에 실패했습니다.')
   } finally {
     loading.value = false

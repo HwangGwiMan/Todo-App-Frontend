@@ -91,7 +91,8 @@ export const useProjectStore = defineStore('project', () => {
       defaultProject.value = responseData.data || null
       
       return defaultProject.value
-    } catch (error) {
+    } catch (error: unknown) {
+      handleError(error, '기본 프로젝트를 불러오는데 실패했습니다.')
       // 기본 프로젝트가 없을 수 있으므로 에러 처리하지 않음
       defaultProject.value = null
       return null

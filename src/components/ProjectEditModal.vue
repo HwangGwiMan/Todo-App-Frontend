@@ -10,22 +10,40 @@
     >
       <!-- 모달 헤더 -->
       <div class="flex items-center justify-between pb-3">
-        <h3 class="text-lg font-medium text-gray-900">프로젝트 수정</h3>
+        <h3 class="text-lg font-medium text-gray-900">
+          프로젝트 수정
+        </h3>
         <button
-          @click="closeModal"
           class="text-gray-400 hover:text-gray-600 transition-colors duration-200"
+          @click="closeModal"
         >
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          <svg
+            class="w-6 h-6"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M6 18L18 6M6 6l12 12"
+            />
           </svg>
         </button>
       </div>
 
       <!-- 폼 -->
-      <form @submit.prevent="handleSubmit" class="space-y-4">
+      <form
+        class="space-y-4"
+        @submit.prevent="handleSubmit"
+      >
         <!-- 프로젝트명 -->
         <div>
-          <label for="edit-name" class="block text-sm font-medium text-gray-700 mb-1">
+          <label
+            for="edit-name"
+            class="block text-sm font-medium text-gray-700 mb-1"
+          >
             프로젝트명 <span class="text-red-500">*</span>
           </label>
           <input
@@ -38,14 +56,20 @@
             :class="{ 'border-red-300': errors.name }"
             placeholder="프로젝트명을 입력하세요"
           >
-          <p v-if="errors.name" class="mt-1 text-sm text-red-600">
+          <p
+            v-if="errors.name"
+            class="mt-1 text-sm text-red-600"
+          >
             {{ errors.name }}
           </p>
         </div>
 
         <!-- 설명 -->
         <div>
-          <label for="edit-description" class="block text-sm font-medium text-gray-700 mb-1">
+          <label
+            for="edit-description"
+            class="block text-sm font-medium text-gray-700 mb-1"
+          >
             설명
           </label>
           <textarea
@@ -54,7 +78,7 @@
             rows="3"
             class="input-field w-full resize-none"
             placeholder="프로젝트에 대한 설명을 입력하세요"
-          ></textarea>
+          />
         </div>
 
         <!-- 색상 선택 -->
@@ -67,7 +91,6 @@
               v-for="color in colorOptions"
               :key="color.value"
               type="button"
-              @click="form.color = color.value"
               class="w-8 h-8 rounded-full border-2 transition-all duration-200"
               :style="{ backgroundColor: color.value }"
               :class="{
@@ -75,6 +98,7 @@
                 'border-gray-300 hover:scale-105': form.color !== color.value
               }"
               :title="color.name"
+              @click="form.color = color.value"
             >
               <svg
                 v-if="form.color === color.value"
@@ -82,7 +106,11 @@
                 fill="currentColor"
                 viewBox="0 0 20 20"
               >
-                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                <path
+                  fill-rule="evenodd"
+                  d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                  clip-rule="evenodd"
+                />
               </svg>
             </button>
           </div>
@@ -96,16 +124,30 @@
             type="checkbox"
             class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
           >
-          <label for="edit-isDefault" class="ml-2 block text-sm text-gray-700">
+          <label
+            for="edit-isDefault"
+            class="ml-2 block text-sm text-gray-700"
+          >
             기본 프로젝트로 설정
           </label>
         </div>
 
         <!-- 기본 프로젝트 경고 -->
-        <div v-if="project?.isDefault && !form.isDefault" class="p-3 bg-yellow-50 border border-yellow-200 rounded-md">
+        <div
+          v-if="project?.isDefault && !form.isDefault"
+          class="p-3 bg-yellow-50 border border-yellow-200 rounded-md"
+        >
           <div class="flex">
-            <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-              <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+            <svg
+              class="w-5 h-5 text-yellow-400"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                clip-rule="evenodd"
+              />
             </svg>
             <div class="ml-3">
               <p class="text-sm text-yellow-800">
@@ -119,9 +161,9 @@
         <div class="flex justify-end space-x-3 pt-4 border-t">
           <button
             type="button"
-            @click="closeModal"
             class="btn-secondary"
             :disabled="isSubmitting"
+            @click="closeModal"
           >
             취소
           </button>
@@ -130,10 +172,29 @@
             class="btn-primary"
             :disabled="isSubmitting"
           >
-            <span v-if="isSubmitting" class="flex items-center">
-              <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            <span
+              v-if="isSubmitting"
+              class="flex items-center"
+            >
+              <svg
+                class="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  class="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  stroke-width="4"
+                />
+                <path
+                  class="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                />
               </svg>
               수정 중...
             </span>

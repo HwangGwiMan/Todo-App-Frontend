@@ -10,7 +10,7 @@
           class="input-field"
           placeholder="제목, 설명 검색..."
           @input="handleFilterChange"
-        />
+        >
       </div>
 
       <!-- 프로젝트 필터 -->
@@ -57,17 +57,17 @@
       </div>
     </div>
   
-      <!-- 필터 초기화 버튼 -->
-      <div class="mt-4 flex justify-end">
-        <button
-          @click="handleReset"
-          class="text-sm text-gray-600 hover:text-gray-800 underline"
-        >
-          필터 초기화
-        </button>
-      </div>
+    <!-- 필터 초기화 버튼 -->
+    <div class="mt-4 flex justify-end">
+      <button
+        class="text-sm text-gray-600 hover:text-gray-800 underline"
+        @click="handleReset"
+      >
+        필터 초기화
+      </button>
     </div>
-  </template>
+  </div>
+</template>
   
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue'

@@ -1,5 +1,4 @@
 import { client } from '../client/client.gen';
-import type { Auth } from '../client/core/auth.gen';
 import axios, { type AxiosInstance } from 'axios';
 import router from '../router';
 import { useAuthStore } from '../stores/auth';

@@ -1,6 +1,9 @@
 <template>
   <div>
-    <label v-if="label" class="block text-sm font-medium text-gray-700 mb-1">
+    <label
+      v-if="label"
+      class="block text-sm font-medium text-gray-700 mb-1"
+    >
       {{ label }}
     </label>
     <select
@@ -14,7 +17,10 @@
         :value="option.value"
       >
         {{ option.label }}
-        <span v-if="option.isDefault" class="text-blue-600">(기본)</span>
+        <span
+          v-if="option.isDefault"
+          class="text-blue-600"
+        >(기본)</span>
       </option>
     </select>
   </div>

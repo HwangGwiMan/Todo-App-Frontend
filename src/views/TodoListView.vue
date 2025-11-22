@@ -6,10 +6,15 @@
     <!-- Header -->
     <header class="bg-white shadow-sm">
       <div class="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8 flex justify-between items-center">
-        <h1 class="text-2xl font-bold text-gray-900">TodoApp</h1>
+        <h1 class="text-2xl font-bold text-gray-900">
+          TodoApp
+        </h1>
         <div class="flex items-center gap-4">
           <span class="text-gray-700">{{ authStore.username }}</span>
-          <button @click="handleLogout" class="btn-secondary text-sm">
+          <button
+            class="btn-secondary text-sm"
+            @click="handleLogout"
+          >
             로그아웃
           </button>
         </div>
@@ -19,22 +24,41 @@
     <!-- Main Content -->
     <main class="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
       <!-- Stats -->
-      <div v-if="todoStore.stats" class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+      <div
+        v-if="todoStore.stats"
+        class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8"
+      >
         <div class="card">
-          <p class="text-sm text-gray-600">전체</p>
-          <p class="text-2xl font-bold">{{ todoStore.stats.totalCount }}</p>
+          <p class="text-sm text-gray-600">
+            전체
+          </p>
+          <p class="text-2xl font-bold">
+            {{ todoStore.stats.totalCount }}
+          </p>
         </div>
         <div class="card">
-          <p class="text-sm text-gray-600">할 일</p>
-          <p class="text-2xl font-bold text-blue-600">{{ todoStore.stats.todoCount }}</p>
+          <p class="text-sm text-gray-600">
+            할 일
+          </p>
+          <p class="text-2xl font-bold text-blue-600">
+            {{ todoStore.stats.todoCount }}
+          </p>
         </div>
         <div class="card">
-          <p class="text-sm text-gray-600">진행중</p>
-          <p class="text-2xl font-bold text-yellow-600">{{ todoStore.stats.inProgressCount }}</p>
+          <p class="text-sm text-gray-600">
+            진행중
+          </p>
+          <p class="text-2xl font-bold text-yellow-600">
+            {{ todoStore.stats.inProgressCount }}
+          </p>
         </div>
         <div class="card">
-          <p class="text-sm text-gray-600">완료</p>
-          <p class="text-2xl font-bold text-green-600">{{ todoStore.stats.doneCount }}</p>
+          <p class="text-sm text-gray-600">
+            완료
+          </p>
+          <p class="text-2xl font-bold text-green-600">
+            {{ todoStore.stats.doneCount }}
+          </p>
         </div>
       </div>
 
@@ -47,17 +71,28 @@
       <!-- Project Management -->
       <div class="card mb-6">
         <div class="flex justify-between items-center mb-4">
-          <h2 class="text-lg font-semibold text-gray-900">프로젝트 관리</h2>
-          <button @click="showProjectCreateModal = true" class="btn-primary text-sm">
+          <h2 class="text-lg font-semibold text-gray-900">
+            프로젝트 관리
+          </h2>
+          <button
+            class="btn-primary text-sm"
+            @click="showProjectCreateModal = true"
+          >
             + 새 프로젝트
           </button>
         </div>
         
-        <div v-if="projectStore.isLoading" class="text-center py-4 text-gray-500">
+        <div
+          v-if="projectStore.isLoading"
+          class="text-center py-4 text-gray-500"
+        >
           프로젝트를 불러오는 중...
         </div>
         
-        <div v-else-if="projectStore.hasProjects" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+        <div
+          v-else-if="projectStore.hasProjects"
+          class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3"
+        >
           <ProjectCard
             v-for="project in projectStore.sortedProjects"
             :key="project.id"
@@ -68,7 +103,10 @@
           />
         </div>
         
-        <div v-else class="text-center py-8 text-gray-500">
+        <div
+          v-else
+          class="text-center py-8 text-gray-500"
+        >
           프로젝트가 없습니다. 새로운 프로젝트를 추가해보세요!
         </div>
       </div>
@@ -77,14 +115,25 @@
       <div class="card">
         <div class="flex justify-between items-center mb-6">
           <div class="flex items-center gap-2">
-            <h2 class="text-xl font-bold">할 일 목록</h2> 
-            <h2 v-if="selectedProject">{{ selectedProject.name }}</h2>
+            <h2 class="text-xl font-bold">
+              할 일 목록
+            </h2> 
+            <h2 v-if="selectedProject">
+              {{ selectedProject.name }}
+            </h2>
             <!-- 프로젝트 취소 버튼 -->
-            <button v-if="selectedProject" @click="handleProjectCancel" class="btn-secondary">
+            <button
+              v-if="selectedProject"
+              class="btn-secondary"
+              @click="handleProjectCancel"
+            >
               취소
             </button>
           </div>
-          <button @click="showCreateModal = true" class="btn-primary">
+          <button
+            class="btn-primary"
+            @click="showCreateModal = true"
+          >
             + 새 TODO
           </button>
         </div>

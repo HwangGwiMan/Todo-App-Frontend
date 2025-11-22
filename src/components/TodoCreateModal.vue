@@ -1,128 +1,172 @@
 <template>
-    <Teleport to="body">
-      <div
-        v-if="isOpen"
-        class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
-        @click.self="handleClose"
-      >
-        <div class="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto">
-          <div class="p-6">
-            <div class="flex justify-between items-center mb-6">
-              <h2 class="text-2xl font-bold text-gray-900">새 TODO 생성</h2>
-              <button
-                @click="handleClose"
-                class="text-gray-400 hover:text-gray-600 transition-colors"
+  <Teleport to="body">
+    <div
+      v-if="isOpen"
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
+      @click.self="handleClose"
+    >
+      <div class="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto">
+        <div class="p-6">
+          <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-gray-900">
+              새 TODO 생성
+            </h2>
+            <button
+              class="text-gray-400 hover:text-gray-600 transition-colors"
+              @click="handleClose"
+            >
+              <svg
+                class="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
               >
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+          </div>
+  
+          <form
+            class="space-y-4"
+            @submit.prevent="handleSubmit"
+          >
+            <!-- 제목 -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">
+                제목 <span class="text-red-500">*</span>
+              </label>
+              <input
+                v-model="form.title"
+                type="text"
+                class="input-field"
+                :class="{ 'border-red-500': hasFieldError('title') }"
+                placeholder="TODO 제목을 입력하세요"
+                required
+              >
+              <p
+                v-if="hasFieldError('title')"
+                class="mt-1 text-sm text-red-500"
+              >
+                {{ getFieldError('title') }}
+              </p>
             </div>
   
-            <form @submit.prevent="handleSubmit" class="space-y-4">
-              <!-- 제목 -->
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">
-                  제목 <span class="text-red-500">*</span>
-                </label>
-                <input
-                  v-model="form.title"
-                  type="text"
-                  class="input-field"
-                  :class="{ 'border-red-500': hasFieldError('title') }"
-                  placeholder="TODO 제목을 입력하세요"
-                  required
-                />
-                <p v-if="hasFieldError('title')" class="mt-1 text-sm text-red-500">
-                  {{ getFieldError('title') }}
-                </p>
-              </div>
+            <!-- 설명 -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">
+                설명
+              </label>
+              <textarea
+                v-model="form.description"
+                class="input-field"
+                rows="3"
+                placeholder="TODO 설명을 입력하세요"
+              />
+            </div>
   
-              <!-- 설명 -->
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">
-                  설명
-                </label>
-                <textarea
-                  v-model="form.description"
-                  class="input-field"
-                  rows="3"
-                  placeholder="TODO 설명을 입력하세요"
-                />
-              </div>
+            <!-- 상태 -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">
+                상태
+              </label>
+              <select
+                v-model="form.status"
+                class="input-field"
+              >
+                <option value="TODO">
+                  할 일
+                </option>
+                <option value="IN_PROGRESS">
+                  진행중
+                </option>
+                <option value="DONE">
+                  완료
+                </option>
+              </select>
+            </div>
   
-              <!-- 상태 -->
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">
-                  상태
-                </label>
-                <select v-model="form.status" class="input-field">
-                  <option value="TODO">할 일</option>
-                  <option value="IN_PROGRESS">진행중</option>
-                  <option value="DONE">완료</option>
-                </select>
-              </div>
+            <!-- 우선순위 -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">
+                우선순위
+              </label>
+              <select
+                v-model="form.priority"
+                class="input-field"
+              >
+                <option value="LOW">
+                  낮음
+                </option>
+                <option value="MEDIUM">
+                  보통
+                </option>
+                <option value="HIGH">
+                  높음
+                </option>
+              </select>
+            </div>
   
-              <!-- 우선순위 -->
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">
-                  우선순위
-                </label>
-                <select v-model="form.priority" class="input-field">
-                  <option value="LOW">낮음</option>
-                  <option value="MEDIUM">보통</option>
-                  <option value="HIGH">높음</option>
-                </select>
-              </div>
+            <!-- 마감일 -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">
+                마감일
+              </label>
+              <input
+                v-model="form.dueDate"
+                type="datetime-local"
+                step="1"
+                class="input-field"
+                placeholder="년-월-일 시:분:초"
+                @input="handleDueDateChange"
+              >
+              <p
+                v-if="form.dueDate"
+                class="mt-1 text-xs text-gray-500"
+              >
+                {{ formatDateDisplay(form.dueDate) }}
+              </p>
+            </div>
   
-              <!-- 마감일 -->
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">
-                  마감일
-                </label>
-                <input
-                  v-model="form.dueDate"
-                  type="datetime-local"
-                  step="1"
-                  class="input-field"
-                  placeholder="년-월-일 시:분:초"
-                  @input="handleDueDateChange"
-                />
-                <p v-if="form.dueDate" class="mt-1 text-xs text-gray-500">
-                  {{ formatDateDisplay(form.dueDate) }}
-                </p>
-              </div>
+            <!-- 에러 메시지 -->
+            <div
+              v-if="error"
+              class="p-3 bg-red-50 border border-red-200 rounded-lg"
+            >
+              <p class="text-sm text-red-600">
+                {{ error }}
+              </p>
+            </div>
   
-              <!-- 에러 메시지 -->
-              <div v-if="error" class="p-3 bg-red-50 border border-red-200 rounded-lg">
-                <p class="text-sm text-red-600">{{ error }}</p>
-              </div>
-  
-              <!-- 버튼 -->
-              <div class="flex gap-3 pt-4">
-                <button
-                  type="button"
-                  @click="handleClose"
-                  class="flex-1 btn-secondary"
-                  :disabled="loading"
-                >
-                  취소
-                </button>
-                <button
-                  type="submit"
-                  class="flex-1 btn-primary"
-                  :disabled="loading"
-                >
-                  <span v-if="loading">생성 중...</span>
-                  <span v-else>생성</span>
-                </button>
-              </div>
-            </form>
-          </div>
+            <!-- 버튼 -->
+            <div class="flex gap-3 pt-4">
+              <button
+                type="button"
+                class="flex-1 btn-secondary"
+                :disabled="loading"
+                @click="handleClose"
+              >
+                취소
+              </button>
+              <button
+                type="submit"
+                class="flex-1 btn-primary"
+                :disabled="loading"
+              >
+                <span v-if="loading">생성 중...</span>
+                <span v-else>생성</span>
+              </button>
+            </div>
+          </form>
         </div>
       </div>
-    </Teleport>
-  </template>
+    </div>
+  </Teleport>
+</template>
   
   <script setup lang="ts">
   import { ref, watch } from 'vue'

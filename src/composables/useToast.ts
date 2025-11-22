@@ -1,5 +1,5 @@
 import { ref } from 'vue'
-import type { Toast, ToastType } from '@/components/ToastNotification.vue'
+import type { ToastType } from '@/components/ToastNotification.vue'
 
 const toastRef = ref<InstanceType<typeof import('@/components/ToastNotification.vue')> | null>(null)
 

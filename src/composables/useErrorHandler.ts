@@ -1,5 +1,5 @@
 import { ref, type Ref } from 'vue'
-import { parseApiError, getErrorMessage, getFieldErrors, type ParsedError } from '@/utils/errorHandler'
+import { parseApiError, getErrorMessage, getFieldErrors } from '@/utils/errorHandler'
 
 export function useErrorHandler() {
   const error: Ref<string> = ref('')

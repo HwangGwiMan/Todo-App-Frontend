@@ -1,46 +1,49 @@
 <template>
-    <div v-if="totalPages > 1" class="flex items-center justify-between border-t border-gray-200 pt-4">
-      <div class="text-sm text-gray-700">
-        전체 <span class="font-medium">{{ totalElements }}</span>개 중
-        <span class="font-medium">{{ startItem }}</span>-
-        <span class="font-medium">{{ endItem }}</span>개 표시
-      </div>
-      
-      <div class="flex gap-2">
-        <button
-          @click="$emit('pageChange', currentPage - 1)"
-          :disabled="currentPage === 0"
-          class="px-3 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          이전
-        </button>
-        
-        <div class="flex gap-1">
-          <button
-            v-for="page in visiblePages"
-            :key="page"
-            @click="$emit('pageChange', page)"
-            :class="[
-              'px-3 py-2 border rounded-lg text-sm font-medium',
-              page === currentPage
-                ? 'bg-primary-600 text-white border-primary-600'
-                : 'border-gray-300 text-gray-700 hover:bg-gray-50'
-            ]"
-          >
-            {{ page + 1 }}
-          </button>
-        </div>
-        
-        <button
-          @click="$emit('pageChange', currentPage + 1)"
-          :disabled="currentPage >= totalPages - 1"
-          class="px-3 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          다음
-        </button>
-      </div>
+  <div
+    v-if="totalPages > 1"
+    class="flex items-center justify-between border-t border-gray-200 pt-4"
+  >
+    <div class="text-sm text-gray-700">
+      전체 <span class="font-medium">{{ totalElements }}</span>개 중
+      <span class="font-medium">{{ startItem }}</span>-
+      <span class="font-medium">{{ endItem }}</span>개 표시
     </div>
-  </template>
+      
+    <div class="flex gap-2">
+      <button
+        :disabled="currentPage === 0"
+        class="px-3 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+        @click="$emit('pageChange', currentPage - 1)"
+      >
+        이전
+      </button>
+        
+      <div class="flex gap-1">
+        <button
+          v-for="page in visiblePages"
+          :key="page"
+          :class="[
+            'px-3 py-2 border rounded-lg text-sm font-medium',
+            page === currentPage
+              ? 'bg-primary-600 text-white border-primary-600'
+              : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+          ]"
+          @click="$emit('pageChange', page)"
+        >
+          {{ page + 1 }}
+        </button>
+      </div>
+        
+      <button
+        :disabled="currentPage >= totalPages - 1"
+        class="px-3 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+        @click="$emit('pageChange', currentPage + 1)"
+      >
+        다음
+      </button>
+    </div>
+  </div>
+</template>
   
   <script setup lang="ts">
   import { computed } from 'vue'
