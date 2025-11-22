@@ -14,77 +14,45 @@
       </div>
 
       <!-- 프로젝트 필터 -->
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">프로젝트</label>
-        <select
-          v-model="localFilters.projectId"
-          class="input-field"
-          @change="handleFilterChange"
-        >
-          <option value="">전체 프로젝트</option>
-          <option
-            v-for="project in projectOptions"
-            :key="project.value"
-            :value="project.value"
-          >
-            {{ project.label }}
-            <span v-if="project.isDefault" class="text-blue-600">(기본)</span>
-          </option>
-        </select>
-      </div>
+      <SelectField
+        v-model="localFilters.projectId"
+        label="프로젝트"
+        :options="projectSelectOptions"
+        @change="handleFilterChange"
+      />
 
       <!-- 상태 필터 -->
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">상태</label>
-        <select
-          v-model="localFilters.status"
-          class="input-field"
-          @change="handleFilterChange"
-        >
-          <option value="">전체</option>
-          <option value="TODO">할 일</option>
-          <option value="IN_PROGRESS">진행중</option>
-          <option value="DONE">완료</option>
-        </select>
-      </div>
+      <SelectField
+        v-model="localFilters.status"
+        label="상태"
+        :options="statusOptions"
+        @change="handleFilterChange"
+      />
 
       <!-- 우선순위 필터 -->
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">우선순위</label>
-        <select
-          v-model="localFilters.priority"
-          class="input-field"
-          @change="handleFilterChange"
-        >
-          <option value="">전체</option>
-          <option value="HIGH">높음</option>
-          <option value="MEDIUM">보통</option>
-          <option value="LOW">낮음</option>
-        </select>
-      </div>
+      <SelectField
+        v-model="localFilters.priority"
+        label="우선순위"
+        :options="priorityOptions"
+        @change="handleFilterChange"
+      />
 
       <!-- 정렬 -->
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-1">정렬</label>
         <div class="flex gap-2">
-          <select
+          <SelectField
             v-model="localFilters.sortBy"
-            class="input-field flex-1"
+            :options="sortByOptions"
+            select-class="input-field flex-1"
             @change="handleFilterChange"
-          >
-            <option value="createdAt">생성일</option>
-            <option value="dueDate">마감일</option>
-            <option value="priority">우선순위</option>
-            <option value="title">제목</option>
-          </select>
-          <select
+          />
+          <SelectField
             v-model="localFilters.sortDirection"
-            class="input-field w-24"
+            :options="sortDirectionOptions"
+            select-class="input-field w-24"
             @change="handleFilterChange"
-          >
-            <option value="DESC">내림차순</option>
-            <option value="ASC">오름차순</option>
-          </select>
+          />
         </div>
       </div>
     </div>
@@ -102,8 +70,9 @@
   </template>
   
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, watch, computed } from 'vue'
 import type { TodoSearchRequest } from '@/client'
+import SelectField from './SelectField.vue'
 
 interface ProjectOption {
   value: number
@@ -152,6 +121,42 @@ watch(() => props.filters, (newFilters) => {
     sortDirection: newFilters.sortDirection || 'DESC'
   }
 }, { deep: true })
+
+// SelectField용 옵션 데이터
+const projectSelectOptions = computed(() => [
+  { value: '', label: '전체 프로젝트' },
+  ...props.projectOptions.map(project => ({
+    value: project.value,
+    label: project.label,
+    isDefault: project.isDefault
+  }))
+])
+
+const statusOptions = computed(() => [
+  { value: '', label: '전체' },
+  { value: 'TODO', label: '할 일' },
+  { value: 'IN_PROGRESS', label: '진행중' },
+  { value: 'DONE', label: '완료' }
+])
+
+const priorityOptions = computed(() => [
+  { value: '', label: '전체' },
+  { value: 'HIGH', label: '높음' },
+  { value: 'MEDIUM', label: '보통' },
+  { value: 'LOW', label: '낮음' }
+])
+
+const sortByOptions = computed(() => [
+  { value: 'createdAt', label: '생성일' },
+  { value: 'dueDate', label: '마감일' },
+  { value: 'priority', label: '우선순위' },
+  { value: 'title', label: '제목' }
+])
+
+const sortDirectionOptions = computed(() => [
+  { value: 'DESC', label: '내림차순' },
+  { value: 'ASC', label: '오름차순' }
+])
 
 const handleFilterChange = () => {
   const filters: TodoSearchRequest = {
