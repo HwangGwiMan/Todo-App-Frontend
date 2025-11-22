@@ -2,8 +2,7 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import type { 
   ProjectRequest, 
-  ProjectResponse,
-  ApiResponse
+  ProjectResponse
 } from '@/client'
 import { 
   getProjects, 
@@ -51,8 +50,7 @@ export const useProjectStore = defineStore('project', () => {
         throwOnError: true
       })
       
-      const responseData = response.data as ApiResponse<ProjectResponse[]>
-      projects.value = responseData.data || []
+      projects.value = (response.data?.data as ProjectResponse[]) || []
       
     } catch (error) {
       handleError(error, '프로젝트 목록을 불러오는데 실패했습니다.')
@@ -69,8 +67,7 @@ export const useProjectStore = defineStore('project', () => {
         throwOnError: true
       })
       
-      const responseData = response.data as ApiResponse<ProjectResponse>
-      currentProject.value = responseData.data || null
+      currentProject.value = response.data?.data || null
       
       return currentProject.value
     } catch (error) {
@@ -87,8 +84,7 @@ export const useProjectStore = defineStore('project', () => {
         throwOnError: false // 기본 프로젝트가 없을 수 있음
       })
       
-      const responseData = response.data as ApiResponse<ProjectResponse>
-      defaultProject.value = responseData.data || null
+      defaultProject.value = response.data?.data || null
       
       return defaultProject.value
     } catch (error: unknown) {
@@ -108,8 +104,7 @@ export const useProjectStore = defineStore('project', () => {
         throwOnError: true
       })
       
-      const responseData = response.data as ApiResponse<ProjectResponse>
-      const newProject = responseData.data
+      const newProject = response.data?.data
       
       if (newProject) {
         projects.value.push(newProject)
@@ -146,8 +141,7 @@ export const useProjectStore = defineStore('project', () => {
         throwOnError: true
       })
       
-      const responseData = response.data as ApiResponse<ProjectResponse>
-      const updatedProject = responseData.data
+      const updatedProject = response.data?.data
       
       if (updatedProject) {
         const index = projects.value.findIndex(p => p.id === projectId)
