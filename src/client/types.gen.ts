@@ -396,6 +396,126 @@ export type TodoStatsResponse = {
 /**
  * API 공통 응답
  */
+export type ApiResponseTodoDashboardStatsResponse = {
+    /**
+     * 성공 여부
+     */
+    success?: boolean;
+    /**
+     * 메시지
+     */
+    message?: string | null;
+    /**
+     * 응답 데이터
+     */
+    data?: TodoDashboardStatsResponse | null;
+};
+
+export type BasicStats = {
+    /**
+     * 전체 개수
+     */
+    totalCount?: number;
+    /**
+     * 할 일 개수
+     */
+    todoCount?: number;
+    /**
+     * 진행중 개수
+     */
+    inProgressCount?: number;
+    /**
+     * 완료 개수
+     */
+    doneCount?: number;
+    /**
+     * 지난 마감일 개수
+     */
+    overdueCount?: number;
+    /**
+     * 완료율
+     */
+    completionRate?: number;
+};
+
+export type PriorityStats = {
+    /**
+     * 우선순위
+     */
+    priority?: string;
+    /**
+     * 개수
+     */
+    count?: number;
+    /**
+     * 비율 (%)
+     */
+    percentage?: number;
+};
+
+export type ProjectStats = {
+    /**
+     * 프로젝트 ID
+     */
+    projectId?: number | null;
+    /**
+     * 프로젝트 이름
+     */
+    projectName?: string;
+    /**
+     * 프로젝트 색상
+     */
+    projectColor?: string;
+    /**
+     * TODO 개수
+     */
+    todoCount?: number;
+    /**
+     * 비율 (%)
+     */
+    percentage?: number;
+};
+
+export type StatusStats = {
+    /**
+     * 상태
+     */
+    status?: string;
+    /**
+     * 개수
+     */
+    count?: number;
+    /**
+     * 비율 (%)
+     */
+    percentage?: number;
+};
+
+/**
+ * 대시보드 통계 응답
+ */
+export type TodoDashboardStatsResponse = {
+    /**
+     * 기본 통계
+     */
+    basicStats?: BasicStats;
+    /**
+     * 상태별 통계
+     */
+    statusStats?: Array<StatusStats>;
+    /**
+     * 우선순위별 통계
+     */
+    priorityStats?: Array<PriorityStats>;
+    /**
+     * 프로젝트별 통계
+     */
+    projectStats?: Array<ProjectStats>;
+};
+
+/**
+ * API 공통 응답
+ */
 export type ApiResponseListProjectResponse = {
     /**
      * 성공 여부
@@ -807,6 +927,22 @@ export type GetUserStatsResponses = {
 };
 
 export type GetUserStatsResponse = GetUserStatsResponses[keyof GetUserStatsResponses];
+
+export type GetDashboardStatsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/todos/dashboard/stats';
+};
+
+export type GetDashboardStatsResponses = {
+    /**
+     * OK
+     */
+    200: ApiResponseTodoDashboardStatsResponse;
+};
+
+export type GetDashboardStatsResponse = GetDashboardStatsResponses[keyof GetDashboardStatsResponses];
 
 export type GetDefaultProjectData = {
     body?: never;

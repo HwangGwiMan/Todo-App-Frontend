@@ -284,6 +284,63 @@ export const zApiResponseTodoStatsResponse = z.object({
     ]))
 });
 
+export const zBasicStats = z.object({
+    totalCount: z.optional(z.coerce.bigint()),
+    todoCount: z.optional(z.coerce.bigint()),
+    inProgressCount: z.optional(z.coerce.bigint()),
+    doneCount: z.optional(z.coerce.bigint()),
+    overdueCount: z.optional(z.coerce.bigint()),
+    completionRate: z.optional(z.number())
+});
+
+export const zPriorityStats = z.object({
+    priority: z.optional(z.string()),
+    count: z.optional(z.coerce.bigint()),
+    percentage: z.optional(z.number())
+});
+
+export const zProjectStats = z.object({
+    projectId: z.optional(z.union([
+        z.coerce.bigint(),
+        z.null()
+    ])),
+    projectName: z.optional(z.string()),
+    projectColor: z.optional(z.string()),
+    todoCount: z.optional(z.coerce.bigint()),
+    percentage: z.optional(z.number())
+});
+
+export const zStatusStats = z.object({
+    status: z.optional(z.string()),
+    count: z.optional(z.coerce.bigint()),
+    percentage: z.optional(z.number())
+});
+
+/**
+ * 대시보드 통계 응답
+ */
+export const zTodoDashboardStatsResponse = z.object({
+    basicStats: z.optional(zBasicStats),
+    statusStats: z.optional(z.array(zStatusStats)),
+    priorityStats: z.optional(z.array(zPriorityStats)),
+    projectStats: z.optional(z.array(zProjectStats))
+});
+
+/**
+ * API 공통 응답
+ */
+export const zApiResponseTodoDashboardStatsResponse = z.object({
+    success: z.optional(z.boolean()),
+    message: z.optional(z.union([
+        z.string(),
+        z.null()
+    ])),
+    data: z.optional(z.union([
+        zTodoDashboardStatsResponse,
+        z.null()
+    ]))
+});
+
 /**
  * API 공통 응답
  */
@@ -506,6 +563,17 @@ export const zGetUserStatsData = z.object({
  * OK
  */
 export const zGetUserStatsResponse = zApiResponseTodoStatsResponse;
+
+export const zGetDashboardStatsData = z.object({
+    body: z.optional(z.never()),
+    path: z.optional(z.never()),
+    query: z.optional(z.never())
+});
+
+/**
+ * OK
+ */
+export const zGetDashboardStatsResponse = zApiResponseTodoDashboardStatsResponse;
 
 export const zGetDefaultProjectData = z.object({
     body: z.optional(z.never()),

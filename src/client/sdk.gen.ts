@@ -2,8 +2,8 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { CreateProjectData, CreateProjectErrors, CreateProjectResponses, CreateTodoData, CreateTodoResponses, DeleteProjectData, DeleteProjectErrors, DeleteProjectResponses, DeleteTodoData, DeleteTodoResponses, GetDefaultProjectData, GetDefaultProjectErrors, GetDefaultProjectResponses, GetProjectData, GetProjectErrors, GetProjectResponses, GetProjectsData, GetProjectsErrors, GetProjectsResponses, GetTodoData, GetTodoResponses, GetTodosData, GetTodosResponses, GetUserStatsData, GetUserStatsResponses, LoginData, LoginErrors, LoginResponses, SignupData, SignupResponses, TestData, TestResponses, UpdateProjectData, UpdateProjectErrors, UpdateProjectResponses, UpdateTodoData, UpdateTodoResponses, UpdateTodoStatusData, UpdateTodoStatusResponses } from './types.gen';
-import { zCreateProjectData, zCreateProjectResponse, zCreateTodoData, zCreateTodoResponse, zDeleteProjectData, zDeleteProjectResponse, zDeleteTodoData, zDeleteTodoResponse, zGetDefaultProjectData, zGetDefaultProjectResponse, zGetProjectData, zGetProjectResponse, zGetProjectsData, zGetProjectsResponse, zGetTodoData, zGetTodoResponse, zGetTodosData, zGetTodosResponse, zGetUserStatsData, zGetUserStatsResponse, zLoginData, zLoginResponse, zSignupData, zSignupResponse, zTestData, zTestResponse, zUpdateProjectData, zUpdateProjectResponse, zUpdateTodoData, zUpdateTodoResponse, zUpdateTodoStatusData, zUpdateTodoStatusResponse } from './zod.gen';
+import type { CreateProjectData, CreateProjectErrors, CreateProjectResponses, CreateTodoData, CreateTodoResponses, DeleteProjectData, DeleteProjectErrors, DeleteProjectResponses, DeleteTodoData, DeleteTodoResponses, GetDashboardStatsData, GetDashboardStatsResponses, GetDefaultProjectData, GetDefaultProjectErrors, GetDefaultProjectResponses, GetProjectData, GetProjectErrors, GetProjectResponses, GetProjectsData, GetProjectsErrors, GetProjectsResponses, GetTodoData, GetTodoResponses, GetTodosData, GetTodosResponses, GetUserStatsData, GetUserStatsResponses, LoginData, LoginErrors, LoginResponses, SignupData, SignupResponses, TestData, TestResponses, UpdateProjectData, UpdateProjectErrors, UpdateProjectResponses, UpdateTodoData, UpdateTodoResponses, UpdateTodoStatusData, UpdateTodoStatusResponses } from './types.gen';
+import { zCreateProjectData, zCreateProjectResponse, zCreateTodoData, zCreateTodoResponse, zDeleteProjectData, zDeleteProjectResponse, zDeleteTodoData, zDeleteTodoResponse, zGetDashboardStatsData, zGetDashboardStatsResponse, zGetDefaultProjectData, zGetDefaultProjectResponse, zGetProjectData, zGetProjectResponse, zGetProjectsData, zGetProjectsResponse, zGetTodoData, zGetTodoResponse, zGetTodosData, zGetTodosResponse, zGetUserStatsData, zGetUserStatsResponse, zLoginData, zLoginResponse, zSignupData, zSignupResponse, zTestData, zTestResponse, zUpdateProjectData, zUpdateProjectResponse, zUpdateTodoData, zUpdateTodoResponse, zUpdateTodoStatusData, zUpdateTodoStatusResponse } from './zod.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -333,6 +333,27 @@ export const getUserStats = <ThrowOnError extends boolean = false>(options?: Opt
             }
         ],
         url: '/api/todos/stats',
+        ...options
+    });
+};
+
+/**
+ * 대시보드 통계 조회
+ *
+ * 대시보드에 표시할 상세 통계를 조회합니다. 상태별, 우선순위별, 프로젝트별 통계를 포함합니다.
+ */
+export const getDashboardStats = <ThrowOnError extends boolean = false>(options?: Options<GetDashboardStatsData, ThrowOnError>) => {
+    return (options?.client ?? client).get<GetDashboardStatsResponses, unknown, ThrowOnError>({
+        requestValidator: async (data) => await zGetDashboardStatsData.parseAsync(data),
+        responseType: 'json',
+        responseValidator: async (data) => await zGetDashboardStatsResponse.parseAsync(data),
+        security: [
+            {
+                scheme: 'bearer',
+                type: 'http'
+            }
+        ],
+        url: '/api/todos/dashboard/stats',
         ...options
     });
 };

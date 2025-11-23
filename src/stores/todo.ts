@@ -7,13 +7,15 @@ import {
   updateTodo as updateTodoApi,
   updateTodoStatus as updateTodoStatusApi,
   deleteTodo as deleteTodoApi,
-  getUserStats
+  getUserStats,
+  getDashboardStats
 } from '@/client'
 import type { 
   TodoResponse, 
   TodoRequest, 
   TodoSearchRequest, 
-  TodoStatsResponse
+  TodoStatsResponse,
+  TodoDashboardStatsResponse
 } from '@/client'
 
 // 상태 타입 정의
@@ -212,6 +214,19 @@ export const useTodoStore = defineStore('todo', () => {
     }
   }
 
+  const fetchDashboardStats = async (): Promise<TodoDashboardStatsResponse | null> => {
+    try {
+      const response = await getDashboardStats({
+        throwOnError: true
+      })
+      
+      return response.data?.data || null
+    } catch (error) {
+      console.error('대시보드 통계 조회 실패:', error)
+      throw error
+    }
+  }
+
   const clearTodos = () => {
     todos.value = []
     currentTodo.value = null
@@ -238,6 +253,7 @@ export const useTodoStore = defineStore('todo', () => {
     updateTodoStatus,
     deleteTodo,
     fetchStats,
+    fetchDashboardStats,
     clearTodos
   }
 })
