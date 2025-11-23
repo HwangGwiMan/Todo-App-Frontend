@@ -6,6 +6,12 @@ Vue 3 + TypeScript + Tailwind CSS로 구축된 TodoApp 프론트엔드입니다.
 
 이 프로젝트는 독립적인 Git 레포지토리로 관리됩니다. 백엔드와 별도로 버전 관리됩니다.
 
+## 📊 현재 개발 상태
+
+- ✅ **Phase 1 완료**: TODO CRUD, 인증, 필터/정렬/검색, 페이지네이션, 통계 대시보드
+- ✅ **Phase 2 완료**: 프로젝트 관리, 프로젝트-TODO 통합, 프로젝트 필터링
+- 🚧 **Phase 3 진행 중**: TODO 상세 페이지 구현 필요 (현재 플레이스홀더만 존재)
+
 ## 🚀 시작하기
 
 ### 사전 요구사항
@@ -50,10 +56,11 @@ src/
 │   ├── TodoCard.vue       # TODO 카드 컴포넌트
 │   ├── TodoCreateModal.vue # TODO 생성 모달
 │   ├── TodoEditModal.vue  # TODO 수정 모달
-│   ├── ProjectCard.vue    # 프로젝트 카드 컴포넌트 (Phase 2)
-│   ├── ProjectCreateModal.vue # 프로젝트 생성 모달 (Phase 2)
-│   ├── ProjectEditModal.vue # 프로젝트 수정 모달 (Phase 2)
-│   ├── FilterSortBar.vue  # 필터/정렬 바 (프로젝트 필터 추가)
+│   ├── ProjectCard.vue    # 프로젝트 카드 컴포넌트 ✅
+│   ├── ProjectCreateModal.vue # 프로젝트 생성 모달 ✅
+│   ├── ProjectEditModal.vue # 프로젝트 수정 모달 ✅
+│   ├── SelectField.vue    # 선택 필드 컴포넌트
+│   ├── FilterSortBar.vue  # 필터/정렬 바 (프로젝트 필터 포함) ✅
 │   ├── Pagination.vue      # 페이지네이션
 │   ├── LoadingSpinner.vue # 로딩 스피너
 │   └── ToastNotification.vue # 토스트 알림
@@ -74,7 +81,7 @@ src/
 ├── stores/                # Pinia 상태 관리
 │   ├── auth.ts            # 인증 상태
 │   ├── todo.ts            # TODO 상태
-│   └── project.ts         # 프로젝트 상태 (Phase 2)
+│   └── project.ts         # 프로젝트 상태 ✅
 │
 ├── types/                 # 추가 타입 정의 및 재export
 │   └── index.ts           # 타입 별칭 및 재export
@@ -85,8 +92,8 @@ src/
 ├── views/                 # 페이지 컴포넌트
 │   ├── LoginView.vue      # 로그인 페이지
 │   ├── SignupView.vue     # 회원가입 페이지
-│   ├── TodoListView.vue   # TODO 목록 페이지
-│   ├── TodoDetailView.vue # TODO 상세 페이지 (Phase 2 예정)
+│   ├── TodoListView.vue   # TODO 목록 페이지 (프로젝트 관리 통합) ✅
+│   ├── TodoDetailView.vue # TODO 상세 페이지 🚧 (플레이스홀더만 존재)
 │   └── NotFoundView.vue  # 404 페이지
 │
 ├── App.vue                # 루트 컴포넌트
@@ -202,13 +209,13 @@ const created = await createTodo({
   throwOnError: true
 })
 
-// 프로젝트 목록 조회 (Phase 2)
+// 프로젝트 목록 조회 ✅
 const projectsResponse = await getProjects({
   throwOnError: true
 })
 const projects = projectsResponse.data?.data
 
-// 프로젝트 생성 (Phase 2)
+// 프로젝트 생성 ✅
 const newProject: ProjectRequest = {
   name: '새 프로젝트',
   description: '프로젝트 설명',
@@ -490,7 +497,7 @@ await todoStore.deleteTodo(todoId)
 await todoStore.fetchStats()
 ```
 
-### Project Store (Phase 2)
+### Project Store ✅
 ```typescript
 import { useProjectStore } from '@/stores/project'
 
@@ -520,82 +527,128 @@ const projectOptions = projectStore.getProjectsForSelect
 ### ✅ Phase 1 완료 (2025년 11월)
 
 **구현 완료된 기능:**
-- [x] TODO 카드 컴포넌트 (`TodoCard.vue`)
-  - 상태 배지, 우선순위 배지
-  - 마감일 및 완료일 표시
-  - 상태 변경 버튼
-  - 수정/삭제 버튼
-- [x] TODO 생성 모달 (`TodoCreateModal.vue`)
-  - 제목, 설명, 상태, 우선순위, 마감일 입력
-  - 유효성 검사 및 에러 처리
-- [x] TODO 수정 모달 (`TodoEditModal.vue`)
-  - 기존 데이터 로드 및 수정
-  - 유효성 검사 및 에러 처리
-- [x] 필터/정렬 UI (`FilterSortBar.vue`)
-  - 검색 (제목, 설명)
-  - 상태 필터 (TODO, IN_PROGRESS, DONE)
-  - 우선순위 필터 (HIGH, MEDIUM, LOW)
-  - 정렬 (생성일, 마감일, 우선순위, 제목)
-  - 정렬 방향 (오름차순, 내림차순)
-- [x] 검색 기능
-  - 실시간 검색
-  - 필터와 연동
-- [x] 페이지네이션 UI (`Pagination.vue`)
-  - 페이지 번호 표시
-  - 이전/다음 버튼
-  - 전체 개수 표시
-- [x] 로딩 스피너 (`LoadingSpinner.vue`)
-  - 비동기 작업 중 로딩 표시
-- [x] 에러 토스트 알림 (`ToastNotification.vue`, `useToast.ts`)
-  - 성공/에러/정보 알림
-  - 자동 사라짐
-  - 여러 알림 동시 표시
+- [x] **TODO 핵심 기능**
+  - TODO 카드 컴포넌트 (`TodoCard.vue`)
+    - 상태 배지 (TODO/IN_PROGRESS/DONE)
+    - 우선순위 배지 (HIGH/MEDIUM/LOW)
+    - 마감일 및 완료일 표시
+    - 상태 변경 버튼
+    - 수정/삭제 버튼
+  - TODO 생성 모달 (`TodoCreateModal.vue`)
+    - 제목, 설명, 상태, 우선순위, 마감일 입력
+    - 프로젝트 선택 (Phase 2 통합)
+    - 유효성 검사 및 에러 처리
+  - TODO 수정 모달 (`TodoEditModal.vue`)
+    - 기존 데이터 로드 및 수정
+    - 프로젝트 변경 지원
+    - 유효성 검사 및 에러 처리
 
-**추가 구현 사항:**
-- [x] 인증 시스템 (로그인, 회원가입, 로그아웃)
-- [x] API 클라이언트 자동 생성 및 연동
-- [x] 에러 처리 시스템
-- [x] 통계 대시보드 (전체, 할 일, 진행중, 완료 개수)
-- [x] 반응형 디자인 (모바일, 태블릿, 데스크톱)
+- [x] **필터링 및 검색**
+  - 필터/정렬 UI (`FilterSortBar.vue`)
+    - 검색 (제목, 설명 키워드)
+    - 상태 필터 (TODO, IN_PROGRESS, DONE, 전체)
+    - 우선순위 필터 (HIGH, MEDIUM, LOW, 전체)
+    - 프로젝트 필터 (Phase 2 통합)
+    - 정렬 (생성일, 마감일, 우선순위, 제목)
+    - 정렬 방향 (오름차순, 내림차순)
+  - 실시간 검색 및 필터 연동
+
+- [x] **UI 컴포넌트**
+  - 페이지네이션 (`Pagination.vue`)
+    - 페이지 번호 표시 및 네비게이션
+    - 이전/다음 버튼
+    - 전체 개수 표시
+  - 로딩 스피너 (`LoadingSpinner.vue`)
+    - 비동기 작업 중 로딩 표시
+  - 토스트 알림 (`ToastNotification.vue`, `useToast.ts`)
+    - 성공/에러/정보 알림
+    - 자동 사라짐
+    - 여러 알림 동시 표시
+
+- [x] **인증 및 라우팅**
+  - 인증 시스템 (로그인, 회원가입, 로그아웃)
+  - Vue Router 인증 가드
+  - JWT 토큰 자동 주입
+
+- [x] **상태 관리**
+  - Pinia 스토어 (auth, todo)
+  - API 클라이언트 자동 생성 및 연동 (`@hey-api/openapi-ts`)
+  - 완벽한 타입 안전성
+
+- [x] **통계 및 대시보드**
+  - 통계 대시보드 (전체, 할 일, 진행중, 완료 개수)
+  - 실시간 통계 업데이트
+
+- [x] **반응형 디자인**
+  - 모바일, 태블릿, 데스크톱 대응
+  - Tailwind CSS 기반 반응형 레이아웃
 
 ### ✅ Phase 2 완료 (2025년 11월)
 
 **구현 완료된 기능:**
-- [x] 프로젝트 관리 기능
+- [x] **프로젝트 관리**
   - 프로젝트 카드 컴포넌트 (`ProjectCard.vue`)
+    - 프로젝트 색상 표시
+    - 기본 프로젝트 배지
+    - 프로젝트 통계 (TODO 개수)
+    - 수정/삭제/선택 버튼
   - 프로젝트 생성 모달 (`ProjectCreateModal.vue`)
+    - 프로젝트 이름, 설명, 색상 입력
+    - 기본 프로젝트 설정
   - 프로젝트 수정 모달 (`ProjectEditModal.vue`)
-  - 프로젝트 색상 및 기본 프로젝트 관리
-- [x] 프로젝트 상태 관리 (`project.ts` Store)
-  - CRUD 작업 및 상태 관리
-  - 에러 처리 및 로딩 상태
-  - 기본 프로젝트 관리
-- [x] 통합 프로젝트 필터링
+    - 프로젝트 정보 수정
+    - 기본 프로젝트 변경
+
+- [x] **프로젝트 상태 관리**
+  - 프로젝트 스토어 (`project.ts`)
+    - CRUD 작업 및 상태 관리
+    - 에러 처리 및 로딩 상태
+    - 기본 프로젝트 관리
+    - 프로젝트 정렬 (기본 프로젝트 우선, position 순)
+
+- [x] **프로젝트-TODO 통합**
   - FilterSortBar에 프로젝트 필터 추가
   - 프로젝트별 TODO 목록 조회
   - 프로젝트 선택 시 자동 필터링
-- [x] TodoListView 통합 UI
-  - 프로젝트 관리 섹션 추가
-  - 프로젝트-TODO 연동 관리
-  - 완전한 CRUD 및 필터링 통합
+  - TODO 생성/수정 시 프로젝트 지정
 
-### 🚧 Phase 3 예정
+- [x] **통합 UI**
+  - TodoListView에 프로젝트 관리 섹션 통합
+  - 프로젝트 선택 및 필터링 UI
+  - 프로젝트별 TODO 그룹화
 
-**다음 단계 구현 예정:**
-- [ ] TODO 상세 페이지 (`TodoDetailView.vue`)
-  - 상세 정보 표시
+### 🚧 Phase 3 진행 중 / 예정
+
+**현재 상태:**
+- [x] 라우트 설정 완료 (`/todos/:id`)
+- [ ] **TODO 상세 페이지 (`TodoDetailView.vue`)** - 미구현
+  - 현재 플레이스홀더만 존재
+  - 상세 정보 표시 필요
   - 댓글 기능 (선택사항)
   - 히스토리 표시 (선택사항)
-- [ ] 고급 기능
+
+**다음 단계 구현 예정:**
+- [ ] **고급 TODO 기능**
   - TODO 드래그 앤 드롭 (순서 변경)
   - TODO 복제
   - TODO 템플릿
   - 일괄 작업 (다중 선택, 일괄 삭제/상태 변경)
-- [ ] 사용자 경험 개선
-  - 키보드 단축키
+
+- [ ] **사용자 경험 개선**
+  - 키보드 단축키 (Ctrl+N: 새 TODO, Ctrl+K: 검색 등)
   - 다크 모드
   - 애니메이션 효과
-  - 접근성 개선
+  - 접근성 개선 (WCAG 2.1 Level AA)
+
+- [ ] **고급 뷰 모드**
+  - 칸반 보드 뷰 (드래그 앤 드롭)
+  - 캘린더 뷰 (마감일 기준)
+
+- [ ] **추가 기능**
+  - 태그 시스템
+  - 체크리스트 (서브 태스크)
+  - 반복 작업
+  - 브라우저 알림 (Notification API)
 
 ## 🔧 환경 변수
 
