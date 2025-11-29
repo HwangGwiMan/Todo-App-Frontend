@@ -9,9 +9,12 @@ const getAuthToken = async (): Promise<string | undefined> => {
   return token || undefined;
 };
 
+// environment variable
+const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 // axios 인스턴스 생성 및 인터셉터 설정
 const axiosInstance: AxiosInstance = axios.create({
-  baseURL: 'http://localhost:8080'
+  baseURL: BASE_URL
 });
 
 // 응답 인터셉터: 401 에러 처리
