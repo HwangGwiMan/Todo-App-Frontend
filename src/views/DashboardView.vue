@@ -39,31 +39,41 @@
         <!-- 기본 통계 카드 -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4 mb-8">
           <div class="card">
-            <p class="text-sm text-gray-600">전체</p>
+            <p class="text-sm text-gray-600">
+              전체
+            </p>
             <p class="text-2xl font-bold">
               {{ dashboardStats.basicStats?.totalCount || 0 }}
             </p>
           </div>
           <div class="card">
-            <p class="text-sm text-gray-600">할 일</p>
+            <p class="text-sm text-gray-600">
+              할 일
+            </p>
             <p class="text-2xl font-bold text-blue-600">
               {{ dashboardStats.basicStats?.todoCount || 0 }}
             </p>
           </div>
           <div class="card">
-            <p class="text-sm text-gray-600">진행중</p>
+            <p class="text-sm text-gray-600">
+              진행중
+            </p>
             <p class="text-2xl font-bold text-yellow-600">
               {{ dashboardStats.basicStats?.inProgressCount || 0 }}
             </p>
           </div>
           <div class="card">
-            <p class="text-sm text-gray-600">완료</p>
+            <p class="text-sm text-gray-600">
+              완료
+            </p>
             <p class="text-2xl font-bold text-green-600">
               {{ dashboardStats.basicStats?.doneCount || 0 }}
             </p>
           </div>
           <div class="card">
-            <p class="text-sm text-gray-600">완료율</p>
+            <p class="text-sm text-gray-600">
+              완료율
+            </p>
             <p class="text-2xl font-bold text-green-600">
               {{ Math.round(dashboardStats.basicStats?.completionRate || 0) }}%
             </p>
@@ -75,7 +85,9 @@
             </div>
           </div>
           <div class="card">
-            <p class="text-sm text-gray-600">지난 마감일</p>
+            <p class="text-sm text-gray-600">
+              지난 마감일
+            </p>
             <p class="text-2xl font-bold text-red-600">
               {{ dashboardStats.basicStats?.overdueCount || 0 }}
             </p>
@@ -86,7 +98,9 @@
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           <!-- 상태별 분포 파이 차트 -->
           <div class="card">
-            <h3 class="text-lg font-semibold mb-4">상태별 분포</h3>
+            <h3 class="text-lg font-semibold mb-4">
+              상태별 분포
+            </h3>
             <div class="h-64">
               <PieChart
                 v-if="statusChartData"
@@ -97,7 +111,9 @@
 
           <!-- 우선순위별 분포 파이 차트 -->
           <div class="card">
-            <h3 class="text-lg font-semibold mb-4">우선순위별 분포</h3>
+            <h3 class="text-lg font-semibold mb-4">
+              우선순위별 분포
+            </h3>
             <div class="h-64">
               <PieChart
                 v-if="priorityChartData"
@@ -109,7 +125,9 @@
 
         <!-- 프로젝트별 통계 -->
         <div class="card mb-6">
-          <h3 class="text-lg font-semibold mb-4">프로젝트별 통계</h3>
+          <h3 class="text-lg font-semibold mb-4">
+            프로젝트별 통계
+          </h3>
           <div class="h-64">
             <BarChart
               v-if="projectChartData"
@@ -120,7 +138,9 @@
 
         <!-- 프로젝트별 상세 리스트 -->
         <div class="card">
-          <h3 class="text-lg font-semibold mb-4">프로젝트별 상세</h3>
+          <h3 class="text-lg font-semibold mb-4">
+            프로젝트별 상세
+          </h3>
           <div class="space-y-2">
             <div
               v-for="project in dashboardStats.projectStats"
