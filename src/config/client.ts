@@ -10,7 +10,7 @@ const getAuthToken = async (): Promise<string | undefined> => {
 };
 
 // environment variable
-const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
 
 // axios 인스턴스 생성 및 인터셉터 설정
 const axiosInstance: AxiosInstance = axios.create({
