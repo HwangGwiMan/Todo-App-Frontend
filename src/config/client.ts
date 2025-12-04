@@ -39,6 +39,7 @@ axiosInstance.interceptors.response.use(
 
 // 클라이언트 설정 업데이트 (커스텀 axios 인스턴스 사용)
 client.setConfig({
+  baseURL: BASE_URL,
   auth: getAuthToken,
   axios: axiosInstance,
 });
