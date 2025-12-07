@@ -679,6 +679,383 @@ const projectOptions = projectStore.getProjectsForSelect
   - 반복 작업
   - 브라우저 알림 (Notification API)
 
+### 📤 Phase 5 예정 - 파일 출력(Export) 기능
+
+**기능 개요:**
+TODO 및 프로젝트 데이터를 다양한 파일 형식으로 내보내기할 수 있는 기능 추가
+
+#### UI/UX 설계
+
+**1. 내보내기 버튼 위치**
+- **TodoListView**: 필터/정렬 바 옆에 내보내기 버튼 추가
+  - 현재 필터링된 TODO 목록 전체를 내보내기
+- **TodoDetailView**: 상세 페이지 상단에 내보내기 버튼 추가
+  - 현재 보고 있는 TODO 단건 내보내기
+- **프로젝트 섹션**: 각 프로젝트 카드에 내보내기 버튼 추가
+  - 해당 프로젝트의 모든 TODO를 내보내기
+
+**2. 내보내기 UI 컴포넌트**
+
+```vue
+<!-- ExportButton.vue (신규 생성) -->
+<template>
+  <div class="relative inline-block">
+    <!-- 내보내기 버튼 -->
+    <button 
+      @click="toggleMenu" 
+      class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 
+             bg-white border border-gray-300 rounded-lg hover:bg-gray-50 
+             focus:outline-none focus:ring-2 focus:ring-blue-500"
+    >
+      <DownloadIcon class="w-4 h-4" />
+      내보내기
+    </button>
+    
+    <!-- 드롭다운 메뉴 -->
+    <div 
+      v-if="showMenu" 
+      class="absolute right-0 z-10 mt-2 w-48 bg-white rounded-lg shadow-lg 
+             border border-gray-200 divide-y divide-gray-100"
+    >
+      <!-- JSON -->
+      <button 
+        @click="handleExport('json')" 
+        class="w-full px-4 py-2 text-left text-sm text-gray-700 
+               hover:bg-gray-50 flex items-center gap-2"
+      >
+        <FileJsonIcon class="w-4 h-4 text-blue-500" />
+        JSON으로 내보내기
+      </button>
+      
+      <!-- Excel -->
+      <button 
+        @click="handleExport('excel')" 
+        class="w-full px-4 py-2 text-left text-sm text-gray-700 
+               hover:bg-gray-50 flex items-center gap-2"
+      >
+        <FileSpreadsheetIcon class="w-4 h-4 text-green-500" />
+        Excel로 내보내기
+      </button>
+      
+      <!-- PDF -->
+      <button 
+        @click="handleExport('pdf')" 
+        class="w-full px-4 py-2 text-left text-sm text-gray-700 
+               hover:bg-gray-50 flex items-center gap-2"
+      >
+        <FilePdfIcon class="w-4 h-4 text-red-500" />
+        PDF로 내보내기
+      </button>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref } from 'vue'
+
+interface Props {
+  // 'single' - 단일 TODO, 'list' - 필터링된 목록, 'selected' - 선택된 항목
+  exportType: 'single' | 'list' | 'selected'
+  todoId?: number  // exportType이 'single'일 때 필요
+  todoIds?: number[]  // exportType이 'selected'일 때 필요
+}
+
+const props = defineProps<Props>()
+const emit = defineEmits<{
+  'export': [format: 'json' | 'excel' | 'pdf']
+}>()
+
+const showMenu = ref(false)
+
+const toggleMenu = () => {
+  showMenu.value = !showMenu.value
+}
+
+const handleExport = async (format: 'json' | 'excel' | 'pdf') => {
+  showMenu.value = false
+  emit('export', format)
+}
+</script>
+```
+
+**3. 파일 다운로드 유틸리티**
+
+```typescript
+// src/utils/fileDownload.ts (신규 생성)
+
+/**
+ * Blob 데이터를 파일로 다운로드
+ */
+export function downloadBlob(blob: Blob, filename: string) {
+  const url = window.URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = filename
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+  window.URL.revokeObjectURL(url)
+}
+
+/**
+ * 파일명에 현재 날짜 추가
+ */
+export function generateFilename(
+  prefix: string, 
+  extension: string, 
+  includeTimestamp = true
+): string {
+  const date = new Date()
+  const dateStr = date.toISOString().split('T')[0]  // YYYY-MM-DD
+  const timeStr = includeTimestamp 
+    ? `_${date.getHours()}${date.getMinutes()}${date.getSeconds()}` 
+    : ''
+  
+  return `${prefix}_${dateStr}${timeStr}.${extension}`
+}
+
+// 사용 예시
+// generateFilename('todos', 'xlsx')
+// => 'todos_2025-12-07_142536.xlsx'
+```
+
+**4. Store에 Export 액션 추가**
+
+```typescript
+// src/stores/todo.ts
+
+import { downloadBlob, generateFilename } from '@/utils/fileDownload'
+
+export const useTodoStore = defineStore('todo', () => {
+  // ... 기존 코드 ...
+  
+  /**
+   * 단일 TODO를 파일로 내보내기
+   */
+  async function exportSingleTodo(todoId: number, format: 'json' | 'excel' | 'pdf') {
+    try {
+      const response = await client.GET(`/api/todos/${todoId}/export/${format}`, {
+        responseType: 'blob',  // Blob으로 응답 받기
+      })
+      
+      if (response.data) {
+        const extension = format === 'excel' ? 'xlsx' : format
+        const filename = generateFilename(`todo_${todoId}`, extension)
+        downloadBlob(response.data, filename)
+        
+        useToast().success(`${format.toUpperCase()} 파일로 내보내기 완료`)
+      }
+    } catch (error) {
+      useToast().error('파일 내보내기에 실패했습니다')
+      throw error
+    }
+  }
+  
+  /**
+   * 필터링된 TODO 목록을 파일로 내보내기
+   */
+  async function exportFilteredTodos(format: 'json' | 'excel') {
+    try {
+      const params = {
+        ...filters.value,
+        // 페이징 제거 (전체 데이터 가져오기)
+        page: undefined,
+        size: undefined,
+      }
+      
+      const response = await client.GET(`/api/todos/export/${format}`, {
+        params,
+        responseType: 'blob',
+      })
+      
+      if (response.data) {
+        const extension = format === 'excel' ? 'xlsx' : format
+        const filename = generateFilename('todos', extension)
+        downloadBlob(response.data, filename)
+        
+        useToast().success(`${format.toUpperCase()} 파일로 내보내기 완료`)
+      }
+    } catch (error) {
+      useToast().error('파일 내보내기에 실패했습니다')
+      throw error
+    }
+  }
+  
+  /**
+   * 선택된 TODO들을 파일로 내보내기
+   */
+  async function exportSelectedTodos(
+    todoIds: number[], 
+    format: 'json' | 'excel'
+  ) {
+    try {
+      const response = await client.POST(`/api/todos/export/${format}`, {
+        body: todoIds,
+        responseType: 'blob',
+      })
+      
+      if (response.data) {
+        const extension = format === 'excel' ? 'xlsx' : format
+        const filename = generateFilename('todos_selected', extension)
+        downloadBlob(response.data, filename)
+        
+        useToast().success(`${todoIds.length}개 항목을 ${format.toUpperCase()} 파일로 내보냈습니다`)
+      }
+    } catch (error) {
+      useToast().error('파일 내보내기에 실패했습니다')
+      throw error
+    }
+  }
+  
+  return {
+    // ... 기존 return 항목들 ...
+    exportSingleTodo,
+    exportFilteredTodos,
+    exportSelectedTodos,
+  }
+})
+```
+
+**5. TodoListView에 내보내기 버튼 추가**
+
+```vue
+<!-- src/views/TodoListView.vue -->
+<template>
+  <div class="container mx-auto px-4 py-6">
+    <h1 class="text-3xl font-bold mb-6">할 일 목록</h1>
+    
+    <!-- 필터/정렬 바와 내보내기 버튼을 나란히 배치 -->
+    <div class="flex gap-4 mb-6">
+      <div class="flex-1">
+        <FilterSortBar
+          :filters="filters"
+          :project-options="projectOptions"
+          @update:filters="handleFilterChange"
+        />
+      </div>
+      
+      <!-- 내보내기 버튼 추가 -->
+      <div class="flex-shrink-0">
+        <ExportButton
+          export-type="list"
+          @export="handleExport"
+        />
+      </div>
+    </div>
+    
+    <!-- ... 나머지 코드 ... -->
+  </div>
+</template>
+
+<script setup lang="ts">
+import { useTodoStore } from '@/stores/todo'
+import ExportButton from '@/components/ExportButton.vue'
+
+const todoStore = useTodoStore()
+
+const handleExport = async (format: 'json' | 'excel' | 'pdf') => {
+  await todoStore.exportFilteredTodos(format)
+}
+</script>
+```
+
+**6. TodoDetailView에 내보내기 버튼 추가**
+
+```vue
+<!-- src/views/TodoDetailView.vue -->
+<template>
+  <div class="container mx-auto px-4 py-6">
+    <!-- 헤더와 액션 버튼들 -->
+    <div class="flex justify-between items-center mb-6">
+      <h1 class="text-3xl font-bold">할 일 상세</h1>
+      
+      <div class="flex gap-2">
+        <!-- 내보내기 버튼 추가 -->
+        <ExportButton
+          export-type="single"
+          :todo-id="todoId"
+          @export="handleExport"
+        />
+        
+        <!-- 수정, 삭제 버튼 -->
+        <button @click="handleEdit">수정</button>
+        <button @click="handleDelete">삭제</button>
+      </div>
+    </div>
+    
+    <!-- ... 나머지 코드 ... -->
+  </div>
+</template>
+
+<script setup lang="ts">
+import { useTodoStore } from '@/stores/todo'
+import ExportButton from '@/components/ExportButton.vue'
+
+const todoStore = useTodoStore()
+const route = useRoute()
+const todoId = Number(route.params.id)
+
+const handleExport = async (format: 'json' | 'excel' | 'pdf') => {
+  await todoStore.exportSingleTodo(todoId, format)
+}
+</script>
+```
+
+#### 구현 체크리스트
+
+**1단계: 기본 인프라 (1-2시간)**
+- [ ] `ExportButton.vue` 컴포넌트 생성
+- [ ] `src/utils/fileDownload.ts` 유틸리티 생성
+- [ ] Heroicons 또는 Lucide 아이콘 추가 (다운로드, 파일 아이콘)
+- [ ] Store에 export 액션 추가
+
+**2단계: JSON 내보내기 (2-3시간)**
+- [ ] JSON 내보내기 API 연동
+- [ ] TodoListView에 내보내기 버튼 추가
+- [ ] TodoDetailView에 내보내기 버튼 추가
+- [ ] 프로젝트 카드에 내보내기 버튼 추가
+- [ ] 다운로드 성공/실패 Toast 알림
+- [ ] 로딩 상태 처리
+
+**3단계: Excel 내보내기 (1시간)**
+- [ ] Excel 내보내기 API 연동
+- [ ] 드롭다운 메뉴에 Excel 옵션 추가
+- [ ] 다운로드 테스트
+
+**4단계: PDF 내보내기 (1시간)**
+- [ ] PDF 내보내기 API 연동
+- [ ] 드롭다운 메뉴에 PDF 옵션 추가
+- [ ] 다운로드 테스트
+
+**5단계: 고급 기능 (선택사항, 2-3시간)**
+- [ ] 일괄 선택 모드 추가 (체크박스로 여러 TODO 선택)
+- [ ] 선택된 항목만 내보내기
+- [ ] 내보내기 전 미리보기 모달
+- [ ] 내보내기 옵션 설정 (포함할 필드 선택 등)
+
+#### 예상 개발 기간
+
+- **기본 인프라**: 1-2시간
+- **JSON 내보내기**: 2-3시간
+- **Excel 내보내기**: 1시간
+- **PDF 내보내기**: 1시간
+- **테스트 및 버그 수정**: 2-3시간
+- **총 예상 시간**: 7-10시간
+
+#### 기술 스택
+
+- **파일 다운로드**: Blob API + URL.createObjectURL
+- **아이콘**: Heroicons 또는 Lucide Vue
+- **상태 관리**: Pinia Store에 export 액션 추가
+- **에러 처리**: 기존 Toast 알림 시스템 활용
+
+#### 참고 자료
+
+- [MDN - Blob API](https://developer.mozilla.org/en-US/docs/Web/API/Blob)
+- [MDN - Download Attribute](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/a#attr-download)
+- [Heroicons](https://heroicons.com/)
+- [Lucide Icons](https://lucide.dev/)
+
 ## 🔧 환경 변수
 
 `env.development.example` 파일을 복사하여 `.env.development` 파일을 생성하세요:
