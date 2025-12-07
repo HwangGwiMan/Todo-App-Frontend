@@ -1,6 +1,10 @@
 <template>
-  <div class="min-h-screen bg-gray-50 py-8">
-    <div class="max-w-4xl mx-auto px-4">
+  <div class="min-h-screen bg-gray-50">
+    <!-- Header -->
+    <AppHeader />
+
+    <!-- Main Content -->
+    <div class="max-w-4xl mx-auto px-4 py-8">
       <!-- 로딩 상태 -->
       <div
         v-if="todoStore.loading"
@@ -211,6 +215,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useTodoStore } from '@/stores/todo'
 import { useProjectStore } from '@/stores/project'
 import { useToast } from '@/composables/useToast'
+import AppHeader from '@/components/AppHeader.vue'
 import LoadingSpinner from '@/components/LoadingSpinner.vue'
 import TodoEditModal from '@/components/TodoEditModal.vue'
 import { format } from 'date-fns'

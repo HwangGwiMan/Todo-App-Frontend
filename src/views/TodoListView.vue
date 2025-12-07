@@ -4,22 +4,7 @@
     <ToastNotification ref="toastRef" />
 
     <!-- Header -->
-    <header class="bg-white shadow-sm">
-      <div class="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8 flex justify-between items-center">
-        <h1 class="text-2xl font-bold text-gray-900">
-          TodoApp
-        </h1>
-        <div class="flex items-center gap-4">
-          <span class="text-gray-700">{{ authStore.username }}</span>
-          <button
-            class="btn-secondary text-sm"
-            @click="handleLogout"
-          >
-            로그아웃
-          </button>
-        </div>
-      </div>
-    </header>
+    <AppHeader />
 
     <!-- Main Content -->
     <main class="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
@@ -230,12 +215,11 @@
 
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue'
-import { useRouter } from 'vue-router'
-import { useAuthStore } from '@/stores/auth'
 import { useTodoStore } from '@/stores/todo'
 import { useProjectStore } from '@/stores/project'
 import { useToast } from '@/composables/useToast'
 import { useErrorHandler } from '@/composables/useErrorHandler'
+import AppHeader from '@/components/AppHeader.vue'
 import TodoCard from '@/components/TodoCard.vue'
 import TodoCreateModal from '@/components/TodoCreateModal.vue'
 import TodoEditModal from '@/components/TodoEditModal.vue'
@@ -248,8 +232,6 @@ import LoadingSpinner from '@/components/LoadingSpinner.vue'
 import ToastNotification from '@/components/ToastNotification.vue'
 import type { TodoResponse, TodoRequest, TodoSearchRequest, ProjectResponse, ProjectRequest } from '@/client'
 
-const router = useRouter()
-const authStore = useAuthStore()
 const todoStore = useTodoStore()
 const projectStore = useProjectStore()
 const { setToastRef, showError, showSuccess } = useToast()
@@ -299,11 +281,6 @@ watch(filters, async (newFilters) => {
     showError('TODO 목록을 불러오는데 실패했습니다.')
   }
 }, { deep: true })
-
-const handleLogout = () => {
-  authStore.logout()
-  router.push('/login')
-}
 
 const handleCreate = async (todoData: TodoRequest) => {
   try {
