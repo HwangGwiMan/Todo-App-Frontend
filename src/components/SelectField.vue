@@ -7,7 +7,7 @@
       {{ label }}
     </label>
     <select
-      :modelValue="modelValue"
+      :value="modelValue"
       :class="selectClass"
       @change="handleChange"
     >
