@@ -694,65 +694,29 @@ TODO 및 프로젝트 데이터를 다양한 파일 형식으로 내보내기할
 - **프로젝트 섹션**: 각 프로젝트 카드에 내보내기 버튼 추가
   - 해당 프로젝트의 모든 TODO를 내보내기
 
-**2. 내보내기 UI 컴포넌트**
+**2. 내보내기 모달 방식**
+- 각 위치에 "내보내기" 버튼 **하나만** 배치
+- 버튼 클릭 시 **팝업 모달** 표시
+- 모달에서 파일 형식 선택 (JSON / Excel / PDF)
+- 선택한 형식으로 다운로드 진행
+
+**3. 내보내기 UI 컴포넌트**
 
 ```vue
 <!-- ExportButton.vue (신규 생성) -->
 <template>
-  <div class="relative inline-block">
-    <!-- 내보내기 버튼 -->
-    <button 
-      @click="toggleMenu" 
-      class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 
-             bg-white border border-gray-300 rounded-lg hover:bg-gray-50 
-             focus:outline-none focus:ring-2 focus:ring-blue-500"
-    >
-      <DownloadIcon class="w-4 h-4" />
-      내보내기
-    </button>
-    
-    <!-- 드롭다운 메뉴 -->
-    <div 
-      v-if="showMenu" 
-      class="absolute right-0 z-10 mt-2 w-48 bg-white rounded-lg shadow-lg 
-             border border-gray-200 divide-y divide-gray-100"
-    >
-      <!-- JSON -->
-      <button 
-        @click="handleExport('json')" 
-        class="w-full px-4 py-2 text-left text-sm text-gray-700 
-               hover:bg-gray-50 flex items-center gap-2"
-      >
-        <FileJsonIcon class="w-4 h-4 text-blue-500" />
-        JSON으로 내보내기
-      </button>
-      
-      <!-- Excel -->
-      <button 
-        @click="handleExport('excel')" 
-        class="w-full px-4 py-2 text-left text-sm text-gray-700 
-               hover:bg-gray-50 flex items-center gap-2"
-      >
-        <FileSpreadsheetIcon class="w-4 h-4 text-green-500" />
-        Excel로 내보내기
-      </button>
-      
-      <!-- PDF -->
-      <button 
-        @click="handleExport('pdf')" 
-        class="w-full px-4 py-2 text-left text-sm text-gray-700 
-               hover:bg-gray-50 flex items-center gap-2"
-      >
-        <FilePdfIcon class="w-4 h-4 text-red-500" />
-        PDF로 내보내기
-      </button>
-    </div>
-  </div>
+  <button 
+    @click="openModal" 
+    class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 
+           bg-white border border-gray-300 rounded-lg hover:bg-gray-50 
+           focus:outline-none focus:ring-2 focus:ring-blue-500"
+  >
+    <DownloadIcon class="w-4 h-4" />
+    내보내기
+  </button>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-
 interface Props {
   // 'single' - 단일 TODO, 'list' - 필터링된 목록, 'selected' - 선택된 항목
   exportType: 'single' | 'list' | 'selected'
@@ -762,19 +726,162 @@ interface Props {
 
 const props = defineProps<Props>()
 const emit = defineEmits<{
+  'open-modal': []
+}>()
+
+const openModal = () => {
+  emit('open-modal')
+}
+</script>
+```
+
+```vue
+<!-- ExportModal.vue (신규 생성) -->
+<template>
+  <!-- 모달 오버레이 -->
+  <div 
+    v-if="isOpen" 
+    @click="handleOverlayClick"
+    class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
+  >
+    <!-- 모달 컨텐츠 -->
+    <div 
+      @click.stop
+      class="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4 p-6"
+    >
+      <!-- 헤더 -->
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-2xl font-bold text-gray-800">파일 형식 선택</h2>
+        <button 
+          @click="closeModal"
+          class="text-gray-400 hover:text-gray-600 transition-colors"
+        >
+          <XIcon class="w-6 h-6" />
+        </button>
+      </div>
+      
+      <!-- 파일 형식 옵션들 -->
+      <div class="space-y-3">
+        <!-- JSON 옵션 -->
+        <button 
+          @click="handleExport('json')"
+          class="w-full flex items-center gap-4 p-4 border border-gray-200 
+                 rounded-lg hover:border-blue-500 hover:bg-blue-50 
+                 transition-all group"
+        >
+          <div class="flex-shrink-0">
+            <FileJsonIcon class="w-10 h-10 text-blue-500" />
+          </div>
+          <div class="flex-1 text-left">
+            <h3 class="font-semibold text-gray-800 group-hover:text-blue-600">
+              JSON
+            </h3>
+            <p class="text-sm text-gray-600">
+              데이터 백업 및 마이그레이션에 적합
+            </p>
+          </div>
+          <ChevronRightIcon class="w-5 h-5 text-gray-400 group-hover:text-blue-500" />
+        </button>
+        
+        <!-- Excel 옵션 -->
+        <button 
+          @click="handleExport('excel')"
+          class="w-full flex items-center gap-4 p-4 border border-gray-200 
+                 rounded-lg hover:border-green-500 hover:bg-green-50 
+                 transition-all group"
+        >
+          <div class="flex-shrink-0">
+            <FileSpreadsheetIcon class="w-10 h-10 text-green-500" />
+          </div>
+          <div class="flex-1 text-left">
+            <h3 class="font-semibold text-gray-800 group-hover:text-green-600">
+              Excel
+            </h3>
+            <p class="text-sm text-gray-600">
+              편집 및 분석 가능한 스프레드시트
+            </p>
+          </div>
+          <ChevronRightIcon class="w-5 h-5 text-gray-400 group-hover:text-green-500" />
+        </button>
+        
+        <!-- PDF 옵션 -->
+        <button 
+          @click="handleExport('pdf')"
+          class="w-full flex items-center gap-4 p-4 border border-gray-200 
+                 rounded-lg hover:border-red-500 hover:bg-red-50 
+                 transition-all group"
+        >
+          <div class="flex-shrink-0">
+            <FilePdfIcon class="w-10 h-10 text-red-500" />
+          </div>
+          <div class="flex-1 text-left">
+            <h3 class="font-semibold text-gray-800 group-hover:text-red-600">
+              PDF
+            </h3>
+            <p class="text-sm text-gray-600">
+              인쇄 및 공유용 문서
+            </p>
+          </div>
+          <ChevronRightIcon class="w-5 h-5 text-gray-400 group-hover:text-red-500" />
+        </button>
+      </div>
+      
+      <!-- 취소 버튼 -->
+      <button 
+        @click="closeModal"
+        class="w-full mt-6 px-4 py-2 text-sm font-medium text-gray-700 
+               bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+      >
+        취소
+      </button>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { watch } from 'vue'
+
+interface Props {
+  isOpen: boolean
+  exportType: 'single' | 'list' | 'selected'
+  todoId?: number
+  todoIds?: number[]
+}
+
+const props = defineProps<Props>()
+const emit = defineEmits<{
+  'close': []
   'export': [format: 'json' | 'excel' | 'pdf']
 }>()
 
-const showMenu = ref(false)
-
-const toggleMenu = () => {
-  showMenu.value = !showMenu.value
-}
-
-const handleExport = async (format: 'json' | 'excel' | 'pdf') => {
-  showMenu.value = false
+const handleExport = (format: 'json' | 'excel' | 'pdf') => {
   emit('export', format)
+  closeModal()
 }
+
+const closeModal = () => {
+  emit('close')
+}
+
+const handleOverlayClick = () => {
+  closeModal()
+}
+
+// ESC 키로 모달 닫기
+watch(() => props.isOpen, (isOpen) => {
+  if (isOpen) {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        closeModal()
+      }
+    }
+    document.addEventListener('keydown', handleEscape)
+    
+    return () => {
+      document.removeEventListener('keydown', handleEscape)
+    }
+  }
+})
 </script>
 ```
 
@@ -916,7 +1023,7 @@ export const useTodoStore = defineStore('todo', () => {
 })
 ```
 
-**5. TodoListView에 내보내기 버튼 추가**
+**5. TodoListView에 내보내기 버튼 및 모달 추가**
 
 ```vue
 <!-- src/views/TodoListView.vue -->
@@ -938,20 +1045,31 @@ export const useTodoStore = defineStore('todo', () => {
       <div class="flex-shrink-0">
         <ExportButton
           export-type="list"
-          @export="handleExport"
+          @open-modal="showExportModal = true"
         />
       </div>
     </div>
     
-    <!-- ... 나머지 코드 ... -->
+    <!-- ... TODO 목록 ... -->
+    
+    <!-- 내보내기 모달 -->
+    <ExportModal
+      :is-open="showExportModal"
+      export-type="list"
+      @close="showExportModal = false"
+      @export="handleExport"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue'
 import { useTodoStore } from '@/stores/todo'
 import ExportButton from '@/components/ExportButton.vue'
+import ExportModal from '@/components/ExportModal.vue'
 
 const todoStore = useTodoStore()
+const showExportModal = ref(false)
 
 const handleExport = async (format: 'json' | 'excel' | 'pdf') => {
   await todoStore.exportFilteredTodos(format)
@@ -959,7 +1077,7 @@ const handleExport = async (format: 'json' | 'excel' | 'pdf') => {
 </script>
 ```
 
-**6. TodoDetailView에 내보내기 버튼 추가**
+**6. TodoDetailView에 내보내기 버튼 및 모달 추가**
 
 ```vue
 <!-- src/views/TodoDetailView.vue -->
@@ -974,7 +1092,7 @@ const handleExport = async (format: 'json' | 'excel' | 'pdf') => {
         <ExportButton
           export-type="single"
           :todo-id="todoId"
-          @export="handleExport"
+          @open-modal="showExportModal = true"
         />
         
         <!-- 수정, 삭제 버튼 -->
@@ -983,17 +1101,30 @@ const handleExport = async (format: 'json' | 'excel' | 'pdf') => {
       </div>
     </div>
     
-    <!-- ... 나머지 코드 ... -->
+    <!-- ... TODO 상세 정보 ... -->
+    
+    <!-- 내보내기 모달 -->
+    <ExportModal
+      :is-open="showExportModal"
+      export-type="single"
+      :todo-id="todoId"
+      @close="showExportModal = false"
+      @export="handleExport"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue'
+import { useRoute } from 'vue-router'
 import { useTodoStore } from '@/stores/todo'
 import ExportButton from '@/components/ExportButton.vue'
+import ExportModal from '@/components/ExportModal.vue'
 
 const todoStore = useTodoStore()
 const route = useRoute()
 const todoId = Number(route.params.id)
+const showExportModal = ref(false)
 
 const handleExport = async (format: 'json' | 'excel' | 'pdf') => {
   await todoStore.exportSingleTodo(todoId, format)
@@ -1003,10 +1134,13 @@ const handleExport = async (format: 'json' | 'excel' | 'pdf') => {
 
 #### 구현 체크리스트
 
-**1단계: 기본 인프라 (1-2시간)**
-- [ ] `ExportButton.vue` 컴포넌트 생성
+**1단계: 기본 인프라 (2-3시간)**
+- [ ] `ExportButton.vue` 컴포넌트 생성 (모달 열기 버튼)
+- [ ] `ExportModal.vue` 컴포넌트 생성 (파일 형식 선택 모달)
 - [ ] `src/utils/fileDownload.ts` 유틸리티 생성
-- [ ] Heroicons 또는 Lucide 아이콘 추가 (다운로드, 파일 아이콘)
+- [ ] Heroicons 또는 Lucide 아이콘 추가 (다운로드, 파일, X, ChevronRight 아이콘)
+- [ ] 모달 오버레이 스타일링 및 애니메이션
+- [ ] ESC 키로 모달 닫기 기능
 - [ ] Store에 export 액션 추가
 
 **2단계: JSON 내보내기 (2-3시간)**
@@ -1035,12 +1169,12 @@ const handleExport = async (format: 'json' | 'excel' | 'pdf') => {
 
 #### 예상 개발 기간
 
-- **기본 인프라**: 1-2시간
+- **기본 인프라 (버튼 + 모달)**: 2-3시간
 - **JSON 내보내기**: 2-3시간
 - **Excel 내보내기**: 1시간
 - **PDF 내보내기**: 1시간
 - **테스트 및 버그 수정**: 2-3시간
-- **총 예상 시간**: 7-10시간
+- **총 예상 시간**: 8-11시간
 
 #### 기술 스택
 
