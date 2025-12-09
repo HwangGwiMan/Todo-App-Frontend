@@ -679,6 +679,1029 @@ const projectOptions = projectStore.getProjectsForSelect
   - 반복 작업
   - 브라우저 알림 (Notification API)
 
+### 📅 Phase 6 예정 - TODO 일정 관리 및 알림 기능 UI
+
+**기능 개요:**
+TODO 일정 관리 필드를 입력/수정할 수 있는 UI와 알림 설정 인터페이스를 구현합니다.
+
+#### 1. TODO 타입 확장
+
+**자동 생성된 타입 (백엔드 연동 후):**
+
+```typescript
+// src/client/types.gen.ts
+
+export type TodoRequest = {
+    // ... 기존 필드들 ...
+    
+    // 일정 관련 필드
+    startDate?: string | null;           // ISO 8601 날짜/시간 문자열
+    endDate?: string | null;
+    isAllDay?: boolean;                  // 종일 일정 여부
+    recurrenceRule?: string | null;      // 반복 설정 JSON
+    location?: string | null;            // 장소
+    estimatedDuration?: number | null;   // 예상 소요 시간 (분)
+    
+    // 알림 관련 필드
+    notificationSettings?: string | null; // 알림 설정 JSON 배열
+    notificationEnabled?: boolean;       // 알림 활성화 여부
+};
+
+export type TodoResponse = {
+    // ... 기존 필드들 ...
+    
+    startDate?: string | null;
+    endDate?: string | null;
+    isAllDay?: boolean;
+    recurrenceRule?: string | null;
+    location?: string | null;
+    estimatedDuration?: number | null;
+    notificationSettings?: string | null;
+    notificationEnabled?: boolean;
+    parentTodoId?: number | null;        // 반복 일정의 원본 ID
+};
+```
+
+#### 2. 일정 입력 컴포넌트
+
+**DateTimeRangePicker.vue (신규 생성)**
+
+```vue
+<template>
+  <div class="space-y-4">
+    <!-- 종일 일정 토글 -->
+    <div class="flex items-center gap-2">
+      <input
+        id="is-all-day"
+        v-model="localIsAllDay"
+        type="checkbox"
+        class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+      />
+      <label for="is-all-day" class="text-sm font-medium text-gray-700">
+        종일 일정
+      </label>
+    </div>
+    
+    <!-- 시작 일시 -->
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-2">
+        시작 일시
+      </label>
+      <input
+        v-model="localStartDate"
+        :type="localIsAllDay ? 'date' : 'datetime-local'"
+        class="input-field"
+        :required="required"
+      />
+    </div>
+    
+    <!-- 종료 일시 (선택) -->
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-2">
+        종료 일시 (선택)
+      </label>
+      <input
+        v-model="localEndDate"
+        :type="localIsAllDay ? 'date' : 'datetime-local'"
+        class="input-field"
+        :min="localStartDate"
+      />
+    </div>
+    
+    <!-- 예상 소요 시간 -->
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-2">
+        예상 소요 시간
+      </label>
+      <div class="flex gap-2 items-center">
+        <input
+          v-model.number="durationHours"
+          type="number"
+          min="0"
+          max="23"
+          class="input-field w-20"
+          placeholder="0"
+        />
+        <span class="text-sm text-gray-600">시간</span>
+        <input
+          v-model.number="durationMinutes"
+          type="number"
+          min="0"
+          max="59"
+          step="15"
+          class="input-field w-20"
+          placeholder="0"
+        />
+        <span class="text-sm text-gray-600">분</span>
+      </div>
+    </div>
+    
+    <!-- 장소 -->
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-2">
+        장소 (선택)
+      </label>
+      <input
+        v-model="localLocation"
+        type="text"
+        class="input-field"
+        placeholder="예: 서울시 강남구 테헤란로 123"
+        maxlength="500"
+      />
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, watch, computed } from 'vue'
+
+interface Props {
+  startDate?: string | null
+  endDate?: string | null
+  isAllDay?: boolean
+  location?: string | null
+  estimatedDuration?: number | null  // 분 단위
+  required?: boolean
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  isAllDay: false,
+  required: false
+})
+
+const emit = defineEmits<{
+  'update:startDate': [value: string | null]
+  'update:endDate': [value: string | null]
+  'update:isAllDay': [value: boolean]
+  'update:location': [value: string | null]
+  'update:estimatedDuration': [value: number | null]
+}>()
+
+const localStartDate = ref(props.startDate)
+const localEndDate = ref(props.endDate)
+const localIsAllDay = ref(props.isAllDay)
+const localLocation = ref(props.location)
+
+// 소요 시간을 시간과 분으로 분리
+const durationHours = ref(
+  props.estimatedDuration ? Math.floor(props.estimatedDuration / 60) : 0
+)
+const durationMinutes = ref(
+  props.estimatedDuration ? props.estimatedDuration % 60 : 0
+)
+
+// 총 소요 시간 (분)
+const totalDuration = computed(() => {
+  const hours = durationHours.value || 0
+  const minutes = durationMinutes.value || 0
+  const total = hours * 60 + minutes
+  return total > 0 ? total : null
+})
+
+// 변경 사항 emit
+watch(localStartDate, (value) => emit('update:startDate', value || null))
+watch(localEndDate, (value) => emit('update:endDate', value || null))
+watch(localIsAllDay, (value) => emit('update:isAllDay', value))
+watch(localLocation, (value) => emit('update:location', value || null))
+watch(totalDuration, (value) => emit('update:estimatedDuration', value))
+
+// 종일 일정 토글 시 시간 부분 제거/추가
+watch(localIsAllDay, (isAllDay) => {
+  if (isAllDay && localStartDate.value) {
+    // datetime-local -> date 변환
+    localStartDate.value = localStartDate.value.split('T')[0]
+  }
+  if (isAllDay && localEndDate.value) {
+    localEndDate.value = localEndDate.value.split('T')[0]
+  }
+})
+</script>
+```
+
+#### 3. 반복 설정 컴포넌트
+
+**RecurrenceRuleEditor.vue (신규 생성)**
+
+```vue
+<template>
+  <div class="space-y-4">
+    <!-- 반복 활성화 토글 -->
+    <div class="flex items-center gap-2">
+      <input
+        id="recurrence-enabled"
+        v-model="isEnabled"
+        type="checkbox"
+        class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+      />
+      <label for="recurrence-enabled" class="text-sm font-medium text-gray-700">
+        반복 일정
+      </label>
+    </div>
+    
+    <div v-if="isEnabled" class="space-y-3 pl-6 border-l-2 border-blue-200">
+      <!-- 반복 유형 -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">
+          반복 주기
+        </label>
+        <select v-model="rule.type" class="input-field">
+          <option value="DAILY">매일</option>
+          <option value="WEEKLY">매주</option>
+          <option value="MONTHLY">매월</option>
+          <option value="YEARLY">매년</option>
+        </select>
+      </div>
+      
+      <!-- 반복 간격 -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">
+          {{ intervalLabel }}
+        </label>
+        <input
+          v-model.number="rule.interval"
+          type="number"
+          min="1"
+          max="30"
+          class="input-field w-24"
+        />
+      </div>
+      
+      <!-- 요일 선택 (주간 반복 시) -->
+      <div v-if="rule.type === 'WEEKLY'">
+        <label class="block text-sm font-medium text-gray-700 mb-2">
+          반복 요일
+        </label>
+        <div class="flex gap-2">
+          <button
+            v-for="(day, index) in weekDays"
+            :key="index"
+            type="button"
+            @click="toggleDay(index + 1)"
+            :class="[
+              'px-3 py-2 rounded-lg text-sm font-medium transition-colors',
+              rule.daysOfWeek?.includes(index + 1)
+                ? 'bg-blue-600 text-white'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            ]"
+          >
+            {{ day }}
+          </button>
+        </div>
+      </div>
+      
+      <!-- 날짜 선택 (월간 반복 시) -->
+      <div v-if="rule.type === 'MONTHLY'">
+        <label class="block text-sm font-medium text-gray-700 mb-2">
+          반복 날짜
+        </label>
+        <input
+          v-model.number="rule.dayOfMonth"
+          type="number"
+          min="1"
+          max="31"
+          class="input-field w-24"
+          placeholder="일"
+        />
+      </div>
+      
+      <!-- 종료 조건 -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">
+          반복 종료
+        </label>
+        <div class="space-y-2">
+          <label class="flex items-center gap-2">
+            <input
+              v-model="endType"
+              type="radio"
+              value="never"
+              class="w-4 h-4 text-blue-600"
+            />
+            <span class="text-sm text-gray-700">종료 안함</span>
+          </label>
+          
+          <label class="flex items-center gap-2">
+            <input
+              v-model="endType"
+              type="radio"
+              value="date"
+              class="w-4 h-4 text-blue-600"
+            />
+            <span class="text-sm text-gray-700">종료 날짜</span>
+            <input
+              v-if="endType === 'date'"
+              v-model="rule.endDate"
+              type="date"
+              class="input-field flex-1"
+            />
+          </label>
+          
+          <label class="flex items-center gap-2">
+            <input
+              v-model="endType"
+              type="radio"
+              value="count"
+              class="w-4 h-4 text-blue-600"
+            />
+            <span class="text-sm text-gray-700">반복 횟수</span>
+            <input
+              v-if="endType === 'count'"
+              v-model.number="rule.count"
+              type="number"
+              min="1"
+              max="365"
+              class="input-field w-24"
+              placeholder="회"
+            />
+          </label>
+        </div>
+      </div>
+      
+      <!-- 미리보기 -->
+      <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
+        <p class="text-sm font-medium text-blue-900 mb-1">반복 요약</p>
+        <p class="text-sm text-blue-700">{{ recurrenceSummary }}</p>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, computed, watch } from 'vue'
+
+interface RecurrenceRule {
+  type: 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY'
+  interval: number
+  daysOfWeek?: number[]  // 1-7 (월-일)
+  dayOfMonth?: number    // 1-31
+  endDate?: string | null
+  count?: number | null
+}
+
+interface Props {
+  recurrenceRule?: string | null
+}
+
+const props = defineProps<Props>()
+
+const emit = defineEmits<{
+  'update:recurrenceRule': [value: string | null]
+}>()
+
+const isEnabled = ref(false)
+const endType = ref<'never' | 'date' | 'count'>('never')
+
+const rule = ref<RecurrenceRule>({
+  type: 'DAILY',
+  interval: 1,
+  daysOfWeek: [],
+})
+
+const weekDays = ['월', '화', '수', '목', '금', '토', '일']
+
+// 초기 데이터 로드
+if (props.recurrenceRule) {
+  try {
+    const parsed = JSON.parse(props.recurrenceRule) as RecurrenceRule
+    rule.value = parsed
+    isEnabled.value = true
+    
+    if (parsed.endDate) endType.value = 'date'
+    else if (parsed.count) endType.value = 'count'
+  } catch (e) {
+    console.error('반복 규칙 파싱 실패:', e)
+  }
+}
+
+// 간격 레이블
+const intervalLabel = computed(() => {
+  const labels = {
+    DAILY: '며칠마다',
+    WEEKLY: '몇 주마다',
+    MONTHLY: '몇 개월마다',
+    YEARLY: '몇 년마다',
+  }
+  return labels[rule.value.type]
+})
+
+// 반복 요약
+const recurrenceSummary = computed(() => {
+  if (!isEnabled.value) return ''
+  
+  const { type, interval } = rule.value
+  
+  let summary = ''
+  if (type === 'DAILY') {
+    summary = interval === 1 ? '매일' : `${interval}일마다`
+  } else if (type === 'WEEKLY') {
+    const days = rule.value.daysOfWeek || []
+    const dayNames = days.map(d => weekDays[d - 1]).join(', ')
+    summary = `${interval}주마다 (${dayNames || '요일 선택 안함'})`
+  } else if (type === 'MONTHLY') {
+    const day = rule.value.dayOfMonth || '?'
+    summary = `${interval}개월마다 ${day}일`
+  } else if (type === 'YEARLY') {
+    summary = interval === 1 ? '매년' : `${interval}년마다`
+  }
+  
+  if (endType.value === 'date' && rule.value.endDate) {
+    summary += `, ${rule.value.endDate}까지`
+  } else if (endType.value === 'count' && rule.value.count) {
+    summary += `, ${rule.value.count}회 반복`
+  }
+  
+  return summary
+})
+
+// 요일 토글
+const toggleDay = (day: number) => {
+  if (!rule.value.daysOfWeek) {
+    rule.value.daysOfWeek = []
+  }
+  
+  const index = rule.value.daysOfWeek.indexOf(day)
+  if (index > -1) {
+    rule.value.daysOfWeek.splice(index, 1)
+  } else {
+    rule.value.daysOfWeek.push(day)
+    rule.value.daysOfWeek.sort()
+  }
+}
+
+// 변경 사항 emit
+watch([isEnabled, rule, endType], () => {
+  if (!isEnabled.value) {
+    emit('update:recurrenceRule', null)
+    return
+  }
+  
+  const ruleToEmit: RecurrenceRule = {
+    type: rule.value.type,
+    interval: rule.value.interval,
+  }
+  
+  if (rule.value.type === 'WEEKLY' && rule.value.daysOfWeek) {
+    ruleToEmit.daysOfWeek = rule.value.daysOfWeek
+  }
+  
+  if (rule.value.type === 'MONTHLY' && rule.value.dayOfMonth) {
+    ruleToEmit.dayOfMonth = rule.value.dayOfMonth
+  }
+  
+  if (endType.value === 'date') {
+    ruleToEmit.endDate = rule.value.endDate
+    ruleToEmit.count = null
+  } else if (endType.value === 'count') {
+    ruleToEmit.count = rule.value.count
+    ruleToEmit.endDate = null
+  } else {
+    ruleToEmit.endDate = null
+    ruleToEmit.count = null
+  }
+  
+  emit('update:recurrenceRule', JSON.stringify(ruleToEmit))
+}, { deep: true })
+</script>
+```
+
+#### 4. 알림 설정 컴포넌트
+
+**NotificationSettingsEditor.vue (신규 생성)**
+
+```vue
+<template>
+  <div class="space-y-4">
+    <!-- 알림 활성화 토글 -->
+    <div class="flex items-center gap-2">
+      <input
+        id="notification-enabled"
+        v-model="localEnabled"
+        type="checkbox"
+        class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+      />
+      <label for="notification-enabled" class="text-sm font-medium text-gray-700">
+        알림 받기
+      </label>
+    </div>
+    
+    <div v-if="localEnabled" class="space-y-3 pl-6 border-l-2 border-blue-200">
+      <!-- 알림 목록 -->
+      <div
+        v-for="(notification, index) in notifications"
+        :key="index"
+        class="flex gap-2 items-start p-3 bg-gray-50 rounded-lg"
+      >
+        <div class="flex-1 space-y-2">
+          <!-- 알림 타입 -->
+          <select
+            v-model="notification.type"
+            class="input-field text-sm"
+          >
+            <option value="EMAIL">이메일</option>
+            <option value="SMS">문자 메시지</option>
+            <option value="KAKAO">카카오톡</option>
+            <option value="PUSH">브라우저 알림</option>
+          </select>
+          
+          <!-- 알림 시간 -->
+          <div class="flex gap-2 items-center">
+            <select
+              v-model.number="notification.timing"
+              class="input-field text-sm flex-1"
+            >
+              <option :value="0">정시</option>
+              <option :value="-5">5분 전</option>
+              <option :value="-10">10분 전</option>
+              <option :value="-15">15분 전</option>
+              <option :value="-30">30분 전</option>
+              <option :value="-60">1시간 전</option>
+              <option :value="-120">2시간 전</option>
+              <option :value="-1440">1일 전</option>
+              <option :value="-2880">2일 전</option>
+              <option :value="-10080">1주 전</option>
+            </select>
+          </div>
+        </div>
+        
+        <!-- 삭제 버튼 -->
+        <button
+          type="button"
+          @click="removeNotification(index)"
+          class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+        >
+          <XIcon class="w-4 h-4" />
+        </button>
+      </div>
+      
+      <!-- 알림 추가 버튼 -->
+      <button
+        type="button"
+        @click="addNotification"
+        class="w-full px-4 py-2 text-sm font-medium text-blue-600 
+               bg-blue-50 border border-blue-200 rounded-lg 
+               hover:bg-blue-100 transition-colors"
+      >
+        + 알림 추가
+      </button>
+      
+      <!-- 알림 미리보기 -->
+      <div
+        v-if="notifications.length > 0"
+        class="bg-blue-50 border border-blue-200 rounded-lg p-3"
+      >
+        <p class="text-sm font-medium text-blue-900 mb-1">알림 요약</p>
+        <ul class="text-sm text-blue-700 space-y-1">
+          <li v-for="(notification, index) in notifications" :key="index">
+            • {{ formatNotification(notification) }}
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, watch } from 'vue'
+
+interface NotificationSetting {
+  type: 'EMAIL' | 'SMS' | 'KAKAO' | 'PUSH'
+  timing: number  // 분 단위 (음수는 사전 알림)
+}
+
+interface Props {
+  notificationSettings?: string | null
+  notificationEnabled?: boolean
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  notificationEnabled: false
+})
+
+const emit = defineEmits<{
+  'update:notificationSettings': [value: string | null]
+  'update:notificationEnabled': [value: boolean]
+}>()
+
+const localEnabled = ref(props.notificationEnabled)
+const notifications = ref<NotificationSetting[]>([])
+
+// 초기 데이터 로드
+if (props.notificationSettings) {
+  try {
+    notifications.value = JSON.parse(props.notificationSettings)
+  } catch (e) {
+    console.error('알림 설정 파싱 실패:', e)
+  }
+}
+
+// 기본 알림이 없으면 하나 추가
+if (localEnabled.value && notifications.value.length === 0) {
+  notifications.value.push({ type: 'EMAIL', timing: -30 })
+}
+
+// 알림 추가
+const addNotification = () => {
+  notifications.value.push({
+    type: 'EMAIL',
+    timing: -30
+  })
+}
+
+// 알림 제거
+const removeNotification = (index: number) => {
+  notifications.value.splice(index, 1)
+}
+
+// 알림 포맷팅
+const formatNotification = (notification: NotificationSetting) => {
+  const typeLabels = {
+    EMAIL: '이메일',
+    SMS: '문자',
+    KAKAO: '카카오톡',
+    PUSH: '브라우저'
+  }
+  
+  const type = typeLabels[notification.type]
+  
+  if (notification.timing === 0) {
+    return `${type} - 정시`
+  }
+  
+  const minutes = Math.abs(notification.timing)
+  let timeStr = ''
+  
+  if (minutes >= 1440) {
+    const days = Math.floor(minutes / 1440)
+    timeStr = `${days}일 전`
+  } else if (minutes >= 60) {
+    const hours = Math.floor(minutes / 60)
+    timeStr = `${hours}시간 전`
+  } else {
+    timeStr = `${minutes}분 전`
+  }
+  
+  return `${type} - ${timeStr}`
+}
+
+// 변경 사항 emit
+watch(localEnabled, (value) => {
+  emit('update:notificationEnabled', value)
+  
+  if (value && notifications.value.length === 0) {
+    notifications.value.push({ type: 'EMAIL', timing: -30 })
+  }
+})
+
+watch(notifications, () => {
+  if (!localEnabled.value || notifications.value.length === 0) {
+    emit('update:notificationSettings', null)
+  } else {
+    emit('update:notificationSettings', JSON.stringify(notifications.value))
+  }
+}, { deep: true })
+</script>
+```
+
+#### 5. TODO 생성/수정 모달에 통합
+
+**TodoCreateModal.vue 및 TodoEditModal.vue에 추가:**
+
+```vue
+<template>
+  <div class="modal">
+    <!-- ... 기존 필드들 ... -->
+    
+    <!-- 일정 섹션 -->
+    <div class="mt-6">
+      <h3 class="text-lg font-semibold text-gray-800 mb-3">
+        📅 일정 정보
+      </h3>
+      <DateTimeRangePicker
+        v-model:start-date="form.startDate"
+        v-model:end-date="form.endDate"
+        v-model:is-all-day="form.isAllDay"
+        v-model:location="form.location"
+        v-model:estimated-duration="form.estimatedDuration"
+      />
+    </div>
+    
+    <!-- 반복 설정 섹션 -->
+    <div class="mt-6">
+      <h3 class="text-lg font-semibold text-gray-800 mb-3">
+        🔁 반복 설정
+      </h3>
+      <RecurrenceRuleEditor
+        v-model:recurrence-rule="form.recurrenceRule"
+      />
+    </div>
+    
+    <!-- 알림 설정 섹션 -->
+    <div class="mt-6">
+      <h3 class="text-lg font-semibold text-gray-800 mb-3">
+        🔔 알림 설정
+      </h3>
+      <NotificationSettingsEditor
+        v-model:notification-settings="form.notificationSettings"
+        v-model:notification-enabled="form.notificationEnabled"
+      />
+    </div>
+    
+    <!-- ... 버튼들 ... -->
+  </div>
+</template>
+
+<script setup lang="ts">
+import DateTimeRangePicker from '@/components/DateTimeRangePicker.vue'
+import RecurrenceRuleEditor from '@/components/RecurrenceRuleEditor.vue'
+import NotificationSettingsEditor from '@/components/NotificationSettingsEditor.vue'
+
+// ... 기존 코드 ...
+</script>
+```
+
+#### 6. TODO 상세 페이지에 일정 정보 표시
+
+**TodoDetailView.vue에 추가:**
+
+```vue
+<template>
+  <div class="container mx-auto px-4 py-6">
+    <!-- ... 기존 내용 ... -->
+    
+    <!-- 일정 정보 카드 -->
+    <div v-if="hasScheduleInfo" class="card mt-6">
+      <h3 class="text-lg font-semibold text-gray-800 mb-4">
+        📅 일정 정보
+      </h3>
+      
+      <div class="space-y-3">
+        <!-- 종일 일정 배지 -->
+        <div v-if="todo.isAllDay" class="inline-block">
+          <span class="px-2 py-1 bg-purple-100 text-purple-700 text-xs font-medium rounded">
+            종일 일정
+          </span>
+        </div>
+        
+        <!-- 시작 일시 -->
+        <div v-if="todo.startDate" class="flex items-center gap-2">
+          <span class="text-sm font-medium text-gray-600 w-24">시작:</span>
+          <span class="text-sm text-gray-800">
+            {{ formatDateTime(todo.startDate, todo.isAllDay) }}
+          </span>
+        </div>
+        
+        <!-- 종료 일시 -->
+        <div v-if="todo.endDate" class="flex items-center gap-2">
+          <span class="text-sm font-medium text-gray-600 w-24">종료:</span>
+          <span class="text-sm text-gray-800">
+            {{ formatDateTime(todo.endDate, todo.isAllDay) }}
+          </span>
+        </div>
+        
+        <!-- 예상 소요 시간 -->
+        <div v-if="todo.estimatedDuration" class="flex items-center gap-2">
+          <span class="text-sm font-medium text-gray-600 w-24">소요 시간:</span>
+          <span class="text-sm text-gray-800">
+            {{ formatDuration(todo.estimatedDuration) }}
+          </span>
+        </div>
+        
+        <!-- 장소 -->
+        <div v-if="todo.location" class="flex items-center gap-2">
+          <span class="text-sm font-medium text-gray-600 w-24">장소:</span>
+          <span class="text-sm text-gray-800">{{ todo.location }}</span>
+        </div>
+        
+        <!-- 반복 설정 -->
+        <div v-if="todo.recurrenceRule" class="flex items-center gap-2">
+          <span class="text-sm font-medium text-gray-600 w-24">반복:</span>
+          <span class="text-sm text-gray-800">
+            {{ formatRecurrence(todo.recurrenceRule) }}
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 알림 설정 카드 -->
+    <div v-if="todo.notificationEnabled && todo.notificationSettings" class="card mt-6">
+      <h3 class="text-lg font-semibold text-gray-800 mb-4">
+        🔔 알림 설정
+      </h3>
+      
+      <ul class="space-y-2">
+        <li
+          v-for="(notification, index) in parseNotifications(todo.notificationSettings)"
+          :key="index"
+          class="flex items-center gap-2 text-sm"
+        >
+          <span class="w-2 h-2 bg-blue-500 rounded-full"></span>
+          <span class="text-gray-800">
+            {{ formatNotification(notification) }}
+          </span>
+        </li>
+      </ul>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { format } from 'date-fns'
+import { ko } from 'date-fns/locale'
+
+// ... 기존 코드 ...
+
+const hasScheduleInfo = computed(() => {
+  return todo.value?.startDate || 
+         todo.value?.endDate || 
+         todo.value?.location || 
+         todo.value?.estimatedDuration ||
+         todo.value?.recurrenceRule
+})
+
+const formatDateTime = (dateStr: string, isAllDay?: boolean) => {
+  const date = new Date(dateStr)
+  if (isAllDay) {
+    return format(date, 'yyyy년 M월 d일', { locale: ko })
+  }
+  return format(date, 'yyyy년 M월 d일 HH:mm', { locale: ko })
+}
+
+const formatDuration = (minutes: number) => {
+  const hours = Math.floor(minutes / 60)
+  const mins = minutes % 60
+  
+  if (hours > 0 && mins > 0) {
+    return `${hours}시간 ${mins}분`
+  } else if (hours > 0) {
+    return `${hours}시간`
+  } else {
+    return `${mins}분`
+  }
+}
+
+const formatRecurrence = (ruleJson: string) => {
+  try {
+    const rule = JSON.parse(ruleJson)
+    // 반복 규칙을 읽기 쉬운 형태로 변환
+    // 구현 로직은 RecurrenceRuleEditor의 recurrenceSummary와 유사
+    return '매일 반복'  // 간단한 예시
+  } catch {
+    return '반복 설정'
+  }
+}
+
+const parseNotifications = (settingsJson: string) => {
+  try {
+    return JSON.parse(settingsJson)
+  } catch {
+    return []
+  }
+}
+
+const formatNotification = (notification: any) => {
+  // NotificationSettingsEditor의 formatNotification과 동일한 로직
+  const typeLabels = { EMAIL: '이메일', SMS: '문자', KAKAO: '카카오톡', PUSH: '브라우저' }
+  const type = typeLabels[notification.type as keyof typeof typeLabels]
+  
+  if (notification.timing === 0) return `${type} - 정시`
+  
+  const minutes = Math.abs(notification.timing)
+  let timeStr = ''
+  
+  if (minutes >= 1440) {
+    timeStr = `${Math.floor(minutes / 1440)}일 전`
+  } else if (minutes >= 60) {
+    timeStr = `${Math.floor(minutes / 60)}시간 전`
+  } else {
+    timeStr = `${minutes}분 전`
+  }
+  
+  return `${type} - ${timeStr}`
+}
+</script>
+```
+
+#### 7. 캘린더 뷰 (선택사항)
+
+**CalendarView.vue (신규 생성)**
+
+```vue
+<template>
+  <div class="calendar-view">
+    <div class="calendar-header">
+      <button @click="previousMonth">이전</button>
+      <h2>{{ currentMonthLabel }}</h2>
+      <button @click="nextMonth">다음</button>
+    </div>
+    
+    <div class="calendar-grid">
+      <!-- 요일 헤더 -->
+      <div v-for="day in weekDays" :key="day" class="calendar-day-header">
+        {{ day }}
+      </div>
+      
+      <!-- 날짜 셀 -->
+      <div
+        v-for="date in calendarDates"
+        :key="date.toString()"
+        class="calendar-date-cell"
+        :class="{ 'is-today': isToday(date) }"
+      >
+        <div class="date-number">{{ date.getDate() }}</div>
+        
+        <!-- 해당 날짜의 TODO들 -->
+        <div
+          v-for="todo in getTodosForDate(date)"
+          :key="todo.id"
+          class="calendar-todo-item"
+          @click="openTodoDetail(todo.id)"
+        >
+          <span class="todo-title">{{ todo.title }}</span>
+          <span v-if="todo.startDate" class="todo-time">
+            {{ formatTime(todo.startDate) }}
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+// 캘린더 뷰 구현
+// FullCalendar 또는 v-calendar 라이브러리 사용 추천
+</script>
+```
+
+#### 8. 구현 체크리스트
+
+**Phase 6-1: 기본 일정 입력 (4-5시간)**
+- [ ] DateTimeRangePicker.vue 컴포넌트 생성
+- [ ] 종일 일정 토글 기능
+- [ ] 시작/종료 일시 입력
+- [ ] 예상 소요 시간 입력
+- [ ] 장소 입력
+- [ ] TodoCreateModal/TodoEditModal에 통합
+
+**Phase 6-2: 반복 설정 UI (5-6시간)**
+- [ ] RecurrenceRuleEditor.vue 컴포넌트 생성
+- [ ] 반복 유형 선택 (일간/주간/월간/년간)
+- [ ] 반복 간격 설정
+- [ ] 요일 선택 (주간 반복 시)
+- [ ] 날짜 선택 (월간 반복 시)
+- [ ] 반복 종료 조건 (날짜/횟수)
+- [ ] 반복 요약 표시
+
+**Phase 6-3: 알림 설정 UI (4-5시간)**
+- [ ] NotificationSettingsEditor.vue 컴포넌트 생성
+- [ ] 알림 타입 선택 (이메일/SMS/카카오톡/푸시)
+- [ ] 알림 시간 설정 (분/시간/일 전)
+- [ ] 여러 알림 추가/삭제
+- [ ] 알림 요약 표시
+
+**Phase 6-4: TODO 상세 페이지 확장 (2-3시간)**
+- [ ] 일정 정보 섹션 추가
+- [ ] 알림 설정 섹션 추가
+- [ ] 날짜/시간 포맷팅
+- [ ] 반복 규칙 표시
+
+**Phase 6-5: 캘린더 뷰 (선택, 8-10시간)**
+- [ ] 캘린더 컴포넌트 생성 또는 라이브러리 통합
+- [ ] 월간 뷰 구현
+- [ ] TODO 표시 및 클릭 이벤트
+- [ ] 날짜 네비게이션
+- [ ] 반응형 디자인
+
+**Phase 6-6: 알림 관리 페이지 (선택, 3-4시간)**
+- [ ] 알림 이력 조회
+- [ ] 알림 설정 전역 관리
+- [ ] 알림 테스트 기능
+
+**총 예상 개발 시간: 15-19시간 (캘린더 뷰 제외) 또는 23-29시간 (캘린더 뷰 포함)**
+
+#### 9. 필요한 추가 패키지
+
+```json
+// package.json에 추가할 의존성 (선택사항)
+
+{
+  "dependencies": {
+    // 캘린더 라이브러리 (택1)
+    "v-calendar": "^3.0.0",            // 가볍고 커스터마이징 용이
+    "@fullcalendar/vue3": "^6.1.0",    // 기능이 풍부함
+    
+    // 아이콘 (이미 사용 중일 수 있음)
+    "@heroicons/vue": "^2.0.0"
+  }
+}
+```
+
+#### 10. 참고 문서
+
+- [v-calendar 문서](https://vcalendar.io/)
+- [FullCalendar Vue 문서](https://fullcalendar.io/docs/vue)
+- [date-fns 문서](https://date-fns.org/) (이미 사용 중)
+- [MDN - Input type datetime-local](https://developer.mozilla.org/ko/docs/Web/HTML/Element/input/datetime-local)
+
 ### 📤 Phase 5 예정 - 파일 출력(Export) 기능
 
 **기능 개요:**
