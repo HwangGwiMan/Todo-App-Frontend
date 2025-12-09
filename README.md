@@ -654,7 +654,834 @@ const projectOptions = projectStore.getProjectsForSelect
   - Toast 알림 시스템 연동 (수정/삭제/상태 변경 성공/실패)
   - 데이터 변경 시 자동 새로고침
 
-### 🚧 Phase 4 예정
+### 🏗️ Phase 4 예정 - 아키텍처 및 코드 품질 개선
+
+**기능 개요:**
+코드 유지보수성, 재사용성, 성능을 향상시키기 위한 프론트엔드 리팩토링 및 베스트 프랙티스 적용
+
+#### 우선순위: 높음 (필수)
+
+**1. Composable 패턴으로 로직 재사용 (4-5시간)**
+
+**현재 문제:**
+- Store와 컴포넌트 간 반복 코드
+- 에러 처리, Toast 알림, 로딩 상태 관리가 각 컴포넌트에 중복
+- 비즈니스 로직 재사용이 어려움
+
+**구현 계획:**
+
+```typescript
+// composables/useTodoOperations.ts (신규 생성)
+export function useTodoOperations() {
+  const todoStore = useTodoStore()
+  const toast = useToast()
+  const loading = ref(false)
+  const error = ref<Error | null>(null)
+  
+  const createTodoWithFeedback = async (data: TodoRequest) => {
+    loading.value = true
+    error.value = null
+    
+    try {
+      await todoStore.createTodo(data)
+      toast.success('TODO가 생성되었습니다.')
+      return { success: true, data: null }
+    } catch (e) {
+      error.value = e as Error
+      toast.error('TODO 생성에 실패했습니다.')
+      return { success: false, error: e }
+    } finally {
+      loading.value = false
+    }
+  }
+  
+  const updateTodoWithFeedback = async (id: number, data: TodoRequest) => {
+    loading.value = true
+    error.value = null
+    
+    try {
+      const result = await todoStore.updateTodo(id, data)
+      toast.success('TODO가 수정되었습니다.')
+      return { success: true, data: result }
+    } catch (e) {
+      error.value = e as Error
+      toast.error('TODO 수정에 실패했습니다.')
+      return { success: false, error: e }
+    } finally {
+      loading.value = false
+    }
+  }
+  
+  const deleteTodoWithConfirm = async (id: number) => {
+    if (!confirm('정말 삭제하시겠습니까?')) {
+      return { success: false, cancelled: true }
+    }
+    
+    loading.value = true
+    error.value = null
+    
+    try {
+      await todoStore.deleteTodo(id)
+      toast.success('TODO가 삭제되었습니다.')
+      return { success: true }
+    } catch (e) {
+      error.value = e as Error
+      toast.error('TODO 삭제에 실패했습니다.')
+      return { success: false, error: e }
+    } finally {
+      loading.value = false
+    }
+  }
+  
+  const updateStatusWithFeedback = async (id: number, status: TodoStatus) => {
+    try {
+      await todoStore.updateTodoStatus(id, status)
+      toast.success('상태가 변경되었습니다.')
+      return { success: true }
+    } catch (e) {
+      toast.error('상태 변경에 실패했습니다.')
+      return { success: false, error: e }
+    }
+  }
+  
+  return {
+    loading,
+    error,
+    createTodoWithFeedback,
+    updateTodoWithFeedback,
+    deleteTodoWithConfirm,
+    updateStatusWithFeedback
+  }
+}
+
+// 컴포넌트에서 사용
+const { loading, createTodoWithFeedback } = useTodoOperations()
+
+const handleCreate = async () => {
+  const result = await createTodoWithFeedback(formData.value)
+  if (result.success) {
+    emit('close')
+  }
+}
+```
+
+**추가 Composable 구현:**
+
+```typescript
+// composables/useProjectOperations.ts
+export function useProjectOperations() {
+  // 프로젝트 관련 작업
+}
+
+// composables/useFormValidation.ts
+export function useFormValidation() {
+  const errors = ref<Record<string, string>>({})
+  
+  const validateRequired = (value: string, fieldName: string) => {
+    if (!value || value.trim() === '') {
+      errors.value[fieldName] = `${fieldName}은(는) 필수입니다.`
+      return false
+    }
+    delete errors.value[fieldName]
+    return true
+  }
+  
+  const validateMaxLength = (value: string, max: number, fieldName: string) => {
+    if (value.length > max) {
+      errors.value[fieldName] = `${fieldName}은(는) ${max}자 이하여야 합니다.`
+      return false
+    }
+    delete errors.value[fieldName]
+    return true
+  }
+  
+  const clearErrors = () => {
+    errors.value = {}
+  }
+  
+  return {
+    errors,
+    validateRequired,
+    validateMaxLength,
+    clearErrors
+  }
+}
+
+// composables/useConfirmDialog.ts
+export function useConfirmDialog() {
+  const isOpen = ref(false)
+  const message = ref('')
+  const resolveCallback = ref<((value: boolean) => void) | null>(null)
+  
+  const confirm = (msg: string): Promise<boolean> => {
+    message.value = msg
+    isOpen.value = true
+    
+    return new Promise((resolve) => {
+      resolveCallback.value = resolve
+    })
+  }
+  
+  const handleConfirm = () => {
+    resolveCallback.value?.(true)
+    isOpen.value = false
+  }
+  
+  const handleCancel = () => {
+    resolveCallback.value?.(false)
+    isOpen.value = false
+  }
+  
+  return {
+    isOpen,
+    message,
+    confirm,
+    handleConfirm,
+    handleCancel
+  }
+}
+```
+
+**체크리스트:**
+- [ ] `useTodoOperations` composable 생성
+- [ ] `useProjectOperations` composable 생성
+- [ ] `useFormValidation` composable 생성
+- [ ] `useConfirmDialog` composable 생성
+- [ ] 모든 컴포넌트에서 중복 코드 제거
+- [ ] 테스트 작성
+
+**예상 시간:** 4-5시간
+
+---
+
+**2. 낙관적 업데이트 (Optimistic Update) 구현 (3-4시간)**
+
+**현재 문제:**
+- API 응답을 기다리는 동안 UI가 느리게 느껴짐
+- 네트워크 지연 시 사용자 경험 저하
+
+**구현 계획:**
+
+```typescript
+// stores/todo.ts 개선
+const updateTodoStatus = async (id: number, status: TodoStatus) => {
+  // 1. 원본 데이터 백업
+  const originalTodos = [...todos.value]
+  const index = todos.value.findIndex(t => t.id === id)
+  
+  if (index === -1) return
+  
+  // 2. 낙관적 업데이트: 먼저 UI 업데이트
+  const optimisticTodo = {
+    ...todos.value[index],
+    status: status,
+    updatedAt: new Date().toISOString()
+  }
+  todos.value[index] = optimisticTodo
+  
+  try {
+    // 3. API 호출
+    const response = await updateTodoStatusApi({
+      path: { todoId: id },
+      query: { status },
+      throwOnError: true
+    })
+    
+    // 4. 서버 응답으로 최종 업데이트
+    if (response.data?.data) {
+      todos.value[index] = response.data.data
+    }
+    
+    return { success: true, data: response.data?.data }
+  } catch (error) {
+    // 5. 실패 시 롤백
+    todos.value = originalTodos
+    console.error('상태 변경 실패:', error)
+    throw error
+  }
+}
+
+const updateTodo = async (id: number, data: TodoRequest) => {
+  const originalTodos = [...todos.value]
+  const index = todos.value.findIndex(t => t.id === id)
+  
+  if (index !== -1) {
+    // 낙관적 업데이트
+    todos.value[index] = {
+      ...todos.value[index],
+      ...data,
+      updatedAt: new Date().toISOString()
+    }
+  }
+  
+  try {
+    loading.value = true
+    const response = await updateTodoApi({
+      path: { todoId: id },
+      body: data,
+      throwOnError: true
+    })
+    
+    // 서버 응답으로 최종 업데이트
+    if (response.data?.data && index !== -1) {
+      todos.value[index] = response.data.data
+    }
+    
+    return response.data?.data
+  } catch (error) {
+    // 롤백
+    todos.value = originalTodos
+    console.error('TODO 수정 실패:', error)
+    throw error
+  } finally {
+    loading.value = false
+  }
+}
+```
+
+**구현 원칙:**
+1. 먼저 UI 업데이트 (즉각 반응)
+2. 백그라운드에서 API 호출
+3. 성공 시: 서버 데이터로 최종 동기화
+4. 실패 시: 원본 상태로 롤백 + 에러 메시지
+
+**체크리스트:**
+- [ ] `updateTodoStatus`에 낙관적 업데이트 적용
+- [ ] `updateTodo`에 낙관적 업데이트 적용
+- [ ] `deleteTodo`에 낙관적 업데이트 적용 (선택)
+- [ ] 롤백 로직 테스트
+- [ ] 네트워크 지연 시뮬레이션 테스트
+
+**예상 시간:** 3-4시간
+
+---
+
+**3. 에러 처리 표준화 및 개선 (2-3시간)**
+
+**구현 계획:**
+
+```typescript
+// utils/errorHandler.ts 개선
+import type { AxiosError } from 'axios'
+
+export interface ParsedError {
+  message: string
+  status: number
+  statusText: string
+  code?: string
+  field?: string
+}
+
+export function parseApiError(error: unknown): ParsedError {
+  if (isAxiosError(error)) {
+    const response = error.response
+    const errorData = response?.data
+    
+    // 백엔드 ErrorCode 처리
+    if (errorData && typeof errorData === 'object' && 'message' in errorData) {
+      const apiResponse = errorData as { 
+        message?: string
+        code?: string
+        field?: string
+      }
+      
+      return {
+        message: apiResponse.message || '요청 처리 중 오류가 발생했습니다.',
+        status: response?.status || 0,
+        statusText: response?.statusText || 'Unknown Error',
+        code: apiResponse.code,
+        field: apiResponse.field
+      }
+    }
+    
+    // HTTP 상태 코드별 기본 메시지
+    return getDefaultErrorMessage(response?.status || 0)
+  }
+  
+  // 네트워크 오류
+  if (error instanceof Error && error.message === 'Network Error') {
+    return {
+      message: '네트워크 연결을 확인해주세요.',
+      status: 0,
+      statusText: 'Network Error'
+    }
+  }
+  
+  // 기타 오류
+  return {
+    message: '알 수 없는 오류가 발생했습니다.',
+    status: 0,
+    statusText: 'Unknown Error'
+  }
+}
+
+function getDefaultErrorMessage(status: number): ParsedError {
+  const messages: Record<number, string> = {
+    400: '잘못된 요청입니다.',
+    401: '로그인이 필요합니다.',
+    403: '권한이 없습니다.',
+    404: '요청한 리소스를 찾을 수 없습니다.',
+    409: '이미 존재하는 데이터입니다.',
+    422: '입력 데이터를 확인해주세요.',
+    429: '요청이 너무 많습니다. 잠시 후 다시 시도해주세요.',
+    500: '서버 오류가 발생했습니다.',
+    502: '서버가 응답하지 않습니다.',
+    503: '서비스를 사용할 수 없습니다.'
+  }
+  
+  return {
+    message: messages[status] || '오류가 발생했습니다.',
+    status,
+    statusText: `HTTP ${status}`
+  }
+}
+
+function isAxiosError(error: unknown): error is AxiosError {
+  return (error as AxiosError).isAxiosError === true
+}
+```
+
+**체크리스트:**
+- [ ] `parseApiError` 개선
+- [ ] HTTP 상태 코드별 메시지 정의
+- [ ] 백엔드 ErrorCode 매핑
+- [ ] 모든 Store에서 에러 처리 표준화
+- [ ] 에러 로깅 추가 (Sentry 준비)
+
+**예상 시간:** 2-3시간
+
+#### 우선순위: 중간
+
+**4. Store 상태 관리 최적화 (3-4시간)**
+
+**구현 계획:**
+
+```typescript
+// stores/todo.ts 개선
+export const useTodoStore = defineStore('todo', () => {
+  // State를 Map으로 관리 (O(1) 조회)
+  const todosMap = ref<Map<number, TodoResponse>>(new Map())
+  const todoIds = ref<number[]>([])
+  
+  // Computed
+  const todos = computed(() => 
+    todoIds.value.map(id => todosMap.value.get(id)!).filter(Boolean)
+  )
+  
+  const getTodoById = (id: number) => todosMap.value.get(id)
+  
+  // Actions
+  const fetchTodos = async (params?: TodoSearchRequest) => {
+    // ... API 호출
+    
+    // Map과 배열 동시 업데이트
+    todosMap.value.clear()
+    todoIds.value = []
+    
+    pageData.content?.forEach(todo => {
+      if (todo.id) {
+        todosMap.value.set(todo.id, todo)
+        todoIds.value.push(todo.id)
+      }
+    })
+  }
+  
+  const updateTodoInStore = (todo: TodoResponse) => {
+    if (todo.id) {
+      todosMap.value.set(todo.id, todo)
+      
+      // 배열에 없으면 추가
+      if (!todoIds.value.includes(todo.id)) {
+        todoIds.value.push(todo.id)
+      }
+    }
+  }
+  
+  const removeTodoFromStore = (id: number) => {
+    todosMap.value.delete(id)
+    const index = todoIds.value.indexOf(id)
+    if (index > -1) {
+      todoIds.value.splice(index, 1)
+    }
+  }
+  
+  return {
+    todos,
+    getTodoById,
+    fetchTodos,
+    updateTodoInStore,
+    removeTodoFromStore
+  }
+})
+```
+
+**장점:**
+- 개별 TODO 조회 성능 향상 (O(n) → O(1))
+- 부분 업데이트 효율성 증가
+- 메모리 사용 최적화
+
+**체크리스트:**
+- [ ] Todo Store Map 구조로 리팩토링
+- [ ] Project Store 최적화
+- [ ] 불필요한 상태 제거
+- [ ] Computed 속성 최적화
+- [ ] 성능 테스트
+
+**예상 시간:** 3-4시간
+
+---
+
+**5. 컴포넌트 분리 및 재사용성 향상 (4-5시간)**
+
+**구현 계획:**
+
+```typescript
+// components/common/ConfirmDialog.vue (신규)
+<template>
+  <Teleport to="body">
+    <div v-if="isOpen" @click="onCancel" 
+         class="fixed inset-0 z-50 flex items-center justify-center 
+                bg-black bg-opacity-50">
+      <div @click.stop class="bg-white rounded-lg shadow-xl p-6 max-w-md w-full">
+        <h3 class="text-lg font-semibold mb-4">{{ title }}</h3>
+        <p class="text-gray-600 mb-6">{{ message }}</p>
+        
+        <div class="flex justify-end gap-3">
+          <button @click="onCancel" class="btn-secondary">취소</button>
+          <button @click="onConfirm" class="btn-primary">확인</button>
+        </div>
+      </div>
+    </div>
+  </Teleport>
+</template>
+
+// components/common/EmptyState.vue (신규)
+<template>
+  <div class="flex flex-col items-center justify-center py-12">
+    <div class="text-6xl mb-4">{{ icon }}</div>
+    <h3 class="text-xl font-semibold text-gray-700 mb-2">{{ title }}</h3>
+    <p class="text-gray-500 mb-6">{{ message }}</p>
+    <slot name="action"></slot>
+  </div>
+</template>
+
+// components/common/LoadingOverlay.vue (신규)
+<template>
+  <div v-if="isLoading" 
+       class="fixed inset-0 z-40 flex items-center justify-center 
+              bg-white bg-opacity-75">
+    <LoadingSpinner :size="size" />
+  </div>
+</template>
+```
+
+**체크리스트:**
+- [ ] `ConfirmDialog` 공통 컴포넌트 생성
+- [ ] `EmptyState` 컴포넌트 생성
+- [ ] `LoadingOverlay` 컴포넌트 생성
+- [ ] `ErrorBoundary` 컴포넌트 생성 (선택)
+- [ ] 모든 페이지에서 공통 컴포넌트 사용
+- [ ] 중복 코드 제거
+
+**예상 시간:** 4-5시간
+
+---
+
+**6. TypeScript 타입 안전성 강화 (2-3시간)**
+
+**구현 계획:**
+
+```typescript
+// types/index.ts 개선
+
+// API 응답 래퍼 타입
+export interface ApiResponse<T> {
+  success: boolean
+  message: string
+  data: T | null
+}
+
+// 페이지네이션 타입
+export interface PageResponse<T> {
+  content: T[]
+  totalPages: number
+  totalElements: number
+  size: number
+  number: number
+  first: boolean
+  last: boolean
+}
+
+// 작업 결과 타입
+export interface OperationResult<T = void> {
+  success: boolean
+  data?: T
+  error?: Error
+  cancelled?: boolean
+}
+
+// Form 상태 타입
+export interface FormState<T> {
+  data: T
+  errors: Partial<Record<keyof T, string>>
+  touched: Partial<Record<keyof T, boolean>>
+  isValid: boolean
+  isDirty: boolean
+}
+
+// 사용 예시
+const createTodo = async (
+  data: TodoRequest
+): Promise<OperationResult<TodoResponse>> => {
+  try {
+    const result = await todoStore.createTodo(data)
+    return { success: true, data: result }
+  } catch (error) {
+    return { success: false, error: error as Error }
+  }
+}
+```
+
+**체크리스트:**
+- [ ] 공통 타입 정의
+- [ ] Store의 모든 메서드 반환 타입 명시
+- [ ] Composable 타입 정의
+- [ ] `any` 타입 제거
+- [ ] 타입 가드 함수 작성
+
+**예상 시간:** 2-3시간
+
+#### 우선순위: 낮음 (선택)
+
+**7. 성능 모니터링 및 최적화 (3-4시간)**
+
+**구현 계획:**
+
+```typescript
+// utils/performance.ts (신규)
+export function measurePerformance(name: string) {
+  const startMark = `${name}-start`
+  const endMark = `${name}-end`
+  const measureName = `${name}-measure`
+  
+  performance.mark(startMark)
+  
+  return {
+    end: () => {
+      performance.mark(endMark)
+      performance.measure(measureName, startMark, endMark)
+      
+      const measure = performance.getEntriesByName(measureName)[0]
+      console.log(`⏱️ ${name}: ${measure.duration.toFixed(2)}ms`)
+      
+      // 성능 임계값 경고
+      if (measure.duration > 1000) {
+        console.warn(`⚠️ ${name} took ${measure.duration.toFixed(2)}ms`)
+      }
+      
+      return measure.duration
+    }
+  }
+}
+
+// 사용 예시
+const fetchTodos = async () => {
+  const perf = measurePerformance('fetchTodos')
+  
+  try {
+    // ... API 호출
+  } finally {
+    perf.end()
+  }
+}
+
+// Vue 컴포넌트 렌더링 성능 측정
+import { onMounted, onUpdated } from 'vue'
+
+export function useRenderPerformance(componentName: string) {
+  let renderCount = 0
+  
+  onMounted(() => {
+    console.log(`✅ ${componentName} mounted`)
+  })
+  
+  onUpdated(() => {
+    renderCount++
+    console.log(`🔄 ${componentName} updated (${renderCount})`)
+  })
+}
+```
+
+**체크리스트:**
+- [ ] 성능 측정 유틸리티 작성
+- [ ] 주요 API 호출 성능 모니터링
+- [ ] 컴포넌트 렌더링 최적화
+- [ ] 불필요한 re-render 제거
+- [ ] 큰 리스트 가상화 (선택)
+
+**예상 시간:** 3-4시간
+
+---
+
+**8. 테스트 코드 작성 (8-10시간)**
+
+**구현 계획:**
+
+```typescript
+// vitest.config.ts
+import { defineConfig } from 'vitest/config'
+import vue from '@vitejs/plugin-vue'
+
+export default defineConfig({
+  plugins: [vue()],
+  test: {
+    globals: true,
+    environment: 'jsdom'
+  }
+})
+
+// stores/__tests__/todo.spec.ts
+import { setActivePinia, createPinia } from 'pinia'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { useTodoStore } from '../todo'
+import * as api from '@/client'
+
+vi.mock('@/client')
+
+describe('Todo Store', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+  })
+  
+  it('should fetch todos successfully', async () => {
+    const mockTodos = [
+      { id: 1, title: 'Test Todo', status: 'TODO' }
+    ]
+    
+    vi.mocked(api.getTodos).mockResolvedValue({
+      data: {
+        success: true,
+        data: {
+          content: mockTodos,
+          totalPages: 1,
+          totalElements: 1,
+          number: 0
+        }
+      }
+    })
+    
+    const store = useTodoStore()
+    await store.fetchTodos()
+    
+    expect(store.todos).toHaveLength(1)
+    expect(store.todos[0].title).toBe('Test Todo')
+  })
+  
+  it('should handle create todo error', async () => {
+    vi.mocked(api.createTodo).mockRejectedValue(new Error('API Error'))
+    
+    const store = useTodoStore()
+    
+    await expect(store.createTodo({
+      title: 'New Todo'
+    })).rejects.toThrow('API Error')
+  })
+})
+
+// composables/__tests__/useTodoOperations.spec.ts
+describe('useTodoOperations', () => {
+  it('should create todo with feedback', async () => {
+    // 테스트 구현
+  })
+})
+```
+
+**체크리스트:**
+- [ ] Vitest 설정
+- [ ] Store 단위 테스트
+- [ ] Composable 테스트
+- [ ] 컴포넌트 테스트 (선택)
+- [ ] 테스트 커버리지 목표: 60% 이상
+
+**예상 시간:** 8-10시간
+
+---
+
+**9. 접근성 (a11y) 개선 (3-4시간)**
+
+```vue
+<!-- 개선 예시 -->
+<template>
+  <!-- 의미있는 HTML 태그 사용 -->
+  <main role="main" aria-label="TODO 목록">
+    <h1 class="sr-only">할 일 관리</h1>
+    
+    <!-- 키보드 네비게이션 -->
+    <button
+      @click="handleCreate"
+      @keydown.enter="handleCreate"
+      aria-label="새 TODO 만들기"
+      class="btn-primary"
+    >
+      <span aria-hidden="true">+</span>
+      <span>새 TODO</span>
+    </button>
+    
+    <!-- ARIA 속성 -->
+    <div
+      role="alert"
+      aria-live="polite"
+      v-if="errorMessage"
+    >
+      {{ errorMessage }}
+    </div>
+    
+    <!-- 포커스 관리 -->
+    <input
+      ref="titleInput"
+      v-model="title"
+      aria-required="true"
+      aria-describedby="title-error"
+    />
+    <span id="title-error" role="alert">
+      {{ titleError }}
+    </span>
+  </main>
+</template>
+```
+
+**체크리스트:**
+- [ ] 시맨틱 HTML 사용
+- [ ] ARIA 속성 추가
+- [ ] 키보드 네비게이션 지원
+- [ ] 포커스 관리
+- [ ] 스크린 리더 테스트
+- [ ] WCAG 2.1 AA 준수
+
+**예상 시간:** 3-4시간
+
+#### 총 예상 개발 시간
+
+**우선순위 높음 (필수):** 9-12시간
+- Composable 패턴: 4-5시간
+- 낙관적 업데이트: 3-4시간
+- 에러 처리 개선: 2-3시간
+
+**우선순위 중간 (권장):** 9-12시간
+- Store 최적화: 3-4시간
+- 컴포넌트 분리: 4-5시간
+- TypeScript 강화: 2-3시간
+
+**우선순위 낮음 (선택):** 14-18시간
+- 성능 모니터링: 3-4시간
+- 테스트 코드: 8-10시간
+- 접근성 개선: 3-4시간
+
+**총합:** 32-42시간
+
+---
+
+### 🚧 Phase 5 예정
 
 **다음 단계 구현 예정:**
 - [ ] **고급 TODO 기능**
@@ -679,7 +1506,7 @@ const projectOptions = projectStore.getProjectsForSelect
   - 반복 작업
   - 브라우저 알림 (Notification API)
 
-### 📅 Phase 6 예정 - TODO 일정 관리 및 알림 기능 UI
+### 📅 Phase 7 예정 - TODO 일정 관리 및 알림 기능 UI
 
 **기능 개요:**
 TODO 일정 관리 필드를 입력/수정할 수 있는 UI와 알림 설정 인터페이스를 구현합니다.
@@ -1702,7 +2529,7 @@ const formatNotification = (notification: any) => {
 - [date-fns 문서](https://date-fns.org/) (이미 사용 중)
 - [MDN - Input type datetime-local](https://developer.mozilla.org/ko/docs/Web/HTML/Element/input/datetime-local)
 
-### 📤 Phase 5 예정 - 파일 출력(Export) 기능
+### 📤 Phase 6 예정 - 파일 출력(Export) 기능
 
 **기능 개요:**
 TODO 및 프로젝트 데이터를 다양한 파일 형식으로 내보내기할 수 있는 기능 추가
