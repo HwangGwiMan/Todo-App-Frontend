@@ -9,8 +9,8 @@
           {{ todo.title }}
         </h3>
         <p
-          v-if="todo.description"
-          class="text-sm text-gray-600 line-clamp-2"
+          class="text-sm text-gray-600 line-clamp-2 overflow-hidden"
+          style="height: 2.5rem; word-break: break-word;"
         >
           {{ todo.description }}
         </p>

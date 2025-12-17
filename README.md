@@ -8,9 +8,9 @@ Vue 3 + TypeScript + Tailwind CSS로 구축된 TodoApp 프론트엔드입니다.
 
 ## 📊 현재 개발 상태
 
-- ✅ **Phase 1 완료**: TODO CRUD, 인증, 필터/정렬/검색, 페이지네이션, 통계 대시보드
-- ✅ **Phase 2 완료**: 프로젝트 관리, 프로젝트-TODO 통합, 프로젝트 필터링
-- 🚧 **Phase 3 진행 중**: TODO 상세 페이지 구현 필요 (현재 플레이스홀더만 존재)
+- ✅ **Phase 1 완료** (2025년 11월): TODO CRUD, 인증, 필터/정렬/검색, 페이지네이션, 통계 대시보드
+- ✅ **Phase 2 완료** (2025년 11월): 프로젝트 관리, 프로젝트-TODO 통합, 프로젝트 필터링
+- ✅ **Phase 3 완료** (2025년 12월): TODO 상세 페이지 완전 구현 (상세 정보, 날짜 관리, 상태 변경, 수정/삭제)
 
 ## 🚀 시작하기
 
@@ -617,15 +617,871 @@ const projectOptions = projectStore.getProjectsForSelect
   - 프로젝트 선택 및 필터링 UI
   - 프로젝트별 TODO 그룹화
 
-### 🚧 Phase 3 진행 중 / 예정
+### ✅ Phase 3 완료 (2025년 12월)
 
-**현재 상태:**
-- [x] 라우트 설정 완료 (`/todos/:id`)
-- [ ] **TODO 상세 페이지 (`TodoDetailView.vue`)** - 미구현
-  - 현재 플레이스홀더만 존재
-  - 상세 정보 표시 필요
-  - 댓글 기능 (선택사항)
-  - 히스토리 표시 (선택사항)
+**구현 완료된 기능:**
+
+- [x] **TODO 상세 페이지** (`TodoDetailView.vue`) - 완전 구현 완료 ✅
+  
+  **상세 정보 표시:**
+  - 제목 및 설명 (여러 줄 지원, `whitespace-pre-wrap`)
+  - 상태 배지 (할 일/진행중/완료) 및 우선순위 배지 (높음/보통/낮음)
+  - 프로젝트 정보 (프로젝트 이름 및 색상 배지)
+  - 라우트 설정 완료 (`/todos/:id`)
+  
+  **날짜 정보 관리:**
+  - 생성일, 수정일 자동 표시
+  - 마감일 표시 및 **마감일 지남 경고** (⚠️ 빨간색 경고 문구)
+  - 완료일 표시 (완료 상태인 경우만)
+  - date-fns를 사용한 한국어 날짜 포맷팅 (`yyyy년 M월 d일 HH:mm`)
+  
+  **인터랙티브 기능:**
+  - 수정 버튼 (TodoEditModal 열기 및 연동)
+  - 삭제 버튼 (확인 다이얼로그 → 삭제 → 목록으로 자동 이동)
+  - 상태 변경 버튼 (할 일 ↔ 진행중 ↔ 완료) - 현재 상태에 따라 동적 표시
+  - 목록으로 돌아가기 버튼
+  
+  **UX/UI 개선:**
+  - 로딩 스피너 (데이터 로드 중)
+  - 에러 상태 처리 (TODO 없음, 로드 실패 등)
+  - 반응형 디자인 (모바일/태블릿/데스크톱)
+  - 버튼 비활성화 상태 (업데이트 중 중복 클릭 방지)
+  - 깔끔한 카드 레이아웃 및 색상 코딩
+  
+  **기존 시스템 통합:**
+  - TodoCard 클릭 시 상세 페이지 자동 이동
+  - 프로젝트 Store 연동 (프로젝트 정보 자동 로드)
+  - Toast 알림 시스템 연동 (수정/삭제/상태 변경 성공/실패)
+  - 데이터 변경 시 자동 새로고침
+
+### 🏗️ Phase 4 예정 - 아키텍처 및 코드 품질 개선
+
+**기능 개요:**
+코드 유지보수성, 재사용성, 성능을 향상시키기 위한 프론트엔드 리팩토링 및 베스트 프랙티스 적용
+
+#### 우선순위: 높음 (필수)
+
+**1. Composable 패턴으로 로직 재사용 (4-5시간)**
+
+**현재 문제:**
+- Store와 컴포넌트 간 반복 코드
+- 에러 처리, Toast 알림, 로딩 상태 관리가 각 컴포넌트에 중복
+- 비즈니스 로직 재사용이 어려움
+
+**구현 계획:**
+
+```typescript
+// composables/useTodoOperations.ts (신규 생성)
+export function useTodoOperations() {
+  const todoStore = useTodoStore()
+  const toast = useToast()
+  const loading = ref(false)
+  const error = ref<Error | null>(null)
+  
+  const createTodoWithFeedback = async (data: TodoRequest) => {
+    loading.value = true
+    error.value = null
+    
+    try {
+      await todoStore.createTodo(data)
+      toast.success('TODO가 생성되었습니다.')
+      return { success: true, data: null }
+    } catch (e) {
+      error.value = e as Error
+      toast.error('TODO 생성에 실패했습니다.')
+      return { success: false, error: e }
+    } finally {
+      loading.value = false
+    }
+  }
+  
+  const updateTodoWithFeedback = async (id: number, data: TodoRequest) => {
+    loading.value = true
+    error.value = null
+    
+    try {
+      const result = await todoStore.updateTodo(id, data)
+      toast.success('TODO가 수정되었습니다.')
+      return { success: true, data: result }
+    } catch (e) {
+      error.value = e as Error
+      toast.error('TODO 수정에 실패했습니다.')
+      return { success: false, error: e }
+    } finally {
+      loading.value = false
+    }
+  }
+  
+  const deleteTodoWithConfirm = async (id: number) => {
+    if (!confirm('정말 삭제하시겠습니까?')) {
+      return { success: false, cancelled: true }
+    }
+    
+    loading.value = true
+    error.value = null
+    
+    try {
+      await todoStore.deleteTodo(id)
+      toast.success('TODO가 삭제되었습니다.')
+      return { success: true }
+    } catch (e) {
+      error.value = e as Error
+      toast.error('TODO 삭제에 실패했습니다.')
+      return { success: false, error: e }
+    } finally {
+      loading.value = false
+    }
+  }
+  
+  const updateStatusWithFeedback = async (id: number, status: TodoStatus) => {
+    try {
+      await todoStore.updateTodoStatus(id, status)
+      toast.success('상태가 변경되었습니다.')
+      return { success: true }
+    } catch (e) {
+      toast.error('상태 변경에 실패했습니다.')
+      return { success: false, error: e }
+    }
+  }
+  
+  return {
+    loading,
+    error,
+    createTodoWithFeedback,
+    updateTodoWithFeedback,
+    deleteTodoWithConfirm,
+    updateStatusWithFeedback
+  }
+}
+
+// 컴포넌트에서 사용
+const { loading, createTodoWithFeedback } = useTodoOperations()
+
+const handleCreate = async () => {
+  const result = await createTodoWithFeedback(formData.value)
+  if (result.success) {
+    emit('close')
+  }
+}
+```
+
+**추가 Composable 구현:**
+
+```typescript
+// composables/useProjectOperations.ts
+export function useProjectOperations() {
+  // 프로젝트 관련 작업
+}
+
+// composables/useFormValidation.ts
+export function useFormValidation() {
+  const errors = ref<Record<string, string>>({})
+  
+  const validateRequired = (value: string, fieldName: string) => {
+    if (!value || value.trim() === '') {
+      errors.value[fieldName] = `${fieldName}은(는) 필수입니다.`
+      return false
+    }
+    delete errors.value[fieldName]
+    return true
+  }
+  
+  const validateMaxLength = (value: string, max: number, fieldName: string) => {
+    if (value.length > max) {
+      errors.value[fieldName] = `${fieldName}은(는) ${max}자 이하여야 합니다.`
+      return false
+    }
+    delete errors.value[fieldName]
+    return true
+  }
+  
+  const clearErrors = () => {
+    errors.value = {}
+  }
+  
+  return {
+    errors,
+    validateRequired,
+    validateMaxLength,
+    clearErrors
+  }
+}
+
+// composables/useConfirmDialog.ts
+export function useConfirmDialog() {
+  const isOpen = ref(false)
+  const message = ref('')
+  const resolveCallback = ref<((value: boolean) => void) | null>(null)
+  
+  const confirm = (msg: string): Promise<boolean> => {
+    message.value = msg
+    isOpen.value = true
+    
+    return new Promise((resolve) => {
+      resolveCallback.value = resolve
+    })
+  }
+  
+  const handleConfirm = () => {
+    resolveCallback.value?.(true)
+    isOpen.value = false
+  }
+  
+  const handleCancel = () => {
+    resolveCallback.value?.(false)
+    isOpen.value = false
+  }
+  
+  return {
+    isOpen,
+    message,
+    confirm,
+    handleConfirm,
+    handleCancel
+  }
+}
+```
+
+**체크리스트:**
+- [ ] `useTodoOperations` composable 생성
+- [ ] `useProjectOperations` composable 생성
+- [ ] `useFormValidation` composable 생성
+- [ ] `useConfirmDialog` composable 생성
+- [ ] 모든 컴포넌트에서 중복 코드 제거
+- [ ] 테스트 작성
+
+**예상 시간:** 4-5시간
+
+---
+
+**2. 낙관적 업데이트 (Optimistic Update) 구현 (3-4시간)**
+
+**현재 문제:**
+- API 응답을 기다리는 동안 UI가 느리게 느껴짐
+- 네트워크 지연 시 사용자 경험 저하
+
+**구현 계획:**
+
+```typescript
+// stores/todo.ts 개선
+const updateTodoStatus = async (id: number, status: TodoStatus) => {
+  // 1. 원본 데이터 백업
+  const originalTodos = [...todos.value]
+  const index = todos.value.findIndex(t => t.id === id)
+  
+  if (index === -1) return
+  
+  // 2. 낙관적 업데이트: 먼저 UI 업데이트
+  const optimisticTodo = {
+    ...todos.value[index],
+    status: status,
+    updatedAt: new Date().toISOString()
+  }
+  todos.value[index] = optimisticTodo
+  
+  try {
+    // 3. API 호출
+    const response = await updateTodoStatusApi({
+      path: { todoId: id },
+      query: { status },
+      throwOnError: true
+    })
+    
+    // 4. 서버 응답으로 최종 업데이트
+    if (response.data?.data) {
+      todos.value[index] = response.data.data
+    }
+    
+    return { success: true, data: response.data?.data }
+  } catch (error) {
+    // 5. 실패 시 롤백
+    todos.value = originalTodos
+    console.error('상태 변경 실패:', error)
+    throw error
+  }
+}
+
+const updateTodo = async (id: number, data: TodoRequest) => {
+  const originalTodos = [...todos.value]
+  const index = todos.value.findIndex(t => t.id === id)
+  
+  if (index !== -1) {
+    // 낙관적 업데이트
+    todos.value[index] = {
+      ...todos.value[index],
+      ...data,
+      updatedAt: new Date().toISOString()
+    }
+  }
+  
+  try {
+    loading.value = true
+    const response = await updateTodoApi({
+      path: { todoId: id },
+      body: data,
+      throwOnError: true
+    })
+    
+    // 서버 응답으로 최종 업데이트
+    if (response.data?.data && index !== -1) {
+      todos.value[index] = response.data.data
+    }
+    
+    return response.data?.data
+  } catch (error) {
+    // 롤백
+    todos.value = originalTodos
+    console.error('TODO 수정 실패:', error)
+    throw error
+  } finally {
+    loading.value = false
+  }
+}
+```
+
+**구현 원칙:**
+1. 먼저 UI 업데이트 (즉각 반응)
+2. 백그라운드에서 API 호출
+3. 성공 시: 서버 데이터로 최종 동기화
+4. 실패 시: 원본 상태로 롤백 + 에러 메시지
+
+**체크리스트:**
+- [ ] `updateTodoStatus`에 낙관적 업데이트 적용
+- [ ] `updateTodo`에 낙관적 업데이트 적용
+- [ ] `deleteTodo`에 낙관적 업데이트 적용 (선택)
+- [ ] 롤백 로직 테스트
+- [ ] 네트워크 지연 시뮬레이션 테스트
+
+**예상 시간:** 3-4시간
+
+---
+
+**3. 에러 처리 표준화 및 개선 (2-3시간)**
+
+**구현 계획:**
+
+```typescript
+// utils/errorHandler.ts 개선
+import type { AxiosError } from 'axios'
+
+export interface ParsedError {
+  message: string
+  status: number
+  statusText: string
+  code?: string
+  field?: string
+}
+
+export function parseApiError(error: unknown): ParsedError {
+  if (isAxiosError(error)) {
+    const response = error.response
+    const errorData = response?.data
+    
+    // 백엔드 ErrorCode 처리
+    if (errorData && typeof errorData === 'object' && 'message' in errorData) {
+      const apiResponse = errorData as { 
+        message?: string
+        code?: string
+        field?: string
+      }
+      
+      return {
+        message: apiResponse.message || '요청 처리 중 오류가 발생했습니다.',
+        status: response?.status || 0,
+        statusText: response?.statusText || 'Unknown Error',
+        code: apiResponse.code,
+        field: apiResponse.field
+      }
+    }
+    
+    // HTTP 상태 코드별 기본 메시지
+    return getDefaultErrorMessage(response?.status || 0)
+  }
+  
+  // 네트워크 오류
+  if (error instanceof Error && error.message === 'Network Error') {
+    return {
+      message: '네트워크 연결을 확인해주세요.',
+      status: 0,
+      statusText: 'Network Error'
+    }
+  }
+  
+  // 기타 오류
+  return {
+    message: '알 수 없는 오류가 발생했습니다.',
+    status: 0,
+    statusText: 'Unknown Error'
+  }
+}
+
+function getDefaultErrorMessage(status: number): ParsedError {
+  const messages: Record<number, string> = {
+    400: '잘못된 요청입니다.',
+    401: '로그인이 필요합니다.',
+    403: '권한이 없습니다.',
+    404: '요청한 리소스를 찾을 수 없습니다.',
+    409: '이미 존재하는 데이터입니다.',
+    422: '입력 데이터를 확인해주세요.',
+    429: '요청이 너무 많습니다. 잠시 후 다시 시도해주세요.',
+    500: '서버 오류가 발생했습니다.',
+    502: '서버가 응답하지 않습니다.',
+    503: '서비스를 사용할 수 없습니다.'
+  }
+  
+  return {
+    message: messages[status] || '오류가 발생했습니다.',
+    status,
+    statusText: `HTTP ${status}`
+  }
+}
+
+function isAxiosError(error: unknown): error is AxiosError {
+  return (error as AxiosError).isAxiosError === true
+}
+```
+
+**체크리스트:**
+- [ ] `parseApiError` 개선
+- [ ] HTTP 상태 코드별 메시지 정의
+- [ ] 백엔드 ErrorCode 매핑
+- [ ] 모든 Store에서 에러 처리 표준화
+- [ ] 에러 로깅 추가 (Sentry 준비)
+
+**예상 시간:** 2-3시간
+
+#### 우선순위: 중간
+
+**4. Store 상태 관리 최적화 (3-4시간)**
+
+**구현 계획:**
+
+```typescript
+// stores/todo.ts 개선
+export const useTodoStore = defineStore('todo', () => {
+  // State를 Map으로 관리 (O(1) 조회)
+  const todosMap = ref<Map<number, TodoResponse>>(new Map())
+  const todoIds = ref<number[]>([])
+  
+  // Computed
+  const todos = computed(() => 
+    todoIds.value.map(id => todosMap.value.get(id)!).filter(Boolean)
+  )
+  
+  const getTodoById = (id: number) => todosMap.value.get(id)
+  
+  // Actions
+  const fetchTodos = async (params?: TodoSearchRequest) => {
+    // ... API 호출
+    
+    // Map과 배열 동시 업데이트
+    todosMap.value.clear()
+    todoIds.value = []
+    
+    pageData.content?.forEach(todo => {
+      if (todo.id) {
+        todosMap.value.set(todo.id, todo)
+        todoIds.value.push(todo.id)
+      }
+    })
+  }
+  
+  const updateTodoInStore = (todo: TodoResponse) => {
+    if (todo.id) {
+      todosMap.value.set(todo.id, todo)
+      
+      // 배열에 없으면 추가
+      if (!todoIds.value.includes(todo.id)) {
+        todoIds.value.push(todo.id)
+      }
+    }
+  }
+  
+  const removeTodoFromStore = (id: number) => {
+    todosMap.value.delete(id)
+    const index = todoIds.value.indexOf(id)
+    if (index > -1) {
+      todoIds.value.splice(index, 1)
+    }
+  }
+  
+  return {
+    todos,
+    getTodoById,
+    fetchTodos,
+    updateTodoInStore,
+    removeTodoFromStore
+  }
+})
+```
+
+**장점:**
+- 개별 TODO 조회 성능 향상 (O(n) → O(1))
+- 부분 업데이트 효율성 증가
+- 메모리 사용 최적화
+
+**체크리스트:**
+- [ ] Todo Store Map 구조로 리팩토링
+- [ ] Project Store 최적화
+- [ ] 불필요한 상태 제거
+- [ ] Computed 속성 최적화
+- [ ] 성능 테스트
+
+**예상 시간:** 3-4시간
+
+---
+
+**5. 컴포넌트 분리 및 재사용성 향상 (4-5시간)**
+
+**구현 계획:**
+
+```typescript
+// components/common/ConfirmDialog.vue (신규)
+<template>
+  <Teleport to="body">
+    <div v-if="isOpen" @click="onCancel" 
+         class="fixed inset-0 z-50 flex items-center justify-center 
+                bg-black bg-opacity-50">
+      <div @click.stop class="bg-white rounded-lg shadow-xl p-6 max-w-md w-full">
+        <h3 class="text-lg font-semibold mb-4">{{ title }}</h3>
+        <p class="text-gray-600 mb-6">{{ message }}</p>
+        
+        <div class="flex justify-end gap-3">
+          <button @click="onCancel" class="btn-secondary">취소</button>
+          <button @click="onConfirm" class="btn-primary">확인</button>
+        </div>
+      </div>
+    </div>
+  </Teleport>
+</template>
+
+// components/common/EmptyState.vue (신규)
+<template>
+  <div class="flex flex-col items-center justify-center py-12">
+    <div class="text-6xl mb-4">{{ icon }}</div>
+    <h3 class="text-xl font-semibold text-gray-700 mb-2">{{ title }}</h3>
+    <p class="text-gray-500 mb-6">{{ message }}</p>
+    <slot name="action"></slot>
+  </div>
+</template>
+
+// components/common/LoadingOverlay.vue (신규)
+<template>
+  <div v-if="isLoading" 
+       class="fixed inset-0 z-40 flex items-center justify-center 
+              bg-white bg-opacity-75">
+    <LoadingSpinner :size="size" />
+  </div>
+</template>
+```
+
+**체크리스트:**
+- [ ] `ConfirmDialog` 공통 컴포넌트 생성
+- [ ] `EmptyState` 컴포넌트 생성
+- [ ] `LoadingOverlay` 컴포넌트 생성
+- [ ] `ErrorBoundary` 컴포넌트 생성 (선택)
+- [ ] 모든 페이지에서 공통 컴포넌트 사용
+- [ ] 중복 코드 제거
+
+**예상 시간:** 4-5시간
+
+---
+
+**6. TypeScript 타입 안전성 강화 (2-3시간)**
+
+**구현 계획:**
+
+```typescript
+// types/index.ts 개선
+
+// API 응답 래퍼 타입
+export interface ApiResponse<T> {
+  success: boolean
+  message: string
+  data: T | null
+}
+
+// 페이지네이션 타입
+export interface PageResponse<T> {
+  content: T[]
+  totalPages: number
+  totalElements: number
+  size: number
+  number: number
+  first: boolean
+  last: boolean
+}
+
+// 작업 결과 타입
+export interface OperationResult<T = void> {
+  success: boolean
+  data?: T
+  error?: Error
+  cancelled?: boolean
+}
+
+// Form 상태 타입
+export interface FormState<T> {
+  data: T
+  errors: Partial<Record<keyof T, string>>
+  touched: Partial<Record<keyof T, boolean>>
+  isValid: boolean
+  isDirty: boolean
+}
+
+// 사용 예시
+const createTodo = async (
+  data: TodoRequest
+): Promise<OperationResult<TodoResponse>> => {
+  try {
+    const result = await todoStore.createTodo(data)
+    return { success: true, data: result }
+  } catch (error) {
+    return { success: false, error: error as Error }
+  }
+}
+```
+
+**체크리스트:**
+- [ ] 공통 타입 정의
+- [ ] Store의 모든 메서드 반환 타입 명시
+- [ ] Composable 타입 정의
+- [ ] `any` 타입 제거
+- [ ] 타입 가드 함수 작성
+
+**예상 시간:** 2-3시간
+
+#### 우선순위: 낮음 (선택)
+
+**7. 성능 모니터링 및 최적화 (3-4시간)**
+
+**구현 계획:**
+
+```typescript
+// utils/performance.ts (신규)
+export function measurePerformance(name: string) {
+  const startMark = `${name}-start`
+  const endMark = `${name}-end`
+  const measureName = `${name}-measure`
+  
+  performance.mark(startMark)
+  
+  return {
+    end: () => {
+      performance.mark(endMark)
+      performance.measure(measureName, startMark, endMark)
+      
+      const measure = performance.getEntriesByName(measureName)[0]
+      console.log(`⏱️ ${name}: ${measure.duration.toFixed(2)}ms`)
+      
+      // 성능 임계값 경고
+      if (measure.duration > 1000) {
+        console.warn(`⚠️ ${name} took ${measure.duration.toFixed(2)}ms`)
+      }
+      
+      return measure.duration
+    }
+  }
+}
+
+// 사용 예시
+const fetchTodos = async () => {
+  const perf = measurePerformance('fetchTodos')
+  
+  try {
+    // ... API 호출
+  } finally {
+    perf.end()
+  }
+}
+
+// Vue 컴포넌트 렌더링 성능 측정
+import { onMounted, onUpdated } from 'vue'
+
+export function useRenderPerformance(componentName: string) {
+  let renderCount = 0
+  
+  onMounted(() => {
+    console.log(`✅ ${componentName} mounted`)
+  })
+  
+  onUpdated(() => {
+    renderCount++
+    console.log(`🔄 ${componentName} updated (${renderCount})`)
+  })
+}
+```
+
+**체크리스트:**
+- [ ] 성능 측정 유틸리티 작성
+- [ ] 주요 API 호출 성능 모니터링
+- [ ] 컴포넌트 렌더링 최적화
+- [ ] 불필요한 re-render 제거
+- [ ] 큰 리스트 가상화 (선택)
+
+**예상 시간:** 3-4시간
+
+---
+
+**8. 테스트 코드 작성 (8-10시간)**
+
+**구현 계획:**
+
+```typescript
+// vitest.config.ts
+import { defineConfig } from 'vitest/config'
+import vue from '@vitejs/plugin-vue'
+
+export default defineConfig({
+  plugins: [vue()],
+  test: {
+    globals: true,
+    environment: 'jsdom'
+  }
+})
+
+// stores/__tests__/todo.spec.ts
+import { setActivePinia, createPinia } from 'pinia'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { useTodoStore } from '../todo'
+import * as api from '@/client'
+
+vi.mock('@/client')
+
+describe('Todo Store', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+  })
+  
+  it('should fetch todos successfully', async () => {
+    const mockTodos = [
+      { id: 1, title: 'Test Todo', status: 'TODO' }
+    ]
+    
+    vi.mocked(api.getTodos).mockResolvedValue({
+      data: {
+        success: true,
+        data: {
+          content: mockTodos,
+          totalPages: 1,
+          totalElements: 1,
+          number: 0
+        }
+      }
+    })
+    
+    const store = useTodoStore()
+    await store.fetchTodos()
+    
+    expect(store.todos).toHaveLength(1)
+    expect(store.todos[0].title).toBe('Test Todo')
+  })
+  
+  it('should handle create todo error', async () => {
+    vi.mocked(api.createTodo).mockRejectedValue(new Error('API Error'))
+    
+    const store = useTodoStore()
+    
+    await expect(store.createTodo({
+      title: 'New Todo'
+    })).rejects.toThrow('API Error')
+  })
+})
+
+// composables/__tests__/useTodoOperations.spec.ts
+describe('useTodoOperations', () => {
+  it('should create todo with feedback', async () => {
+    // 테스트 구현
+  })
+})
+```
+
+**체크리스트:**
+- [ ] Vitest 설정
+- [ ] Store 단위 테스트
+- [ ] Composable 테스트
+- [ ] 컴포넌트 테스트 (선택)
+- [ ] 테스트 커버리지 목표: 60% 이상
+
+**예상 시간:** 8-10시간
+
+---
+
+**9. 접근성 (a11y) 개선 (3-4시간)**
+
+```vue
+<!-- 개선 예시 -->
+<template>
+  <!-- 의미있는 HTML 태그 사용 -->
+  <main role="main" aria-label="TODO 목록">
+    <h1 class="sr-only">할 일 관리</h1>
+    
+    <!-- 키보드 네비게이션 -->
+    <button
+      @click="handleCreate"
+      @keydown.enter="handleCreate"
+      aria-label="새 TODO 만들기"
+      class="btn-primary"
+    >
+      <span aria-hidden="true">+</span>
+      <span>새 TODO</span>
+    </button>
+    
+    <!-- ARIA 속성 -->
+    <div
+      role="alert"
+      aria-live="polite"
+      v-if="errorMessage"
+    >
+      {{ errorMessage }}
+    </div>
+    
+    <!-- 포커스 관리 -->
+    <input
+      ref="titleInput"
+      v-model="title"
+      aria-required="true"
+      aria-describedby="title-error"
+    />
+    <span id="title-error" role="alert">
+      {{ titleError }}
+    </span>
+  </main>
+</template>
+```
+
+**체크리스트:**
+- [ ] 시맨틱 HTML 사용
+- [ ] ARIA 속성 추가
+- [ ] 키보드 네비게이션 지원
+- [ ] 포커스 관리
+- [ ] 스크린 리더 테스트
+- [ ] WCAG 2.1 AA 준수
+
+**예상 시간:** 3-4시간
+
+#### 총 예상 개발 시간
+
+**우선순위 높음 (필수):** 9-12시간
+- Composable 패턴: 4-5시간
+- 낙관적 업데이트: 3-4시간
+- 에러 처리 개선: 2-3시간
+
+**우선순위 중간 (권장):** 9-12시간
+- Store 최적화: 3-4시간
+- 컴포넌트 분리: 4-5시간
+- TypeScript 강화: 2-3시간
+
+**우선순위 낮음 (선택):** 14-18시간
+- 성능 모니터링: 3-4시간
+- 테스트 코드: 8-10시간
+- 접근성 개선: 3-4시간
+
+**총합:** 32-42시간
+
+---
+
+### 🚧 Phase 5 예정
 
 **다음 단계 구현 예정:**
 - [ ] **고급 TODO 기능**
@@ -649,6 +1505,1540 @@ const projectOptions = projectStore.getProjectsForSelect
   - 체크리스트 (서브 태스크)
   - 반복 작업
   - 브라우저 알림 (Notification API)
+
+### 📅 Phase 7 예정 - TODO 일정 관리 및 알림 기능 UI
+
+**기능 개요:**
+TODO 일정 관리 필드를 입력/수정할 수 있는 UI와 알림 설정 인터페이스를 구현합니다.
+
+#### 1. TODO 타입 확장
+
+**자동 생성된 타입 (백엔드 연동 후):**
+
+```typescript
+// src/client/types.gen.ts
+
+export type TodoRequest = {
+    // ... 기존 필드들 ...
+    
+    // 일정 관련 필드
+    startDate?: string | null;           // ISO 8601 날짜/시간 문자열
+    endDate?: string | null;
+    isAllDay?: boolean;                  // 종일 일정 여부
+    recurrenceRule?: string | null;      // 반복 설정 JSON
+    location?: string | null;            // 장소
+    estimatedDuration?: number | null;   // 예상 소요 시간 (분)
+    
+    // 알림 관련 필드
+    notificationSettings?: string | null; // 알림 설정 JSON 배열
+    notificationEnabled?: boolean;       // 알림 활성화 여부
+};
+
+export type TodoResponse = {
+    // ... 기존 필드들 ...
+    
+    startDate?: string | null;
+    endDate?: string | null;
+    isAllDay?: boolean;
+    recurrenceRule?: string | null;
+    location?: string | null;
+    estimatedDuration?: number | null;
+    notificationSettings?: string | null;
+    notificationEnabled?: boolean;
+    parentTodoId?: number | null;        // 반복 일정의 원본 ID
+};
+```
+
+#### 2. 일정 입력 컴포넌트
+
+**DateTimeRangePicker.vue (신규 생성)**
+
+```vue
+<template>
+  <div class="space-y-4">
+    <!-- 종일 일정 토글 -->
+    <div class="flex items-center gap-2">
+      <input
+        id="is-all-day"
+        v-model="localIsAllDay"
+        type="checkbox"
+        class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+      />
+      <label for="is-all-day" class="text-sm font-medium text-gray-700">
+        종일 일정
+      </label>
+    </div>
+    
+    <!-- 시작 일시 -->
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-2">
+        시작 일시
+      </label>
+      <input
+        v-model="localStartDate"
+        :type="localIsAllDay ? 'date' : 'datetime-local'"
+        class="input-field"
+        :required="required"
+      />
+    </div>
+    
+    <!-- 종료 일시 (선택) -->
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-2">
+        종료 일시 (선택)
+      </label>
+      <input
+        v-model="localEndDate"
+        :type="localIsAllDay ? 'date' : 'datetime-local'"
+        class="input-field"
+        :min="localStartDate"
+      />
+    </div>
+    
+    <!-- 예상 소요 시간 -->
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-2">
+        예상 소요 시간
+      </label>
+      <div class="flex gap-2 items-center">
+        <input
+          v-model.number="durationHours"
+          type="number"
+          min="0"
+          max="23"
+          class="input-field w-20"
+          placeholder="0"
+        />
+        <span class="text-sm text-gray-600">시간</span>
+        <input
+          v-model.number="durationMinutes"
+          type="number"
+          min="0"
+          max="59"
+          step="15"
+          class="input-field w-20"
+          placeholder="0"
+        />
+        <span class="text-sm text-gray-600">분</span>
+      </div>
+    </div>
+    
+    <!-- 장소 -->
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-2">
+        장소 (선택)
+      </label>
+      <input
+        v-model="localLocation"
+        type="text"
+        class="input-field"
+        placeholder="예: 서울시 강남구 테헤란로 123"
+        maxlength="500"
+      />
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, watch, computed } from 'vue'
+
+interface Props {
+  startDate?: string | null
+  endDate?: string | null
+  isAllDay?: boolean
+  location?: string | null
+  estimatedDuration?: number | null  // 분 단위
+  required?: boolean
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  isAllDay: false,
+  required: false
+})
+
+const emit = defineEmits<{
+  'update:startDate': [value: string | null]
+  'update:endDate': [value: string | null]
+  'update:isAllDay': [value: boolean]
+  'update:location': [value: string | null]
+  'update:estimatedDuration': [value: number | null]
+}>()
+
+const localStartDate = ref(props.startDate)
+const localEndDate = ref(props.endDate)
+const localIsAllDay = ref(props.isAllDay)
+const localLocation = ref(props.location)
+
+// 소요 시간을 시간과 분으로 분리
+const durationHours = ref(
+  props.estimatedDuration ? Math.floor(props.estimatedDuration / 60) : 0
+)
+const durationMinutes = ref(
+  props.estimatedDuration ? props.estimatedDuration % 60 : 0
+)
+
+// 총 소요 시간 (분)
+const totalDuration = computed(() => {
+  const hours = durationHours.value || 0
+  const minutes = durationMinutes.value || 0
+  const total = hours * 60 + minutes
+  return total > 0 ? total : null
+})
+
+// 변경 사항 emit
+watch(localStartDate, (value) => emit('update:startDate', value || null))
+watch(localEndDate, (value) => emit('update:endDate', value || null))
+watch(localIsAllDay, (value) => emit('update:isAllDay', value))
+watch(localLocation, (value) => emit('update:location', value || null))
+watch(totalDuration, (value) => emit('update:estimatedDuration', value))
+
+// 종일 일정 토글 시 시간 부분 제거/추가
+watch(localIsAllDay, (isAllDay) => {
+  if (isAllDay && localStartDate.value) {
+    // datetime-local -> date 변환
+    localStartDate.value = localStartDate.value.split('T')[0]
+  }
+  if (isAllDay && localEndDate.value) {
+    localEndDate.value = localEndDate.value.split('T')[0]
+  }
+})
+</script>
+```
+
+#### 3. 반복 설정 컴포넌트
+
+**RecurrenceRuleEditor.vue (신규 생성)**
+
+```vue
+<template>
+  <div class="space-y-4">
+    <!-- 반복 활성화 토글 -->
+    <div class="flex items-center gap-2">
+      <input
+        id="recurrence-enabled"
+        v-model="isEnabled"
+        type="checkbox"
+        class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+      />
+      <label for="recurrence-enabled" class="text-sm font-medium text-gray-700">
+        반복 일정
+      </label>
+    </div>
+    
+    <div v-if="isEnabled" class="space-y-3 pl-6 border-l-2 border-blue-200">
+      <!-- 반복 유형 -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">
+          반복 주기
+        </label>
+        <select v-model="rule.type" class="input-field">
+          <option value="DAILY">매일</option>
+          <option value="WEEKLY">매주</option>
+          <option value="MONTHLY">매월</option>
+          <option value="YEARLY">매년</option>
+        </select>
+      </div>
+      
+      <!-- 반복 간격 -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">
+          {{ intervalLabel }}
+        </label>
+        <input
+          v-model.number="rule.interval"
+          type="number"
+          min="1"
+          max="30"
+          class="input-field w-24"
+        />
+      </div>
+      
+      <!-- 요일 선택 (주간 반복 시) -->
+      <div v-if="rule.type === 'WEEKLY'">
+        <label class="block text-sm font-medium text-gray-700 mb-2">
+          반복 요일
+        </label>
+        <div class="flex gap-2">
+          <button
+            v-for="(day, index) in weekDays"
+            :key="index"
+            type="button"
+            @click="toggleDay(index + 1)"
+            :class="[
+              'px-3 py-2 rounded-lg text-sm font-medium transition-colors',
+              rule.daysOfWeek?.includes(index + 1)
+                ? 'bg-blue-600 text-white'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            ]"
+          >
+            {{ day }}
+          </button>
+        </div>
+      </div>
+      
+      <!-- 날짜 선택 (월간 반복 시) -->
+      <div v-if="rule.type === 'MONTHLY'">
+        <label class="block text-sm font-medium text-gray-700 mb-2">
+          반복 날짜
+        </label>
+        <input
+          v-model.number="rule.dayOfMonth"
+          type="number"
+          min="1"
+          max="31"
+          class="input-field w-24"
+          placeholder="일"
+        />
+      </div>
+      
+      <!-- 종료 조건 -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">
+          반복 종료
+        </label>
+        <div class="space-y-2">
+          <label class="flex items-center gap-2">
+            <input
+              v-model="endType"
+              type="radio"
+              value="never"
+              class="w-4 h-4 text-blue-600"
+            />
+            <span class="text-sm text-gray-700">종료 안함</span>
+          </label>
+          
+          <label class="flex items-center gap-2">
+            <input
+              v-model="endType"
+              type="radio"
+              value="date"
+              class="w-4 h-4 text-blue-600"
+            />
+            <span class="text-sm text-gray-700">종료 날짜</span>
+            <input
+              v-if="endType === 'date'"
+              v-model="rule.endDate"
+              type="date"
+              class="input-field flex-1"
+            />
+          </label>
+          
+          <label class="flex items-center gap-2">
+            <input
+              v-model="endType"
+              type="radio"
+              value="count"
+              class="w-4 h-4 text-blue-600"
+            />
+            <span class="text-sm text-gray-700">반복 횟수</span>
+            <input
+              v-if="endType === 'count'"
+              v-model.number="rule.count"
+              type="number"
+              min="1"
+              max="365"
+              class="input-field w-24"
+              placeholder="회"
+            />
+          </label>
+        </div>
+      </div>
+      
+      <!-- 미리보기 -->
+      <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
+        <p class="text-sm font-medium text-blue-900 mb-1">반복 요약</p>
+        <p class="text-sm text-blue-700">{{ recurrenceSummary }}</p>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, computed, watch } from 'vue'
+
+interface RecurrenceRule {
+  type: 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY'
+  interval: number
+  daysOfWeek?: number[]  // 1-7 (월-일)
+  dayOfMonth?: number    // 1-31
+  endDate?: string | null
+  count?: number | null
+}
+
+interface Props {
+  recurrenceRule?: string | null
+}
+
+const props = defineProps<Props>()
+
+const emit = defineEmits<{
+  'update:recurrenceRule': [value: string | null]
+}>()
+
+const isEnabled = ref(false)
+const endType = ref<'never' | 'date' | 'count'>('never')
+
+const rule = ref<RecurrenceRule>({
+  type: 'DAILY',
+  interval: 1,
+  daysOfWeek: [],
+})
+
+const weekDays = ['월', '화', '수', '목', '금', '토', '일']
+
+// 초기 데이터 로드
+if (props.recurrenceRule) {
+  try {
+    const parsed = JSON.parse(props.recurrenceRule) as RecurrenceRule
+    rule.value = parsed
+    isEnabled.value = true
+    
+    if (parsed.endDate) endType.value = 'date'
+    else if (parsed.count) endType.value = 'count'
+  } catch (e) {
+    console.error('반복 규칙 파싱 실패:', e)
+  }
+}
+
+// 간격 레이블
+const intervalLabel = computed(() => {
+  const labels = {
+    DAILY: '며칠마다',
+    WEEKLY: '몇 주마다',
+    MONTHLY: '몇 개월마다',
+    YEARLY: '몇 년마다',
+  }
+  return labels[rule.value.type]
+})
+
+// 반복 요약
+const recurrenceSummary = computed(() => {
+  if (!isEnabled.value) return ''
+  
+  const { type, interval } = rule.value
+  
+  let summary = ''
+  if (type === 'DAILY') {
+    summary = interval === 1 ? '매일' : `${interval}일마다`
+  } else if (type === 'WEEKLY') {
+    const days = rule.value.daysOfWeek || []
+    const dayNames = days.map(d => weekDays[d - 1]).join(', ')
+    summary = `${interval}주마다 (${dayNames || '요일 선택 안함'})`
+  } else if (type === 'MONTHLY') {
+    const day = rule.value.dayOfMonth || '?'
+    summary = `${interval}개월마다 ${day}일`
+  } else if (type === 'YEARLY') {
+    summary = interval === 1 ? '매년' : `${interval}년마다`
+  }
+  
+  if (endType.value === 'date' && rule.value.endDate) {
+    summary += `, ${rule.value.endDate}까지`
+  } else if (endType.value === 'count' && rule.value.count) {
+    summary += `, ${rule.value.count}회 반복`
+  }
+  
+  return summary
+})
+
+// 요일 토글
+const toggleDay = (day: number) => {
+  if (!rule.value.daysOfWeek) {
+    rule.value.daysOfWeek = []
+  }
+  
+  const index = rule.value.daysOfWeek.indexOf(day)
+  if (index > -1) {
+    rule.value.daysOfWeek.splice(index, 1)
+  } else {
+    rule.value.daysOfWeek.push(day)
+    rule.value.daysOfWeek.sort()
+  }
+}
+
+// 변경 사항 emit
+watch([isEnabled, rule, endType], () => {
+  if (!isEnabled.value) {
+    emit('update:recurrenceRule', null)
+    return
+  }
+  
+  const ruleToEmit: RecurrenceRule = {
+    type: rule.value.type,
+    interval: rule.value.interval,
+  }
+  
+  if (rule.value.type === 'WEEKLY' && rule.value.daysOfWeek) {
+    ruleToEmit.daysOfWeek = rule.value.daysOfWeek
+  }
+  
+  if (rule.value.type === 'MONTHLY' && rule.value.dayOfMonth) {
+    ruleToEmit.dayOfMonth = rule.value.dayOfMonth
+  }
+  
+  if (endType.value === 'date') {
+    ruleToEmit.endDate = rule.value.endDate
+    ruleToEmit.count = null
+  } else if (endType.value === 'count') {
+    ruleToEmit.count = rule.value.count
+    ruleToEmit.endDate = null
+  } else {
+    ruleToEmit.endDate = null
+    ruleToEmit.count = null
+  }
+  
+  emit('update:recurrenceRule', JSON.stringify(ruleToEmit))
+}, { deep: true })
+</script>
+```
+
+#### 4. 알림 설정 컴포넌트
+
+**NotificationSettingsEditor.vue (신규 생성)**
+
+```vue
+<template>
+  <div class="space-y-4">
+    <!-- 알림 활성화 토글 -->
+    <div class="flex items-center gap-2">
+      <input
+        id="notification-enabled"
+        v-model="localEnabled"
+        type="checkbox"
+        class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+      />
+      <label for="notification-enabled" class="text-sm font-medium text-gray-700">
+        알림 받기
+      </label>
+    </div>
+    
+    <div v-if="localEnabled" class="space-y-3 pl-6 border-l-2 border-blue-200">
+      <!-- 알림 목록 -->
+      <div
+        v-for="(notification, index) in notifications"
+        :key="index"
+        class="flex gap-2 items-start p-3 bg-gray-50 rounded-lg"
+      >
+        <div class="flex-1 space-y-2">
+          <!-- 알림 타입 -->
+          <select
+            v-model="notification.type"
+            class="input-field text-sm"
+          >
+            <option value="EMAIL">이메일</option>
+            <option value="SMS">문자 메시지</option>
+            <option value="KAKAO">카카오톡</option>
+            <option value="PUSH">브라우저 알림</option>
+          </select>
+          
+          <!-- 알림 시간 -->
+          <div class="flex gap-2 items-center">
+            <select
+              v-model.number="notification.timing"
+              class="input-field text-sm flex-1"
+            >
+              <option :value="0">정시</option>
+              <option :value="-5">5분 전</option>
+              <option :value="-10">10분 전</option>
+              <option :value="-15">15분 전</option>
+              <option :value="-30">30분 전</option>
+              <option :value="-60">1시간 전</option>
+              <option :value="-120">2시간 전</option>
+              <option :value="-1440">1일 전</option>
+              <option :value="-2880">2일 전</option>
+              <option :value="-10080">1주 전</option>
+            </select>
+          </div>
+        </div>
+        
+        <!-- 삭제 버튼 -->
+        <button
+          type="button"
+          @click="removeNotification(index)"
+          class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+        >
+          <XIcon class="w-4 h-4" />
+        </button>
+      </div>
+      
+      <!-- 알림 추가 버튼 -->
+      <button
+        type="button"
+        @click="addNotification"
+        class="w-full px-4 py-2 text-sm font-medium text-blue-600 
+               bg-blue-50 border border-blue-200 rounded-lg 
+               hover:bg-blue-100 transition-colors"
+      >
+        + 알림 추가
+      </button>
+      
+      <!-- 알림 미리보기 -->
+      <div
+        v-if="notifications.length > 0"
+        class="bg-blue-50 border border-blue-200 rounded-lg p-3"
+      >
+        <p class="text-sm font-medium text-blue-900 mb-1">알림 요약</p>
+        <ul class="text-sm text-blue-700 space-y-1">
+          <li v-for="(notification, index) in notifications" :key="index">
+            • {{ formatNotification(notification) }}
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, watch } from 'vue'
+
+interface NotificationSetting {
+  type: 'EMAIL' | 'SMS' | 'KAKAO' | 'PUSH'
+  timing: number  // 분 단위 (음수는 사전 알림)
+}
+
+interface Props {
+  notificationSettings?: string | null
+  notificationEnabled?: boolean
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  notificationEnabled: false
+})
+
+const emit = defineEmits<{
+  'update:notificationSettings': [value: string | null]
+  'update:notificationEnabled': [value: boolean]
+}>()
+
+const localEnabled = ref(props.notificationEnabled)
+const notifications = ref<NotificationSetting[]>([])
+
+// 초기 데이터 로드
+if (props.notificationSettings) {
+  try {
+    notifications.value = JSON.parse(props.notificationSettings)
+  } catch (e) {
+    console.error('알림 설정 파싱 실패:', e)
+  }
+}
+
+// 기본 알림이 없으면 하나 추가
+if (localEnabled.value && notifications.value.length === 0) {
+  notifications.value.push({ type: 'EMAIL', timing: -30 })
+}
+
+// 알림 추가
+const addNotification = () => {
+  notifications.value.push({
+    type: 'EMAIL',
+    timing: -30
+  })
+}
+
+// 알림 제거
+const removeNotification = (index: number) => {
+  notifications.value.splice(index, 1)
+}
+
+// 알림 포맷팅
+const formatNotification = (notification: NotificationSetting) => {
+  const typeLabels = {
+    EMAIL: '이메일',
+    SMS: '문자',
+    KAKAO: '카카오톡',
+    PUSH: '브라우저'
+  }
+  
+  const type = typeLabels[notification.type]
+  
+  if (notification.timing === 0) {
+    return `${type} - 정시`
+  }
+  
+  const minutes = Math.abs(notification.timing)
+  let timeStr = ''
+  
+  if (minutes >= 1440) {
+    const days = Math.floor(minutes / 1440)
+    timeStr = `${days}일 전`
+  } else if (minutes >= 60) {
+    const hours = Math.floor(minutes / 60)
+    timeStr = `${hours}시간 전`
+  } else {
+    timeStr = `${minutes}분 전`
+  }
+  
+  return `${type} - ${timeStr}`
+}
+
+// 변경 사항 emit
+watch(localEnabled, (value) => {
+  emit('update:notificationEnabled', value)
+  
+  if (value && notifications.value.length === 0) {
+    notifications.value.push({ type: 'EMAIL', timing: -30 })
+  }
+})
+
+watch(notifications, () => {
+  if (!localEnabled.value || notifications.value.length === 0) {
+    emit('update:notificationSettings', null)
+  } else {
+    emit('update:notificationSettings', JSON.stringify(notifications.value))
+  }
+}, { deep: true })
+</script>
+```
+
+#### 5. TODO 생성/수정 모달에 통합
+
+**TodoCreateModal.vue 및 TodoEditModal.vue에 추가:**
+
+```vue
+<template>
+  <div class="modal">
+    <!-- ... 기존 필드들 ... -->
+    
+    <!-- 일정 섹션 -->
+    <div class="mt-6">
+      <h3 class="text-lg font-semibold text-gray-800 mb-3">
+        📅 일정 정보
+      </h3>
+      <DateTimeRangePicker
+        v-model:start-date="form.startDate"
+        v-model:end-date="form.endDate"
+        v-model:is-all-day="form.isAllDay"
+        v-model:location="form.location"
+        v-model:estimated-duration="form.estimatedDuration"
+      />
+    </div>
+    
+    <!-- 반복 설정 섹션 -->
+    <div class="mt-6">
+      <h3 class="text-lg font-semibold text-gray-800 mb-3">
+        🔁 반복 설정
+      </h3>
+      <RecurrenceRuleEditor
+        v-model:recurrence-rule="form.recurrenceRule"
+      />
+    </div>
+    
+    <!-- 알림 설정 섹션 -->
+    <div class="mt-6">
+      <h3 class="text-lg font-semibold text-gray-800 mb-3">
+        🔔 알림 설정
+      </h3>
+      <NotificationSettingsEditor
+        v-model:notification-settings="form.notificationSettings"
+        v-model:notification-enabled="form.notificationEnabled"
+      />
+    </div>
+    
+    <!-- ... 버튼들 ... -->
+  </div>
+</template>
+
+<script setup lang="ts">
+import DateTimeRangePicker from '@/components/DateTimeRangePicker.vue'
+import RecurrenceRuleEditor from '@/components/RecurrenceRuleEditor.vue'
+import NotificationSettingsEditor from '@/components/NotificationSettingsEditor.vue'
+
+// ... 기존 코드 ...
+</script>
+```
+
+#### 6. TODO 상세 페이지에 일정 정보 표시
+
+**TodoDetailView.vue에 추가:**
+
+```vue
+<template>
+  <div class="container mx-auto px-4 py-6">
+    <!-- ... 기존 내용 ... -->
+    
+    <!-- 일정 정보 카드 -->
+    <div v-if="hasScheduleInfo" class="card mt-6">
+      <h3 class="text-lg font-semibold text-gray-800 mb-4">
+        📅 일정 정보
+      </h3>
+      
+      <div class="space-y-3">
+        <!-- 종일 일정 배지 -->
+        <div v-if="todo.isAllDay" class="inline-block">
+          <span class="px-2 py-1 bg-purple-100 text-purple-700 text-xs font-medium rounded">
+            종일 일정
+          </span>
+        </div>
+        
+        <!-- 시작 일시 -->
+        <div v-if="todo.startDate" class="flex items-center gap-2">
+          <span class="text-sm font-medium text-gray-600 w-24">시작:</span>
+          <span class="text-sm text-gray-800">
+            {{ formatDateTime(todo.startDate, todo.isAllDay) }}
+          </span>
+        </div>
+        
+        <!-- 종료 일시 -->
+        <div v-if="todo.endDate" class="flex items-center gap-2">
+          <span class="text-sm font-medium text-gray-600 w-24">종료:</span>
+          <span class="text-sm text-gray-800">
+            {{ formatDateTime(todo.endDate, todo.isAllDay) }}
+          </span>
+        </div>
+        
+        <!-- 예상 소요 시간 -->
+        <div v-if="todo.estimatedDuration" class="flex items-center gap-2">
+          <span class="text-sm font-medium text-gray-600 w-24">소요 시간:</span>
+          <span class="text-sm text-gray-800">
+            {{ formatDuration(todo.estimatedDuration) }}
+          </span>
+        </div>
+        
+        <!-- 장소 -->
+        <div v-if="todo.location" class="flex items-center gap-2">
+          <span class="text-sm font-medium text-gray-600 w-24">장소:</span>
+          <span class="text-sm text-gray-800">{{ todo.location }}</span>
+        </div>
+        
+        <!-- 반복 설정 -->
+        <div v-if="todo.recurrenceRule" class="flex items-center gap-2">
+          <span class="text-sm font-medium text-gray-600 w-24">반복:</span>
+          <span class="text-sm text-gray-800">
+            {{ formatRecurrence(todo.recurrenceRule) }}
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 알림 설정 카드 -->
+    <div v-if="todo.notificationEnabled && todo.notificationSettings" class="card mt-6">
+      <h3 class="text-lg font-semibold text-gray-800 mb-4">
+        🔔 알림 설정
+      </h3>
+      
+      <ul class="space-y-2">
+        <li
+          v-for="(notification, index) in parseNotifications(todo.notificationSettings)"
+          :key="index"
+          class="flex items-center gap-2 text-sm"
+        >
+          <span class="w-2 h-2 bg-blue-500 rounded-full"></span>
+          <span class="text-gray-800">
+            {{ formatNotification(notification) }}
+          </span>
+        </li>
+      </ul>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { format } from 'date-fns'
+import { ko } from 'date-fns/locale'
+
+// ... 기존 코드 ...
+
+const hasScheduleInfo = computed(() => {
+  return todo.value?.startDate || 
+         todo.value?.endDate || 
+         todo.value?.location || 
+         todo.value?.estimatedDuration ||
+         todo.value?.recurrenceRule
+})
+
+const formatDateTime = (dateStr: string, isAllDay?: boolean) => {
+  const date = new Date(dateStr)
+  if (isAllDay) {
+    return format(date, 'yyyy년 M월 d일', { locale: ko })
+  }
+  return format(date, 'yyyy년 M월 d일 HH:mm', { locale: ko })
+}
+
+const formatDuration = (minutes: number) => {
+  const hours = Math.floor(minutes / 60)
+  const mins = minutes % 60
+  
+  if (hours > 0 && mins > 0) {
+    return `${hours}시간 ${mins}분`
+  } else if (hours > 0) {
+    return `${hours}시간`
+  } else {
+    return `${mins}분`
+  }
+}
+
+const formatRecurrence = (ruleJson: string) => {
+  try {
+    const rule = JSON.parse(ruleJson)
+    // 반복 규칙을 읽기 쉬운 형태로 변환
+    // 구현 로직은 RecurrenceRuleEditor의 recurrenceSummary와 유사
+    return '매일 반복'  // 간단한 예시
+  } catch {
+    return '반복 설정'
+  }
+}
+
+const parseNotifications = (settingsJson: string) => {
+  try {
+    return JSON.parse(settingsJson)
+  } catch {
+    return []
+  }
+}
+
+const formatNotification = (notification: any) => {
+  // NotificationSettingsEditor의 formatNotification과 동일한 로직
+  const typeLabels = { EMAIL: '이메일', SMS: '문자', KAKAO: '카카오톡', PUSH: '브라우저' }
+  const type = typeLabels[notification.type as keyof typeof typeLabels]
+  
+  if (notification.timing === 0) return `${type} - 정시`
+  
+  const minutes = Math.abs(notification.timing)
+  let timeStr = ''
+  
+  if (minutes >= 1440) {
+    timeStr = `${Math.floor(minutes / 1440)}일 전`
+  } else if (minutes >= 60) {
+    timeStr = `${Math.floor(minutes / 60)}시간 전`
+  } else {
+    timeStr = `${minutes}분 전`
+  }
+  
+  return `${type} - ${timeStr}`
+}
+</script>
+```
+
+#### 7. 캘린더 뷰 (선택사항)
+
+**CalendarView.vue (신규 생성)**
+
+```vue
+<template>
+  <div class="calendar-view">
+    <div class="calendar-header">
+      <button @click="previousMonth">이전</button>
+      <h2>{{ currentMonthLabel }}</h2>
+      <button @click="nextMonth">다음</button>
+    </div>
+    
+    <div class="calendar-grid">
+      <!-- 요일 헤더 -->
+      <div v-for="day in weekDays" :key="day" class="calendar-day-header">
+        {{ day }}
+      </div>
+      
+      <!-- 날짜 셀 -->
+      <div
+        v-for="date in calendarDates"
+        :key="date.toString()"
+        class="calendar-date-cell"
+        :class="{ 'is-today': isToday(date) }"
+      >
+        <div class="date-number">{{ date.getDate() }}</div>
+        
+        <!-- 해당 날짜의 TODO들 -->
+        <div
+          v-for="todo in getTodosForDate(date)"
+          :key="todo.id"
+          class="calendar-todo-item"
+          @click="openTodoDetail(todo.id)"
+        >
+          <span class="todo-title">{{ todo.title }}</span>
+          <span v-if="todo.startDate" class="todo-time">
+            {{ formatTime(todo.startDate) }}
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+// 캘린더 뷰 구현
+// FullCalendar 또는 v-calendar 라이브러리 사용 추천
+</script>
+```
+
+#### 8. 구현 체크리스트
+
+**Phase 6-1: 기본 일정 입력 (4-5시간)**
+- [ ] DateTimeRangePicker.vue 컴포넌트 생성
+- [ ] 종일 일정 토글 기능
+- [ ] 시작/종료 일시 입력
+- [ ] 예상 소요 시간 입력
+- [ ] 장소 입력
+- [ ] TodoCreateModal/TodoEditModal에 통합
+
+**Phase 6-2: 반복 설정 UI (5-6시간)**
+- [ ] RecurrenceRuleEditor.vue 컴포넌트 생성
+- [ ] 반복 유형 선택 (일간/주간/월간/년간)
+- [ ] 반복 간격 설정
+- [ ] 요일 선택 (주간 반복 시)
+- [ ] 날짜 선택 (월간 반복 시)
+- [ ] 반복 종료 조건 (날짜/횟수)
+- [ ] 반복 요약 표시
+
+**Phase 6-3: 알림 설정 UI (4-5시간)**
+- [ ] NotificationSettingsEditor.vue 컴포넌트 생성
+- [ ] 알림 타입 선택 (이메일/SMS/카카오톡/푸시)
+- [ ] 알림 시간 설정 (분/시간/일 전)
+- [ ] 여러 알림 추가/삭제
+- [ ] 알림 요약 표시
+
+**Phase 6-4: TODO 상세 페이지 확장 (2-3시간)**
+- [ ] 일정 정보 섹션 추가
+- [ ] 알림 설정 섹션 추가
+- [ ] 날짜/시간 포맷팅
+- [ ] 반복 규칙 표시
+
+**Phase 6-5: 캘린더 뷰 (선택, 8-10시간)**
+- [ ] 캘린더 컴포넌트 생성 또는 라이브러리 통합
+- [ ] 월간 뷰 구현
+- [ ] TODO 표시 및 클릭 이벤트
+- [ ] 날짜 네비게이션
+- [ ] 반응형 디자인
+
+**Phase 6-6: 알림 관리 페이지 (선택, 3-4시간)**
+- [ ] 알림 이력 조회
+- [ ] 알림 설정 전역 관리
+- [ ] 알림 테스트 기능
+
+**총 예상 개발 시간: 15-19시간 (캘린더 뷰 제외) 또는 23-29시간 (캘린더 뷰 포함)**
+
+#### 9. 필요한 추가 패키지
+
+```json
+// package.json에 추가할 의존성 (선택사항)
+
+{
+  "dependencies": {
+    // 캘린더 라이브러리 (택1)
+    "v-calendar": "^3.0.0",            // 가볍고 커스터마이징 용이
+    "@fullcalendar/vue3": "^6.1.0",    // 기능이 풍부함
+    
+    // 아이콘 (이미 사용 중일 수 있음)
+    "@heroicons/vue": "^2.0.0"
+  }
+}
+```
+
+#### 10. 참고 문서
+
+- [v-calendar 문서](https://vcalendar.io/)
+- [FullCalendar Vue 문서](https://fullcalendar.io/docs/vue)
+- [date-fns 문서](https://date-fns.org/) (이미 사용 중)
+- [MDN - Input type datetime-local](https://developer.mozilla.org/ko/docs/Web/HTML/Element/input/datetime-local)
+
+### 📤 Phase 6 예정 - 파일 출력(Export) 기능
+
+**기능 개요:**
+TODO 및 프로젝트 데이터를 다양한 파일 형식으로 내보내기할 수 있는 기능 추가
+
+#### UI/UX 설계
+
+**1. 내보내기 버튼 위치**
+- **TodoListView**: 필터/정렬 바 옆에 내보내기 버튼 추가
+  - 현재 필터링된 TODO 목록 전체를 내보내기
+- **TodoDetailView**: 상세 페이지 상단에 내보내기 버튼 추가
+  - 현재 보고 있는 TODO 단건 내보내기
+- **프로젝트 섹션**: 각 프로젝트 카드에 내보내기 버튼 추가
+  - 해당 프로젝트의 모든 TODO를 내보내기
+
+**2. 내보내기 모달 방식**
+- 각 위치에 "내보내기" 버튼 **하나만** 배치
+- 버튼 클릭 시 **팝업 모달** 표시
+- 모달에서 파일 형식 선택 (JSON / Excel / PDF)
+- 선택한 형식으로 다운로드 진행
+
+**3. 내보내기 UI 컴포넌트**
+
+```vue
+<!-- ExportButton.vue (신규 생성) -->
+<template>
+  <button 
+    @click="openModal" 
+    class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 
+           bg-white border border-gray-300 rounded-lg hover:bg-gray-50 
+           focus:outline-none focus:ring-2 focus:ring-blue-500"
+  >
+    <DownloadIcon class="w-4 h-4" />
+    내보내기
+  </button>
+</template>
+
+<script setup lang="ts">
+interface Props {
+  // 'single' - 단일 TODO, 'list' - 필터링된 목록, 'selected' - 선택된 항목
+  exportType: 'single' | 'list' | 'selected'
+  todoId?: number  // exportType이 'single'일 때 필요
+  todoIds?: number[]  // exportType이 'selected'일 때 필요
+}
+
+const props = defineProps<Props>()
+const emit = defineEmits<{
+  'open-modal': []
+}>()
+
+const openModal = () => {
+  emit('open-modal')
+}
+</script>
+```
+
+```vue
+<!-- ExportModal.vue (신규 생성) -->
+<template>
+  <!-- 모달 오버레이 -->
+  <div 
+    v-if="isOpen" 
+    @click="handleOverlayClick"
+    class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
+  >
+    <!-- 모달 컨텐츠 -->
+    <div 
+      @click.stop
+      class="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4 p-6"
+    >
+      <!-- 헤더 -->
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-2xl font-bold text-gray-800">파일 형식 선택</h2>
+        <button 
+          @click="closeModal"
+          class="text-gray-400 hover:text-gray-600 transition-colors"
+        >
+          <XIcon class="w-6 h-6" />
+        </button>
+      </div>
+      
+      <!-- 파일 형식 옵션들 -->
+      <div class="space-y-3">
+        <!-- JSON 옵션 -->
+        <button 
+          @click="handleExport('json')"
+          class="w-full flex items-center gap-4 p-4 border border-gray-200 
+                 rounded-lg hover:border-blue-500 hover:bg-blue-50 
+                 transition-all group"
+        >
+          <div class="flex-shrink-0">
+            <FileJsonIcon class="w-10 h-10 text-blue-500" />
+          </div>
+          <div class="flex-1 text-left">
+            <h3 class="font-semibold text-gray-800 group-hover:text-blue-600">
+              JSON
+            </h3>
+            <p class="text-sm text-gray-600">
+              데이터 백업 및 마이그레이션에 적합
+            </p>
+          </div>
+          <ChevronRightIcon class="w-5 h-5 text-gray-400 group-hover:text-blue-500" />
+        </button>
+        
+        <!-- Excel 옵션 -->
+        <button 
+          @click="handleExport('excel')"
+          class="w-full flex items-center gap-4 p-4 border border-gray-200 
+                 rounded-lg hover:border-green-500 hover:bg-green-50 
+                 transition-all group"
+        >
+          <div class="flex-shrink-0">
+            <FileSpreadsheetIcon class="w-10 h-10 text-green-500" />
+          </div>
+          <div class="flex-1 text-left">
+            <h3 class="font-semibold text-gray-800 group-hover:text-green-600">
+              Excel
+            </h3>
+            <p class="text-sm text-gray-600">
+              편집 및 분석 가능한 스프레드시트
+            </p>
+          </div>
+          <ChevronRightIcon class="w-5 h-5 text-gray-400 group-hover:text-green-500" />
+        </button>
+        
+        <!-- PDF 옵션 -->
+        <button 
+          @click="handleExport('pdf')"
+          class="w-full flex items-center gap-4 p-4 border border-gray-200 
+                 rounded-lg hover:border-red-500 hover:bg-red-50 
+                 transition-all group"
+        >
+          <div class="flex-shrink-0">
+            <FilePdfIcon class="w-10 h-10 text-red-500" />
+          </div>
+          <div class="flex-1 text-left">
+            <h3 class="font-semibold text-gray-800 group-hover:text-red-600">
+              PDF
+            </h3>
+            <p class="text-sm text-gray-600">
+              인쇄 및 공유용 문서
+            </p>
+          </div>
+          <ChevronRightIcon class="w-5 h-5 text-gray-400 group-hover:text-red-500" />
+        </button>
+      </div>
+      
+      <!-- 취소 버튼 -->
+      <button 
+        @click="closeModal"
+        class="w-full mt-6 px-4 py-2 text-sm font-medium text-gray-700 
+               bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+      >
+        취소
+      </button>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { watch } from 'vue'
+
+interface Props {
+  isOpen: boolean
+  exportType: 'single' | 'list' | 'selected'
+  todoId?: number
+  todoIds?: number[]
+}
+
+const props = defineProps<Props>()
+const emit = defineEmits<{
+  'close': []
+  'export': [format: 'json' | 'excel' | 'pdf']
+}>()
+
+const handleExport = (format: 'json' | 'excel' | 'pdf') => {
+  emit('export', format)
+  closeModal()
+}
+
+const closeModal = () => {
+  emit('close')
+}
+
+const handleOverlayClick = () => {
+  closeModal()
+}
+
+// ESC 키로 모달 닫기
+watch(() => props.isOpen, (isOpen) => {
+  if (isOpen) {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        closeModal()
+      }
+    }
+    document.addEventListener('keydown', handleEscape)
+    
+    return () => {
+      document.removeEventListener('keydown', handleEscape)
+    }
+  }
+})
+</script>
+```
+
+**3. 파일 다운로드 유틸리티**
+
+```typescript
+// src/utils/fileDownload.ts (신규 생성)
+
+/**
+ * Blob 데이터를 파일로 다운로드
+ */
+export function downloadBlob(blob: Blob, filename: string) {
+  const url = window.URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = filename
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+  window.URL.revokeObjectURL(url)
+}
+
+/**
+ * 파일명에 현재 날짜 추가
+ */
+export function generateFilename(
+  prefix: string, 
+  extension: string, 
+  includeTimestamp = true
+): string {
+  const date = new Date()
+  const dateStr = date.toISOString().split('T')[0]  // YYYY-MM-DD
+  const timeStr = includeTimestamp 
+    ? `_${date.getHours()}${date.getMinutes()}${date.getSeconds()}` 
+    : ''
+  
+  return `${prefix}_${dateStr}${timeStr}.${extension}`
+}
+
+// 사용 예시
+// generateFilename('todos', 'xlsx')
+// => 'todos_2025-12-07_142536.xlsx'
+```
+
+**4. Store에 Export 액션 추가**
+
+```typescript
+// src/stores/todo.ts
+
+import { downloadBlob, generateFilename } from '@/utils/fileDownload'
+
+export const useTodoStore = defineStore('todo', () => {
+  // ... 기존 코드 ...
+  
+  /**
+   * 단일 TODO를 파일로 내보내기
+   */
+  async function exportSingleTodo(todoId: number, format: 'json' | 'excel' | 'pdf') {
+    try {
+      const response = await client.GET(`/api/todos/${todoId}/export/${format}`, {
+        responseType: 'blob',  // Blob으로 응답 받기
+      })
+      
+      if (response.data) {
+        const extension = format === 'excel' ? 'xlsx' : format
+        const filename = generateFilename(`todo_${todoId}`, extension)
+        downloadBlob(response.data, filename)
+        
+        useToast().success(`${format.toUpperCase()} 파일로 내보내기 완료`)
+      }
+    } catch (error) {
+      useToast().error('파일 내보내기에 실패했습니다')
+      throw error
+    }
+  }
+  
+  /**
+   * 필터링된 TODO 목록을 파일로 내보내기
+   */
+  async function exportFilteredTodos(format: 'json' | 'excel') {
+    try {
+      const params = {
+        ...filters.value,
+        // 페이징 제거 (전체 데이터 가져오기)
+        page: undefined,
+        size: undefined,
+      }
+      
+      const response = await client.GET(`/api/todos/export/${format}`, {
+        params,
+        responseType: 'blob',
+      })
+      
+      if (response.data) {
+        const extension = format === 'excel' ? 'xlsx' : format
+        const filename = generateFilename('todos', extension)
+        downloadBlob(response.data, filename)
+        
+        useToast().success(`${format.toUpperCase()} 파일로 내보내기 완료`)
+      }
+    } catch (error) {
+      useToast().error('파일 내보내기에 실패했습니다')
+      throw error
+    }
+  }
+  
+  /**
+   * 선택된 TODO들을 파일로 내보내기
+   */
+  async function exportSelectedTodos(
+    todoIds: number[], 
+    format: 'json' | 'excel'
+  ) {
+    try {
+      const response = await client.POST(`/api/todos/export/${format}`, {
+        body: todoIds,
+        responseType: 'blob',
+      })
+      
+      if (response.data) {
+        const extension = format === 'excel' ? 'xlsx' : format
+        const filename = generateFilename('todos_selected', extension)
+        downloadBlob(response.data, filename)
+        
+        useToast().success(`${todoIds.length}개 항목을 ${format.toUpperCase()} 파일로 내보냈습니다`)
+      }
+    } catch (error) {
+      useToast().error('파일 내보내기에 실패했습니다')
+      throw error
+    }
+  }
+  
+  return {
+    // ... 기존 return 항목들 ...
+    exportSingleTodo,
+    exportFilteredTodos,
+    exportSelectedTodos,
+  }
+})
+```
+
+**5. TodoListView에 내보내기 버튼 및 모달 추가**
+
+```vue
+<!-- src/views/TodoListView.vue -->
+<template>
+  <div class="container mx-auto px-4 py-6">
+    <h1 class="text-3xl font-bold mb-6">할 일 목록</h1>
+    
+    <!-- 필터/정렬 바와 내보내기 버튼을 나란히 배치 -->
+    <div class="flex gap-4 mb-6">
+      <div class="flex-1">
+        <FilterSortBar
+          :filters="filters"
+          :project-options="projectOptions"
+          @update:filters="handleFilterChange"
+        />
+      </div>
+      
+      <!-- 내보내기 버튼 추가 -->
+      <div class="flex-shrink-0">
+        <ExportButton
+          export-type="list"
+          @open-modal="showExportModal = true"
+        />
+      </div>
+    </div>
+    
+    <!-- ... TODO 목록 ... -->
+    
+    <!-- 내보내기 모달 -->
+    <ExportModal
+      :is-open="showExportModal"
+      export-type="list"
+      @close="showExportModal = false"
+      @export="handleExport"
+    />
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref } from 'vue'
+import { useTodoStore } from '@/stores/todo'
+import ExportButton from '@/components/ExportButton.vue'
+import ExportModal from '@/components/ExportModal.vue'
+
+const todoStore = useTodoStore()
+const showExportModal = ref(false)
+
+const handleExport = async (format: 'json' | 'excel' | 'pdf') => {
+  await todoStore.exportFilteredTodos(format)
+}
+</script>
+```
+
+**6. TodoDetailView에 내보내기 버튼 및 모달 추가**
+
+```vue
+<!-- src/views/TodoDetailView.vue -->
+<template>
+  <div class="container mx-auto px-4 py-6">
+    <!-- 헤더와 액션 버튼들 -->
+    <div class="flex justify-between items-center mb-6">
+      <h1 class="text-3xl font-bold">할 일 상세</h1>
+      
+      <div class="flex gap-2">
+        <!-- 내보내기 버튼 추가 -->
+        <ExportButton
+          export-type="single"
+          :todo-id="todoId"
+          @open-modal="showExportModal = true"
+        />
+        
+        <!-- 수정, 삭제 버튼 -->
+        <button @click="handleEdit">수정</button>
+        <button @click="handleDelete">삭제</button>
+      </div>
+    </div>
+    
+    <!-- ... TODO 상세 정보 ... -->
+    
+    <!-- 내보내기 모달 -->
+    <ExportModal
+      :is-open="showExportModal"
+      export-type="single"
+      :todo-id="todoId"
+      @close="showExportModal = false"
+      @export="handleExport"
+    />
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref } from 'vue'
+import { useRoute } from 'vue-router'
+import { useTodoStore } from '@/stores/todo'
+import ExportButton from '@/components/ExportButton.vue'
+import ExportModal from '@/components/ExportModal.vue'
+
+const todoStore = useTodoStore()
+const route = useRoute()
+const todoId = Number(route.params.id)
+const showExportModal = ref(false)
+
+const handleExport = async (format: 'json' | 'excel' | 'pdf') => {
+  await todoStore.exportSingleTodo(todoId, format)
+}
+</script>
+```
+
+#### 구현 체크리스트
+
+**1단계: 기본 인프라 (2-3시간)**
+- [ ] `ExportButton.vue` 컴포넌트 생성 (모달 열기 버튼)
+- [ ] `ExportModal.vue` 컴포넌트 생성 (파일 형식 선택 모달)
+- [ ] `src/utils/fileDownload.ts` 유틸리티 생성
+- [ ] Heroicons 또는 Lucide 아이콘 추가 (다운로드, 파일, X, ChevronRight 아이콘)
+- [ ] 모달 오버레이 스타일링 및 애니메이션
+- [ ] ESC 키로 모달 닫기 기능
+- [ ] Store에 export 액션 추가
+
+**2단계: JSON 내보내기 (2-3시간)**
+- [ ] JSON 내보내기 API 연동
+- [ ] TodoListView에 내보내기 버튼 추가
+- [ ] TodoDetailView에 내보내기 버튼 추가
+- [ ] 프로젝트 카드에 내보내기 버튼 추가
+- [ ] 다운로드 성공/실패 Toast 알림
+- [ ] 로딩 상태 처리
+
+**3단계: Excel 내보내기 (1시간)**
+- [ ] Excel 내보내기 API 연동
+- [ ] 드롭다운 메뉴에 Excel 옵션 추가
+- [ ] 다운로드 테스트
+
+**4단계: PDF 내보내기 (1시간)**
+- [ ] PDF 내보내기 API 연동
+- [ ] 드롭다운 메뉴에 PDF 옵션 추가
+- [ ] 다운로드 테스트
+
+**5단계: 고급 기능 (선택사항, 2-3시간)**
+- [ ] 일괄 선택 모드 추가 (체크박스로 여러 TODO 선택)
+- [ ] 선택된 항목만 내보내기
+- [ ] 내보내기 전 미리보기 모달
+- [ ] 내보내기 옵션 설정 (포함할 필드 선택 등)
+
+#### 예상 개발 기간
+
+- **기본 인프라 (버튼 + 모달)**: 2-3시간
+- **JSON 내보내기**: 2-3시간
+- **Excel 내보내기**: 1시간
+- **PDF 내보내기**: 1시간
+- **테스트 및 버그 수정**: 2-3시간
+- **총 예상 시간**: 8-11시간
+
+#### 기술 스택
+
+- **파일 다운로드**: Blob API + URL.createObjectURL
+- **아이콘**: Heroicons 또는 Lucide Vue
+- **상태 관리**: Pinia Store에 export 액션 추가
+- **에러 처리**: 기존 Toast 알림 시스템 활용
+
+#### 참고 자료
+
+- [MDN - Blob API](https://developer.mozilla.org/en-US/docs/Web/API/Blob)
+- [MDN - Download Attribute](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/a#attr-download)
+- [Heroicons](https://heroicons.com/)
+- [Lucide Icons](https://lucide.dev/)
 
 ## 🔧 환경 변수
 
