@@ -128,8 +128,23 @@ export const useTodoStore = defineStore('todo', () => {
   }
 
   const updateTodo = async (id: number, data: TodoRequest) => {
+    // 낙관적 업데이트: 원본 데이터 백업
+    const originalTodos = [...todos.value]
+    const index = todos.value.findIndex(t => t.id === id)
+    
     try {
       loading.value = true
+      
+      // 1. 먼저 UI 업데이트 (낙관적 업데이트)
+      if (index !== -1) {
+        todos.value[index] = {
+          ...todos.value[index],
+          ...data,
+          updatedAt: new Date().toISOString()
+        }
+      }
+      
+      // 2. API 호출
       const response = await updateTodoApi({
         path: {
           todoId: id
@@ -138,16 +153,17 @@ export const useTodoStore = defineStore('todo', () => {
         throwOnError: true
       })
       
+      // 3. 서버 응답으로 최종 업데이트
       const updatedTodo = response.data?.data
       
-      if (updatedTodo) {
-        const index = todos.value.findIndex(t => t.id === id)
-        if (index !== -1) {
-          todos.value[index] = updatedTodo
-        }
+      if (updatedTodo && index !== -1) {
+        todos.value[index] = updatedTodo
       }
+      
       return updatedTodo
     } catch (error) {
+      // 4. 실패 시 롤백
+      todos.value = originalTodos
       console.error('TODO 수정 실패:', error)
       throw error
     } finally {
@@ -156,7 +172,26 @@ export const useTodoStore = defineStore('todo', () => {
   }
 
   const updateTodoStatus = async (id: number, status: TodoStatus) => {
+    // 낙관적 업데이트: 원본 데이터 백업
+    const originalTodos = [...todos.value]
+    const index = todos.value.findIndex(t => t.id === id)
+    
+    if (index === -1) {
+      throw new Error('TODO를 찾을 수 없습니다.')
+    }
+    
     try {
+      // 1. 먼저 UI 업데이트 (낙관적 업데이트)
+      const optimisticTodo = {
+        ...todos.value[index],
+        status: status,
+        updatedAt: new Date().toISOString(),
+        // DONE 상태로 변경 시 완료 시간 설정
+        completedAt: status === 'DONE' ? new Date().toISOString() : todos.value[index].completedAt
+      }
+      todos.value[index] = optimisticTodo
+      
+      // 2. API 호출
       const response = await updateTodoStatusApi({
         path: {
           todoId: id
@@ -167,16 +202,17 @@ export const useTodoStore = defineStore('todo', () => {
         throwOnError: true
       })
       
+      // 3. 서버 응답으로 최종 업데이트
       const updatedTodo = response.data?.data
       
       if (updatedTodo) {
-        const index = todos.value.findIndex(t => t.id === id)
-        if (index !== -1) {
-          todos.value[index] = updatedTodo
-        }
+        todos.value[index] = updatedTodo
       }
+      
       return updatedTodo
     } catch (error) {
+      // 4. 실패 시 롤백
+      todos.value = originalTodos
       console.error('TODO 상태 변경 실패:', error)
       throw error
     }
