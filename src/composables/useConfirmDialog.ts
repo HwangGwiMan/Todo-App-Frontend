@@ -10,7 +10,8 @@ export function useConfirmDialog() {
   const isOpen = ref(false)
   const message = ref('')
   const title = ref('확인')
-  const resolveCallback = ref<((value: boolean) => void) | null>(null)
+  // eslint-disable-next-line no-unused-vars
+  const resolveCallback = ref<((result: boolean) => void) | null>(null)
 
   /**
    * 확인 다이얼로그 표시

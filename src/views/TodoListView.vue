@@ -221,7 +221,6 @@ import { useToast } from '@/composables/useToast'
 import { useErrorHandler } from '@/composables/useErrorHandler'
 import { useTodoOperations } from '@/composables/useTodoOperations'
 import { useProjectOperations } from '@/composables/useProjectOperations'
-import { useConfirmDialog } from '@/composables/useConfirmDialog'
 import AppHeader from '@/components/AppHeader.vue'
 import TodoCard from '@/components/TodoCard.vue'
 import TodoCreateModal from '@/components/TodoCreateModal.vue'
@@ -241,7 +240,6 @@ const { setToastRef, showError } = useToast()
 const { handleError } = useErrorHandler()
 const todoOps = useTodoOperations()
 const projectOps = useProjectOperations()
-const { confirmDelete } = useConfirmDialog()
 
 const toastRef = ref<InstanceType<typeof ToastNotification> | null>(null)
 const showCreateModal = ref(false)

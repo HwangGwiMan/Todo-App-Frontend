@@ -18,7 +18,7 @@ export interface OperationResult<T = void> {
  */
 export function useProjectOperations() {
   const projectStore = useProjectStore()
-  const { showSuccess, showError } = useToast()
+  const { showError } = useToast()
   const loading = ref(false)
   const error = ref<Error | null>(null)
 
