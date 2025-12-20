@@ -1,5 +1,5 @@
 # Build Stage
-FROM node:18-alpine as build-stage
+FROM node:20-alpine AS build-stage
 
 WORKDIR /app
 
@@ -16,7 +16,7 @@ ENV VITE_API_URL=$VITE_API_URL
 RUN npm run build
 
 # Production Stage
-FROM nginx:stable-alpine as production-stage
+FROM nginx:stable-alpine AS production-stage
 
 # Nginx 설정 파일 복사
 COPY nginx/default.conf /etc/nginx/conf.d/default.conf
