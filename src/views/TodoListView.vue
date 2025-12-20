@@ -219,6 +219,9 @@ import { useTodoStore } from '@/stores/todo'
 import { useProjectStore } from '@/stores/project'
 import { useToast } from '@/composables/useToast'
 import { useErrorHandler } from '@/composables/useErrorHandler'
+import { useTodoOperations } from '@/composables/useTodoOperations'
+import { useProjectOperations } from '@/composables/useProjectOperations'
+import { useConfirmDialog } from '@/composables/useConfirmDialog'
 import AppHeader from '@/components/AppHeader.vue'
 import TodoCard from '@/components/TodoCard.vue'
 import TodoCreateModal from '@/components/TodoCreateModal.vue'
@@ -234,8 +237,11 @@ import type { TodoResponse, TodoRequest, TodoSearchRequest, ProjectResponse, Pro
 
 const todoStore = useTodoStore()
 const projectStore = useProjectStore()
-const { setToastRef, showError, showSuccess } = useToast()
+const { setToastRef, showError } = useToast()
 const { handleError } = useErrorHandler()
+const todoOps = useTodoOperations()
+const projectOps = useProjectOperations()
+const { confirmDelete } = useConfirmDialog()
 
 const toastRef = ref<InstanceType<typeof ToastNotification> | null>(null)
 const showCreateModal = ref(false)
@@ -288,14 +294,15 @@ const handleCreate = async (todoData: TodoRequest) => {
     if (selectedProject.value) {
       todoData.projectId = selectedProject.value.id
     }
-    await todoStore.createTodo(todoData)
-    showCreateModal.value = false
-    showSuccess('TODO가 생성되었습니다.')
-    await todoStore.fetchStats()
-    await todoStore.fetchTodos(filters.value)
+    
+    const result = await todoOps.createTodoWithFeedback(todoData)
+    
+    if (result.success) {
+      showCreateModal.value = false
+      await todoOps.refreshTodos(filters.value)
+    }
   } catch (error) {
     handleError(error, 'TODO 생성 중 오류가 발생했습니다.')
-    showError('TODO 생성에 실패했습니다.')
   }
 }
 
@@ -306,40 +313,42 @@ const handleEdit = (todo: TodoResponse) => {
 
 const handleUpdate = async (id: number, todoData: TodoRequest) => {
   try {
-    console.log('handleUpdate', id, todoData)
-    await todoStore.updateTodo(id, todoData)
-    showEditModal.value = false
-    selectedTodo.value = null
-    showSuccess('TODO가 수정되었습니다.')
-    await todoStore.fetchStats()
-    await todoStore.fetchTodos(filters.value)
+    const result = await todoOps.updateTodoWithFeedback(id, todoData)
+    
+    if (result.success) {
+      showEditModal.value = false
+      selectedTodo.value = null
+      await todoOps.refreshTodos(filters.value)
+    }
   } catch (error) {
     handleError(error, 'TODO 수정 중 오류가 발생했습니다.')
-    showError('TODO 수정에 실패했습니다.')
   }
 }
 
 const handleDelete = async (id: number) => {
   try {
-    await todoStore.deleteTodo(id)
-    showSuccess('TODO가 삭제되었습니다.')
-    await todoStore.fetchStats()
-    await todoStore.fetchTodos(filters.value)
+    const result = await todoOps.deleteTodoWithConfirm(id)
+    
+    if (result.success) {
+      await todoOps.refreshTodos(filters.value)
+    }
   } catch (error) {
     handleError(error, 'TODO 삭제 중 오류가 발생했습니다.')
-    showError('TODO 삭제에 실패했습니다.')
   }
 }
 
 const handleStatusChange = async (id: number, status: string) => {
   try {
-    await todoStore.updateTodoStatus(id, status as 'TODO' | 'IN_PROGRESS' | 'DONE')
-    showSuccess('상태가 변경되었습니다.')
-    await todoStore.fetchStats()
-    await todoStore.fetchTodos(filters.value)
+    const result = await todoOps.updateStatusWithFeedback(
+      id,
+      status as 'TODO' | 'IN_PROGRESS' | 'DONE'
+    )
+    
+    if (result.success) {
+      await todoOps.refreshTodos(filters.value)
+    }
   } catch (error) {
     handleError(error, '상태 변경 중 오류가 발생했습니다.')
-    showError('상태 변경에 실패했습니다.')
   }
 }
 
@@ -353,15 +362,18 @@ const handlePageChange = async (page: number) => {
 // 프로젝트 관련 핸들러들
 const handleProjectCreate = async (projectData: ProjectRequest) => {
   try {
-    await projectStore.createNewProject(projectData)
-    showProjectCreateModal.value = false
-    showSuccess('프로젝트가 생성되었습니다.')
-    // 프로젝트 생성 후 TODO 목록 새로고침 (프로젝트 필터 옵션 업데이트)
-    await todoStore.fetchTodos(filters.value)
-    await projectStore.fetchProjects()
+    const result = await projectOps.createProjectWithFeedback(projectData)
+    
+    if (result.success) {
+      showProjectCreateModal.value = false
+      // 프로젝트 생성 후 TODO 목록 새로고침 (프로젝트 필터 옵션 업데이트)
+      await Promise.all([
+        todoStore.fetchTodos(filters.value),
+        projectStore.fetchProjects()
+      ])
+    }
   } catch (error) {
     handleError(error, '프로젝트 생성 중 오류가 발생했습니다.')
-    showError('프로젝트 생성에 실패했습니다.')
   }
 }
 
@@ -372,13 +384,14 @@ const handleProjectEdit = (project: ProjectResponse) => {
 
 const handleProjectUpdate = async (projectId: number, projectData: ProjectRequest) => {
   try {
-    await projectStore.updateExistingProject(projectId, projectData)
-    showProjectEditModal.value = false
-    selectedProject.value = null
-    showSuccess('프로젝트가 수정되었습니다.')
+    const result = await projectOps.updateProjectWithFeedback(projectId, projectData)
+    
+    if (result.success) {
+      showProjectEditModal.value = false
+      selectedProject.value = null
+    }
   } catch (error) {
     handleError(error, '프로젝트 수정 중 오류가 발생했습니다.')
-    showError('프로젝트 수정에 실패했습니다.')
   }
 }
 
@@ -391,19 +404,18 @@ const handleProjectDelete = async (project: ProjectResponse) => {
     return
   }
   
-  if (confirm(`'${project.name}' 프로젝트를 삭제하시겠습니까?\n이 프로젝트에 포함된 TODO들은 프로젝트 없음으로 변경됩니다.`)) {
-    try {
-      await projectStore.deleteExistingProject(project.id)
-      showSuccess('프로젝트가 삭제되었습니다.')
+  try {
+    const result = await projectOps.deleteProjectWithConfirm(project.id)
+    
+    if (result.success) {
       // 현재 선택된 프로젝트가 삭제된 경우 필터 초기화
       if (filters.value.projectId === project.id) {
         filters.value.projectId = undefined
       }
       await todoStore.fetchTodos(filters.value)
-    } catch (error) {
-      handleError(error, '프로젝트 삭제 중 오류가 발생했습니다.')
-      showError('프로젝트 삭제에 실패했습니다.')
     }
+  } catch (error) {
+    handleError(error, '프로젝트 삭제 중 오류가 발생했습니다.')
   }
 }
 

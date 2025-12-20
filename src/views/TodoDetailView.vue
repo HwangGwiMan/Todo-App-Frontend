@@ -215,6 +215,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useTodoStore } from '@/stores/todo'
 import { useProjectStore } from '@/stores/project'
 import { useToast } from '@/composables/useToast'
+import { useTodoOperations } from '@/composables/useTodoOperations'
 import AppHeader from '@/components/AppHeader.vue'
 import LoadingSpinner from '@/components/LoadingSpinner.vue'
 import TodoEditModal from '@/components/TodoEditModal.vue'
@@ -228,6 +229,7 @@ const router = useRouter()
 const todoStore = useTodoStore()
 const projectStore = useProjectStore()
 const { showToast } = useToast()
+const todoOps = useTodoOperations()
 
 const todo = computed(() => todoStore.currentTodo)
 const error = ref<string | null>(null)
@@ -364,14 +366,14 @@ const changeStatus = async (status: TodoStatus) => {
   
   try {
     isUpdating.value = true
-    await todoStore.updateTodoStatus(todo.value.id, status)
-    showToast('상태가 변경되었습니다.', 'success')
+    const result = await todoOps.updateStatusWithFeedback(todo.value.id, status)
     
-    // 데이터 새로고침
-    await loadTodo()
+    if (result.success) {
+      // 데이터 새로고침
+      await loadTodo()
+    }
   } catch (err) {
     console.error('상태 변경 실패:', err)
-    showToast('상태 변경에 실패했습니다.', 'error')
   } finally {
     isUpdating.value = false
   }
@@ -381,18 +383,15 @@ const changeStatus = async (status: TodoStatus) => {
 const handleDelete = async () => {
   if (!todo.value?.id) return
   
-  if (!confirm('정말로 이 TODO를 삭제하시겠습니까?')) {
-    return
-  }
-  
   try {
     isDeleting.value = true
-    await todoStore.deleteTodo(todo.value.id)
-    showToast('TODO가 삭제되었습니다.', 'success')
-    router.push('/todos')
+    const result = await todoOps.deleteTodoWithConfirm(todo.value.id)
+    
+    if (result.success) {
+      router.push('/todos')
+    }
   } catch (err) {
     console.error('삭제 실패:', err)
-    showToast('TODO 삭제에 실패했습니다.', 'error')
   } finally {
     isDeleting.value = false
   }
