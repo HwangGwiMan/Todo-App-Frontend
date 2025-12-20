@@ -47,7 +47,7 @@ jobs:
       #     source: "docker-compose.yml" # 루트에 있다고 가정
       #     target: "/home/${{ secrets.EC2_USER }}/app"
 
-      - name: Deploy to EC2
+      - name: Deploy to NCP
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.NCP_HOST }}
