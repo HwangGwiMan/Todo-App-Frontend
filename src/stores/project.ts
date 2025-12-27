@@ -16,8 +16,9 @@ import { useErrorHandler } from '@/composables/useErrorHandler'
 import { useToast } from '@/composables/useToast'
 
 export const useProjectStore = defineStore('project', () => {
-  // State
-  const projects = ref<ProjectResponse[]>([])
+  // State - Map 구조로 최적화 (O(1) 조회)
+  const projectsMap = ref<Map<number, ProjectResponse>>(new Map())
+  const projectIds = ref<number[]>([]) // 순서 유지용
   const currentProject = ref<ProjectResponse | null>(null)
   const defaultProject = ref<ProjectResponse | null>(null)
   const isLoading = ref(false)
@@ -30,6 +31,12 @@ export const useProjectStore = defineStore('project', () => {
   const { showToast } = useToast()
 
   // Getters
+  // 기존 코드와의 호환성을 위해 배열로 반환하는 computed 속성 유지
+  const projects = computed(() => 
+    projectIds.value
+      .map(id => projectsMap.value.get(id))
+      .filter((project): project is ProjectResponse => project !== undefined)
+  )
   const projectCount = computed(() => projects.value.length)
   const hasProjects = computed(() => projectCount.value > 0)
   const sortedProjects = computed(() => {
@@ -42,6 +49,11 @@ export const useProjectStore = defineStore('project', () => {
     })
   })
 
+  // O(1) 조회 메서드
+  const getProjectById = (projectId: number): ProjectResponse | null => {
+    return projectsMap.value.get(projectId) || null
+  }
+
   // Actions
   const fetchProjects = async () => {
     try {
@@ -50,7 +62,18 @@ export const useProjectStore = defineStore('project', () => {
         throwOnError: true
       })
       
-      projects.value = (response.data?.data as ProjectResponse[]) || []
+      const projectList = (response.data?.data as ProjectResponse[]) || []
+      
+      // Map과 배열 동시 업데이트
+      projectsMap.value.clear()
+      projectIds.value = []
+      
+      projectList.forEach(project => {
+        if (project.id !== undefined && project.id !== null) {
+          projectsMap.value.set(project.id, project)
+          projectIds.value.push(project.id)
+        }
+      })
       
     } catch (error) {
       handleError(error, '프로젝트 목록을 불러오는데 실패했습니다.')
@@ -106,14 +129,20 @@ export const useProjectStore = defineStore('project', () => {
       
       const newProject = response.data?.data
       
-      if (newProject) {
-        projects.value.push(newProject)
+      if (newProject && newProject.id !== undefined && newProject.id !== null) {
+        // Map과 배열에 추가
+        projectsMap.value.set(newProject.id, newProject)
+        projectIds.value.push(newProject.id)
         
         // 기본 프로젝트로 설정된 경우 기존 기본 프로젝트 해제
         if (newProject.isDefault) {
-          projects.value.forEach(project => {
-            if (project.id !== newProject.id) {
-              project.isDefault = false
+          projectIds.value.forEach(projectId => {
+            if (projectId !== newProject.id) {
+              const existingProject = projectsMap.value.get(projectId)
+              if (existingProject && existingProject.isDefault) {
+                existingProject.isDefault = false
+                projectsMap.value.set(projectId, existingProject)
+              }
             }
           })
           defaultProject.value = newProject
@@ -143,17 +172,19 @@ export const useProjectStore = defineStore('project', () => {
       
       const updatedProject = response.data?.data
       
-      if (updatedProject) {
-        const index = projects.value.findIndex(p => p.id === projectId)
-        if (index !== -1) {
-          projects.value[index] = updatedProject
-        }
+      if (updatedProject && updatedProject.id !== undefined && updatedProject.id !== null) {
+        // Map 업데이트
+        projectsMap.value.set(updatedProject.id, updatedProject)
         
         // 기본 프로젝트로 설정된 경우 기존 기본 프로젝트 해제
         if (updatedProject.isDefault) {
-          projects.value.forEach(project => {
-            if (project.id !== updatedProject.id) {
-              project.isDefault = false
+          projectIds.value.forEach(projectId => {
+            if (projectId !== updatedProject.id) {
+              const existingProject = projectsMap.value.get(projectId)
+              if (existingProject && existingProject.isDefault) {
+                existingProject.isDefault = false
+                projectsMap.value.set(projectId, existingProject)
+              }
             }
           })
           defaultProject.value = updatedProject
@@ -185,8 +216,9 @@ export const useProjectStore = defineStore('project', () => {
         throwOnError: true
       })
       
-      // 로컬 상태에서 제거
-      projects.value = projects.value.filter(p => p.id !== projectId)
+      // Map과 배열에서 제거
+      projectsMap.value.delete(projectId)
+      projectIds.value = projectIds.value.filter(id => id !== projectId)
       
       // 현재 프로젝트가 삭제된 경우 초기화
       if (currentProject.value?.id === projectId) {
@@ -209,10 +241,6 @@ export const useProjectStore = defineStore('project', () => {
     }
   }
 
-  const getProjectById = (projectId: number): ProjectResponse | null => {
-    return projects.value.find(p => p.id === projectId) || null
-  }
-
   const getProjectsForSelect = computed(() => {
     return sortedProjects.value
       .filter(project => project.id !== undefined)
@@ -226,7 +254,8 @@ export const useProjectStore = defineStore('project', () => {
 
   // Reset function
   const reset = () => {
-    projects.value = []
+    projectsMap.value.clear()
+    projectIds.value = []
     currentProject.value = null
     defaultProject.value = null
     isLoading.value = false
@@ -236,8 +265,8 @@ export const useProjectStore = defineStore('project', () => {
   }
 
   return {
-    // State
-    projects,
+    // State (기존 API 호환성 유지)
+    projects, // computed 배열 (기존 코드와 호환)
     currentProject,
     defaultProject,
     isLoading,
@@ -258,7 +287,7 @@ export const useProjectStore = defineStore('project', () => {
     createNewProject,
     updateExistingProject,
     deleteExistingProject,
-    getProjectById,
+    getProjectById, // O(1) 조회 메서드
     reset
   }
 })
