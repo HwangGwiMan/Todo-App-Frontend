@@ -22,8 +22,9 @@ import type {
 type TodoStatus = 'TODO' | 'IN_PROGRESS' | 'DONE'
 
 export const useTodoStore = defineStore('todo', () => {
-  // State
-  const todos = ref<TodoResponse[]>([])
+  // State - Map 구조로 최적화 (O(1) 조회)
+  const todosMap = ref<Map<number, TodoResponse>>(new Map())
+  const todoIds = ref<number[]>([]) // 순서 유지용
   const currentTodo = ref<TodoResponse | null>(null)
   const stats = ref<TodoStatsResponse | null>(null)
   const loading = ref(false)
@@ -32,11 +33,21 @@ export const useTodoStore = defineStore('todo', () => {
   const currentPage = ref(0)
 
   // Getters
-  const todoList = computed(() => todos.value)
+  // 기존 코드와의 호환성을 위해 배열로 반환하는 computed 속성 유지
+  const todos = computed(() => 
+    todoIds.value
+      .map(id => todosMap.value.get(id))
+      .filter((todo): todo is TodoResponse => todo !== undefined)
+  )
   const todoCount = computed(() => stats.value?.todoCount || 0)
   const inProgressCount = computed(() => stats.value?.inProgressCount || 0)
   const doneCount = computed(() => stats.value?.doneCount || 0)
   const completionRate = computed(() => stats.value?.completionRate || 0)
+
+  // O(1) 조회 메서드
+  const getTodoById = (id: number): TodoResponse | undefined => {
+    return todosMap.value.get(id)
+  }
 
   // Actions
   const fetchTodos = async (params?: TodoSearchRequest) => {
@@ -72,7 +83,18 @@ export const useTodoStore = defineStore('todo', () => {
       const pageData = response.data?.data
       
       if (pageData) {
-        todos.value = pageData.content || []
+        // Map과 배열 동시 업데이트
+        todosMap.value.clear()
+        todoIds.value = []
+        
+        const content = pageData.content || []
+        content.forEach(todo => {
+          if (todo.id !== undefined && todo.id !== null) {
+            todosMap.value.set(todo.id, todo)
+            todoIds.value.push(todo.id)
+          }
+        })
+        
         totalPages.value = pageData.totalPages || 0
         totalElements.value = pageData.totalElements || 0
         currentPage.value = pageData.number || 0
@@ -86,6 +108,13 @@ export const useTodoStore = defineStore('todo', () => {
   }
 
   const fetchTodoById = async (id: number) => {
+    // Map에 이미 있는 경우 캐시된 데이터 사용 (선택적 최적화)
+    const cachedTodo = todosMap.value.get(id)
+    if (cachedTodo) {
+      currentTodo.value = cachedTodo
+      return cachedTodo
+    }
+
     try {
       loading.value = true
       const response = await getTodo({
@@ -95,8 +124,23 @@ export const useTodoStore = defineStore('todo', () => {
         throwOnError: true
       })
       
-      currentTodo.value = response.data?.data || null
-      return response.data?.data
+      const todo = response.data?.data
+      
+      if (todo) {
+        // Map에도 저장하여 나중에 빠르게 조회 가능하도록
+        if (todo.id !== undefined && todo.id !== null) {
+          todosMap.value.set(todo.id, todo)
+          // ID가 배열에 없으면 추가 (순서 유지)
+          if (!todoIds.value.includes(todo.id)) {
+            todoIds.value.push(todo.id)
+          }
+        }
+        currentTodo.value = todo
+      } else {
+        currentTodo.value = null
+      }
+      
+      return todo
     } catch (error) {
       console.error('TODO 조회 실패:', error)
       throw error
@@ -115,8 +159,10 @@ export const useTodoStore = defineStore('todo', () => {
       
       const newTodo = response.data?.data
       
-      if (newTodo) {
-        todos.value.unshift(newTodo)
+      if (newTodo && newTodo.id !== undefined && newTodo.id !== null) {
+        // Map과 배열에 추가 (맨 앞에 추가)
+        todosMap.value.set(newTodo.id, newTodo)
+        todoIds.value.unshift(newTodo.id)
       }
       return newTodo
     } catch (error) {
@@ -129,20 +175,24 @@ export const useTodoStore = defineStore('todo', () => {
 
   const updateTodo = async (id: number, data: TodoRequest) => {
     // 낙관적 업데이트: 원본 데이터 백업
-    const originalTodos = [...todos.value]
-    const index = todos.value.findIndex(t => t.id === id)
+    const originalMap = new Map(todosMap.value)
+    const originalIds = [...todoIds.value]
+    const existingTodo = todosMap.value.get(id)
+    
+    if (!existingTodo) {
+      throw new Error('TODO를 찾을 수 없습니다.')
+    }
     
     try {
       loading.value = true
       
       // 1. 먼저 UI 업데이트 (낙관적 업데이트)
-      if (index !== -1) {
-        todos.value[index] = {
-          ...todos.value[index],
-          ...data,
-          updatedAt: new Date().toISOString()
-        }
+      const optimisticTodo: TodoResponse = {
+        ...existingTodo,
+        ...data,
+        updatedAt: new Date().toISOString()
       }
+      todosMap.value.set(id, optimisticTodo)
       
       // 2. API 호출
       const response = await updateTodoApi({
@@ -156,14 +206,15 @@ export const useTodoStore = defineStore('todo', () => {
       // 3. 서버 응답으로 최종 업데이트
       const updatedTodo = response.data?.data
       
-      if (updatedTodo && index !== -1) {
-        todos.value[index] = updatedTodo
+      if (updatedTodo) {
+        todosMap.value.set(id, updatedTodo)
       }
       
       return updatedTodo
     } catch (error) {
       // 4. 실패 시 롤백
-      todos.value = originalTodos
+      todosMap.value = originalMap
+      todoIds.value = originalIds
       console.error('TODO 수정 실패:', error)
       throw error
     } finally {
@@ -173,23 +224,24 @@ export const useTodoStore = defineStore('todo', () => {
 
   const updateTodoStatus = async (id: number, status: TodoStatus) => {
     // 낙관적 업데이트: 원본 데이터 백업
-    const originalTodos = [...todos.value]
-    const index = todos.value.findIndex(t => t.id === id)
+    const originalMap = new Map(todosMap.value)
+    const originalIds = [...todoIds.value]
+    const existingTodo = todosMap.value.get(id)
     
-    if (index === -1) {
+    if (!existingTodo) {
       throw new Error('TODO를 찾을 수 없습니다.')
     }
     
     try {
       // 1. 먼저 UI 업데이트 (낙관적 업데이트)
-      const optimisticTodo = {
-        ...todos.value[index],
+      const optimisticTodo: TodoResponse = {
+        ...existingTodo,
         status: status,
         updatedAt: new Date().toISOString(),
         // DONE 상태로 변경 시 완료 시간 설정
-        completedAt: status === 'DONE' ? new Date().toISOString() : todos.value[index].completedAt
+        completedAt: status === 'DONE' ? new Date().toISOString() : existingTodo.completedAt
       }
-      todos.value[index] = optimisticTodo
+      todosMap.value.set(id, optimisticTodo)
       
       // 2. API 호출
       const response = await updateTodoStatusApi({
@@ -206,13 +258,14 @@ export const useTodoStore = defineStore('todo', () => {
       const updatedTodo = response.data?.data
       
       if (updatedTodo) {
-        todos.value[index] = updatedTodo
+        todosMap.value.set(id, updatedTodo)
       }
       
       return updatedTodo
     } catch (error) {
       // 4. 실패 시 롤백
-      todos.value = originalTodos
+      todosMap.value = originalMap
+      todoIds.value = originalIds
       console.error('TODO 상태 변경 실패:', error)
       throw error
     }
@@ -228,7 +281,9 @@ export const useTodoStore = defineStore('todo', () => {
         throwOnError: true
       })
       
-      todos.value = todos.value.filter(t => t.id !== id)
+      // Map과 배열에서 제거
+      todosMap.value.delete(id)
+      todoIds.value = todoIds.value.filter(todoId => todoId !== id)
     } catch (error) {
       console.error('TODO 삭제 실패:', error)
       throw error
@@ -264,24 +319,27 @@ export const useTodoStore = defineStore('todo', () => {
   }
 
   const clearTodos = () => {
-    todos.value = []
+    todosMap.value.clear()
+    todoIds.value = []
     currentTodo.value = null
     stats.value = null
   }
 
   return {
-    todos,
+    // State (기존 API 호환성 유지)
+    todos, // computed 배열 (기존 코드와 호환)
     currentTodo,
     stats,
     loading,
     totalPages,
     totalElements,
     currentPage,
-    todoList,
+    // Getters
     todoCount,
     inProgressCount,
     doneCount,
     completionRate,
+    // Actions
     fetchTodos,
     fetchTodoById,
     createTodo,
@@ -290,7 +348,9 @@ export const useTodoStore = defineStore('todo', () => {
     deleteTodo,
     fetchStats,
     fetchDashboardStats,
-    clearTodos
+    clearTodos,
+    // 새로운 최적화된 메서드
+    getTodoById
   }
 })
 
