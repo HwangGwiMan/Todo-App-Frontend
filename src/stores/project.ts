@@ -83,6 +83,13 @@ export const useProjectStore = defineStore('project', () => {
   }
 
   const fetchProject = async (projectId: number) => {
+    // Map에 이미 있는 경우 캐시된 데이터 사용 (선택적 최적화)
+    const cachedProject = projectsMap.value.get(projectId)
+    if (cachedProject) {
+      currentProject.value = cachedProject
+      return cachedProject
+    }
+
     try {
       isLoading.value = true
       const response = await getProject({
@@ -90,7 +97,21 @@ export const useProjectStore = defineStore('project', () => {
         throwOnError: true
       })
       
-      currentProject.value = response.data?.data || null
+      const project = response.data?.data || null
+      
+      if (project) {
+        // Map에도 저장하여 나중에 빠르게 조회 가능하도록
+        if (project.id !== undefined && project.id !== null) {
+          projectsMap.value.set(project.id, project)
+          // ID가 배열에 없으면 추가 (순서 유지)
+          if (!projectIds.value.includes(project.id)) {
+            projectIds.value.push(project.id)
+          }
+        }
+        currentProject.value = project
+      } else {
+        currentProject.value = null
+      }
       
       return currentProject.value
     } catch (error) {
@@ -107,7 +128,21 @@ export const useProjectStore = defineStore('project', () => {
         throwOnError: false // 기본 프로젝트가 없을 수 있음
       })
       
-      defaultProject.value = response.data?.data || null
+      const project = response.data?.data || null
+      
+      if (project) {
+        // Map에도 저장하여 나중에 빠르게 조회 가능하도록
+        if (project.id !== undefined && project.id !== null) {
+          projectsMap.value.set(project.id, project)
+          // ID가 배열에 없으면 추가 (순서 유지)
+          if (!projectIds.value.includes(project.id)) {
+            projectIds.value.push(project.id)
+          }
+        }
+        defaultProject.value = project
+      } else {
+        defaultProject.value = null
+      }
       
       return defaultProject.value
     } catch (error: unknown) {

@@ -1178,7 +1178,7 @@ export function isServerError(error: unknown): boolean
 **�?기능???�???�세??구현 계획?� `.github-issues/` ?�렉?�리???�슈 ?�일??참조?�세??**
 
 #### Phase 4 지??(중간 ?�선?�위) - ?�키?�처 개선
-- [ ] **Store ?�태 관�?최적??* - Map 구조, O(1) 조회 (3-4?�간)  
+- [x] **Store ?�태 관�?최적??* - Map 구조, O(1) 조회 (3-4?�간)  
   ?�� `.github-issues/issue-phase4-store-optimization.md`
 - [ ] **컴포?�트 분리** - 공통 컴포?�트 (ConfirmDialog, EmptyState) (4-5?�간)  
   ?�� `.github-issues/issue-phase4-component-separation.md`

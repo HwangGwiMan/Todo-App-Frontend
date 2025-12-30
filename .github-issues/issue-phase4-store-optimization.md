@@ -44,11 +44,14 @@ export const useTodoStore = defineStore('todo', () => {
 ```
 
 ## ✅ 체크리스트
-- [ ] Todo Store Map 구조로 리팩토링
-- [ ] Project Store 최적화
-- [ ] 불필요한 상태 제거
-- [ ] Computed 속성 최적화
-- [ ] 성능 테스트
+- [x] Todo Store Map 구조로 리팩토링
+- [x] Project Store 최적화
+- [x] 불필요한 상태 제거 (`todoList` 중복 computed 제거)
+- [x] Computed 속성 최적화
+- [x] `fetchTodoById`에서 Map에도 저장하도록 개선 (캐싱 최적화)
+- [x] `fetchProject`에서 Map에도 저장하도록 개선 (캐싱 최적화)
+- [x] `fetchDefaultProject`에서 Map에도 저장하도록 개선
+- [ ] 성능 테스트 (수동 테스트 완료, 자동화 테스트는 추후 구현)
 
 ## ⏱️ 예상 소요 시간
 3-4시간

@@ -39,7 +39,6 @@ export const useTodoStore = defineStore('todo', () => {
       .map(id => todosMap.value.get(id))
       .filter((todo): todo is TodoResponse => todo !== undefined)
   )
-  const todoList = computed(() => todos.value)
   const todoCount = computed(() => stats.value?.todoCount || 0)
   const inProgressCount = computed(() => stats.value?.inProgressCount || 0)
   const doneCount = computed(() => stats.value?.doneCount || 0)
@@ -109,6 +108,13 @@ export const useTodoStore = defineStore('todo', () => {
   }
 
   const fetchTodoById = async (id: number) => {
+    // Map에 이미 있는 경우 캐시된 데이터 사용 (선택적 최적화)
+    const cachedTodo = todosMap.value.get(id)
+    if (cachedTodo) {
+      currentTodo.value = cachedTodo
+      return cachedTodo
+    }
+
     try {
       loading.value = true
       const response = await getTodo({
@@ -118,8 +124,23 @@ export const useTodoStore = defineStore('todo', () => {
         throwOnError: true
       })
       
-      currentTodo.value = response.data?.data || null
-      return response.data?.data
+      const todo = response.data?.data
+      
+      if (todo) {
+        // Map에도 저장하여 나중에 빠르게 조회 가능하도록
+        if (todo.id !== undefined && todo.id !== null) {
+          todosMap.value.set(todo.id, todo)
+          // ID가 배열에 없으면 추가 (순서 유지)
+          if (!todoIds.value.includes(todo.id)) {
+            todoIds.value.push(todo.id)
+          }
+        }
+        currentTodo.value = todo
+      } else {
+        currentTodo.value = null
+      }
+      
+      return todo
     } catch (error) {
       console.error('TODO 조회 실패:', error)
       throw error
@@ -314,7 +335,6 @@ export const useTodoStore = defineStore('todo', () => {
     totalElements,
     currentPage,
     // Getters
-    todoList,
     todoCount,
     inProgressCount,
     doneCount,
