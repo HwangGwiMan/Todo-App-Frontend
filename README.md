@@ -1,148 +1,148 @@
 # TodoApp Frontend
 
-Vue 3 + TypeScript + Tailwind CSS�?구축??TodoApp ?�론?�엔?�입?�다.
+Vue 3 + TypeScript + Tailwind CSS로 구축된 TodoApp 프론트엔드입니다.
 
-## ?�� ?�로?�트 ?�보
+## 📋 프로젝트 정보
 
-???�로?�트???�립?�인 Git ?�포지?�리�?관리됩?�다. 백엔?��? 별도�?버전 관리됩?�다.
+이 프로젝트는 독립적인 Git 레포지토리로 관리됩니다. 백엔드와 별도로 버전 관리됩니다.
 
-## ?�� ?�재 개발 ?�태
+## 📊 현재 개발 상태
 
-- ??**Phase 1 ?�료** (2025??11??: TODO CRUD, ?�증, ?�터/?�렬/검?? ?�이지?�이?? ?�계 ?�?�보??
-- ??**Phase 2 ?�료** (2025??11??: ?�로?�트 관�? ?�로?�트-TODO ?�합, ?�로?�트 ?�터�?
-- ??**Phase 3 ?�료** (2025??12??: TODO ?�세 ?�이지 ?�전 구현 (?�세 ?�보, ?�짜 관�? ?�태 변�? ?�정/??��)
-- ??**Phase 4 ?�료** (2025??12??: ?�키?�처 �?코드 ?�질 개선 (Composable ?�턴, ?��????�데?�트, ?�러 처리 ?��???
+- ✅ **Phase 1 완료** (2025년 11월): TODO CRUD, 인증, 필터/정렬/검색, 페이지네이션, 통계 대시보드
+- ✅ **Phase 2 완료** (2025년 11월): 프로젝트 관리, 프로젝트-TODO 통합, 프로젝트 필터링
+- ✅ **Phase 3 완료** (2025년 12월): TODO 상세 페이지 완전 구현 (상세 정보, 날짜 관리, 상태 변경, 수정/삭제)
+- ✅ **Phase 4 완료** (2025년 12월): 아키텍처 및 코드 품질 개선 (Composable 패턴, 낙관적 업데이트, 에러 처리 표준화)
 
-## ?? ?�작?�기
+## 🚀 시작하기
 
-### ?�전 ?�구?�항
+### 사전 요구사항
 
 - Node.js 20+ 
-- npm ?�는 yarn
-- 백엔???�버 ?�행 (http://localhost:8080)
+- npm 또는 yarn
+- 백엔드 서버 실행 (http://localhost:8080)
 
-### ?�치 �??�행
+### 설치 및 실행
 
 ```bash
-# ?�키지 ?�치
+# 패키지 설치
 npm install
 
-# API ?�라?�언??코드 ?�성 (백엔???�버 ?�행 ??
+# API 클라이언트 코드 생성 (백엔드 서버 실행 후)
 npm run generate:api
-# ?�는 직접 ?�행
+# 또는 직접 실행
 npx @hey-api/openapi-ts
 
-# 개발 ?�버 ?�행 (http://localhost:5173)
+# 개발 서버 실행 (http://localhost:5173)
 npm run dev
 
-# ?�로?�션 빌드
+# 프로덕션 빌드
 npm run build
 
 # 빌드 미리보기
 npm run preview
 ```
 
-## ?�� ?�로?�트 구조
+## 📁 프로젝트 구조
 
 ```
 src/
-?��??� client/                 # @hey-api/openapi-ts�??�동 ?�성??API ?�라?�언??
-??  ?��??� client/            # ?�라?�언??구현
-??  ?��??� core/              # ?�심 ?�틸리티
-??  ?��??� sdk.gen.ts         # SDK ?�수??(login, signup, getTodos ??
-??  ?��??� types.gen.ts       # TypeScript ?�???�의
-??  ?��??� index.ts           # ?�합 export
-??
-?��??� components/            # ?�사??가?�한 컴포?�트
-??  ?��??� TodoCard.vue       # TODO 카드 컴포?�트
-??  ?��??� TodoCreateModal.vue # TODO ?�성 모달
-??  ?��??� TodoEditModal.vue  # TODO ?�정 모달
-??  ?��??� ProjectCard.vue    # ?�로?�트 카드 컴포?�트 ??
-??  ?��??� ProjectCreateModal.vue # ?�로?�트 ?�성 모달 ??
-??  ?��??� ProjectEditModal.vue # ?�로?�트 ?�정 모달 ??
-??  ?��??� SelectField.vue    # ?�택 ?�드 컴포?�트
-??  ?��??� FilterSortBar.vue  # ?�터/?�렬 �?(?�로?�트 ?�터 ?�함) ??
-??  ?��??� Pagination.vue      # ?�이지?�이??
-??  ?��??� LoadingSpinner.vue # 로딩 ?�피??
-??  ?��??� ToastNotification.vue # ?�스???�림
-??
-?��??� config/                # ?�정 ?�일
-??  ?��??� client.ts          # API ?�라?�언???�정 (?�증 ?�큰 ?�동 주입)
-??
-?��??� assets/                # CSS, ?��?지 ??
-??  ?��??� main.css           # Tailwind CSS + 커스?� ?��???
-??
-?��??� composables/           # Vue 컴포?��???
-??  ?��??� useErrorHandler.ts # ?�러 처리 컴포?��?
-??  ?��??� useToast.ts        # ?�스???�림 컴포?��?
-??  ?��??� useTodoOperations.ts # TODO ?�업 컴포?��?(Phase 4) ??
-??  ?��??� useProjectOperations.ts # ?�로?�트 ?�업 컴포?��?(Phase 4) ??
-??  ?��??� useFormValidation.ts # ??검�?컴포?��?(Phase 4) ??
-??  ?��??� useConfirmDialog.ts # ?�인 ?�이?�로�?컴포?��?(Phase 4) ??
-??
-?��??� router/                # Vue Router ?�정
-??  ?��??� index.ts           # ?�우???�의 + ?�비게이??가??
-??
-?��??� stores/                # Pinia ?�태 관�?
-??  ?��??� auth.ts            # ?�증 ?�태
-??  ?��??� todo.ts            # TODO ?�태
-??  ?��??� project.ts         # ?�로?�트 ?�태 ??
-??
-?��??� types/                 # 추�? ?�???�의 �??�export
-??  ?��??� index.ts           # ?�??별칭 �??�export
-??
-?��??� utils/                 # ?�틸리티 ?�수
-??  ?��??� errorHandler.ts    # ?�러 처리 ?�틸리티
-??
-?��??� views/                 # ?�이지 컴포?�트
-??  ?��??� LoginView.vue      # 로그???�이지
-??  ?��??� SignupView.vue     # ?�원가???�이지
-??  ?��??� TodoListView.vue   # TODO 목록 ?�이지 (?�로?�트 관�??�합) ??
-??  ?��??� TodoDetailView.vue # TODO ?�세 ?�이지 ?�� (?�레?�스?�?�만 존재)
-??  ?��??� NotFoundView.vue  # 404 ?�이지
-??
-?��??� App.vue                # 루트 컴포?�트
-?��??� main.ts                # ???�트�??�인??
+├── client/                 # @hey-api/openapi-ts로 자동 생성된 API 클라이언트
+│   ├── client/            # 클라이언트 구현
+│   ├── core/              # 핵심 유틸리티
+│   ├── sdk.gen.ts         # SDK 함수들 (login, signup, getTodos 등)
+│   ├── types.gen.ts       # TypeScript 타입 정의
+│   └── index.ts           # 통합 export
+│
+├── components/            # 재사용 가능한 컴포넌트
+│   ├── TodoCard.vue       # TODO 카드 컴포넌트
+│   ├── TodoCreateModal.vue # TODO 생성 모달
+│   ├── TodoEditModal.vue  # TODO 수정 모달
+│   ├── ProjectCard.vue    # 프로젝트 카드 컴포넌트 ✅
+│   ├── ProjectCreateModal.vue # 프로젝트 생성 모달 ✅
+│   ├── ProjectEditModal.vue # 프로젝트 수정 모달 ✅
+│   ├── SelectField.vue    # 선택 필드 컴포넌트
+│   ├── FilterSortBar.vue  # 필터/정렬 바 (프로젝트 필터 포함) ✅
+│   ├── Pagination.vue      # 페이지네이션
+│   ├── LoadingSpinner.vue # 로딩 스피너
+│   └── ToastNotification.vue # 토스트 알림
+│
+├── config/                # 설정 파일
+│   └── client.ts          # API 클라이언트 설정 (인증 토큰 자동 주입)
+│
+├── assets/                # CSS, 이미지 등
+│   └── main.css           # Tailwind CSS + 커스텀 스타일
+│
+├── composables/           # Vue 컴포저블 ✅
+│   ├── useErrorHandler.ts # 에러 처리 컴포저블
+│   ├── useToast.ts        # 토스트 알림 컴포저블
+│   ├── useTodoOperations.ts # TODO 작업 컴포저블 (Phase 4) ✅
+│   ├── useProjectOperations.ts # 프로젝트 작업 컴포저블 (Phase 4) ✅
+│   ├── useFormValidation.ts # 폼 검증 컴포저블 (Phase 4) ✅
+│   └── useConfirmDialog.ts # 확인 다이얼로그 컴포저블 (Phase 4) ✅
+│
+├── router/                # Vue Router 설정
+│   └── index.ts           # 라우트 정의 + 네비게이션 가드
+│
+├── stores/                # Pinia 상태 관리
+│   ├── auth.ts            # 인증 상태
+│   ├── todo.ts            # TODO 상태
+│   └── project.ts         # 프로젝트 상태 ✅
+│
+├── types/                 # 추가 타입 정의 및 재export
+│   └── index.ts           # 타입 별칭 및 재export
+│
+├── utils/                 # 유틸리티 함수
+│   └── errorHandler.ts    # 에러 처리 유틸리티
+│
+├── views/                 # 페이지 컴포넌트
+│   ├── LoginView.vue      # 로그인 페이지
+│   ├── SignupView.vue     # 회원가입 페이지
+│   ├── TodoListView.vue   # TODO 목록 페이지 (프로젝트 관리 통합) ✅
+│   ├── TodoDetailView.vue # TODO 상세 페이지 🚧 (플레이스홀더만 존재)
+│   └── NotFoundView.vue  # 404 페이지
+│
+├── App.vue                # 루트 컴포넌트
+└── main.ts                # 앱 엔트리 포인트
 ```
 
-## ?�� ?��???가?�드
+## 🎨 스타일 가이드
 
-### Tailwind CSS ?�틸리티 ?�래??
+### Tailwind CSS 유틸리티 클래스
 
-?�로?�트?�서 ?�의??커스?� ?�래??
+프로젝트에서 정의한 커스텀 클래스:
 
 ```css
 /* 버튼 */
-.btn-primary     /* 주요 버튼 (Blue ?�상) */
-.btn-secondary   /* 보조 버튼 (Gray ?�상) */
+.btn-primary     /* 주요 버튼 (Blue 색상) */
+.btn-secondary   /* 보조 버튼 (Gray 색상) */
 
-/* ?�력 ?�드 */
-.input-field     /* ?�스???�력 ?�드 */
+/* 입력 필드 */
+.input-field     /* 텍스트 입력 필드 */
 
 /* 카드 */
-.card            /* 카드 컨테?�너 */
+.card            /* 카드 컨테이너 */
 ```
 
-## ?�� ?�증 처리
+## 🔑 인증 처리
 
-### ?�큰 ?�??
-JWT ?�큰?� `localStorage`???�?�됩?�다:
+### 토큰 저장
+JWT 토큰은 `localStorage`에 저장됩니다:
 - Key: `token`
-- `src/config/client.ts`?�서 ?�동?�로 ?�청 ?�더???�함
+- `src/config/client.ts`에서 자동으로 요청 헤더에 포함
 
-### ?�증 가??
-Vue Router?�서 ?�동?�로 ?�증 체크:
-- ?�증 ?�요 ?�이지: `/todos`, `/todos/:id`
-- 비인�??�이지: `/login`, `/signup`
+### 인증 가드
+Vue Router에서 자동으로 인증 체크:
+- 인증 필요 페이지: `/todos`, `/todos/:id`
+- 비인증 페이지: `/login`, `/signup`
 
-## ?�� API ?�동 (@hey-api/openapi-ts)
+## 📡 API 연동 (@hey-api/openapi-ts)
 
-### OpenAPI 코드 ?�성
+### OpenAPI 코드 생성
 
-???�로?�트??[`@hey-api/openapi-ts`](https://github.com/hey-api/openapi-ts)�??�용?�여 백엔?�의 OpenAPI ?�펙?�로부??TypeScript ?�라?�언??코드�??�동 ?�성?�니??
+이 프로젝트는 [`@hey-api/openapi-ts`](https://github.com/hey-api/openapi-ts)를 사용하여 백엔드의 OpenAPI 스펙으로부터 TypeScript 클라이언트 코드를 자동 생성합니다.
 
-#### ?�정 ?�일
-`openapi-ts.config.ts`?�서 ?�정:
+#### 설정 파일
+`openapi-ts.config.ts`에서 설정:
 ```typescript
 export default defineConfig({
   input: 'http://localhost:8080/api-docs',
@@ -151,20 +151,20 @@ export default defineConfig({
 })
 ```
 
-#### API 코드 ?�성
+#### API 코드 생성
 ```bash
-# 백엔???�버�?먼�? ?�행????
+# 백엔드 서버를 먼저 실행한 후
 npx @hey-api/openapi-ts
 ```
 
-??명령?�는:
-1. `http://localhost:8080/api-docs`?�서 OpenAPI ?�펙 ?�운로드
-2. `src/client/` ?�렉?�리??TypeScript 코드 ?�동 ?�성
-3. 모든 ?�?�과 SDK ?�수 ?�성
+이 명령어는:
+1. `http://localhost:8080/api-docs`에서 OpenAPI 스펙 다운로드
+2. `src/client/` 디렉토리에 TypeScript 코드 자동 생성
+3. 모든 타입과 SDK 함수 생성
 
-### ?�라?�언???�정
+### 클라이언트 설정
 
-`src/config/client.ts`?�서 ?�라?�언?��? 초기?�하�??�증 ?�큰???�동?�로 주입?�니??
+`src/config/client.ts`에서 클라이언트를 초기화하고 인증 토큰을 자동으로 주입합니다:
 
 ```typescript
 import { client } from '../client/client.gen';
@@ -179,20 +179,20 @@ client.setConfig({
 });
 ```
 
-### API ?�용 ?�시
+### API 사용 예시
 
 ```typescript
 import { login, signup, getTodos, createTodo, getProjects, createProject } from '@/client'
 import type { LoginRequest, TodoRequest, ProjectRequest } from '@/client'
 
-// 로그??
+// 로그인
 const response = await login({
   body: { username: 'user', password: 'pass123' },
   throwOnError: true
 })
 const token = response.data?.data?.token
 
-// TODO 목록 조회 (?�로?�트 ?�터 ?�함)
+// TODO 목록 조회 (프로젝트 필터 포함)
 const todosResponse = await getTodos({
   query: {
     searchRequest: { projectId: 1, status: 'TODO', page: 0, size: 50 }
@@ -201,10 +201,10 @@ const todosResponse = await getTodos({
 })
 const todos = todosResponse.data?.data?.content
 
-// TODO ?�성 (?�로?�트 지??
+// TODO 생성 (프로젝트 지정)
 const newTodo: TodoRequest = {
-  title: '??????,
-  description: '?�명',
+  title: '새 할 일',
+  description: '설명',
   status: 'TODO',
   priority: 'HIGH',
   projectId: 1
@@ -214,16 +214,16 @@ const created = await createTodo({
   throwOnError: true
 })
 
-// ?�로?�트 목록 조회 ??
+// 프로젝트 목록 조회 ✅
 const projectsResponse = await getProjects({
   throwOnError: true
 })
 const projects = projectsResponse.data?.data
 
-// ?�로?�트 ?�성 ??
+// 프로젝트 생성 ✅
 const newProject: ProjectRequest = {
-  name: '???�로?�트',
-  description: '?�로?�트 ?�명',
+  name: '새 프로젝트',
+  description: '프로젝트 설명',
   color: '#3B82F6',
   isDefault: false
 }
@@ -233,91 +233,91 @@ const createdProject = await createProject({
 })
 ```
 
-### 쿼리 ?�라미터 ?�면??
+### 쿼리 파라미터 평면화
 
-Spring??`@ModelAttribute`??중첩 객체가 ?�닌 ?�면 쿼리 ?�라미터�?기�??��?�? `todo.ts` store?�서 `paramsSerializer`�??�용?�여 쿼리 ?�라미터�??�면?�합?�다.
+Spring의 `@ModelAttribute`는 중첩 객체가 아닌 평면 쿼리 파라미터를 기대하므로, `todo.ts` store에서 `paramsSerializer`를 사용하여 쿼리 파라미터를 평면화합니다.
 
-## ?���??�???�전??�?Null Safety
+## 🛡️ 타입 안전성 및 Null Safety
 
-### TypeScript ?�???�스??
+### TypeScript 타입 시스템
 
-???�로?�트???�벽???�???�전?�을 보장?�기 ?�해 ?�층???�근 방식???�용?�니??
+이 프로젝트는 완벽한 타입 안전성을 보장하기 위해 다층적 접근 방식을 사용합니다.
 
-#### 1. ?�동 ?�성???�???�의
+#### 1. 자동 생성된 타입 정의
 
-**@hey-api/openapi-ts**�??�성???�?�들?� 백엔?�의 OpenAPI ?�펙�?100% ?�치?�니??
+**@hey-api/openapi-ts**로 생성된 타입들은 백엔드의 OpenAPI 스펙과 100% 일치합니다:
 
 ```typescript
 // src/client/types.gen.ts
 export type TodoRequest = {
-    title: string;                    // ?�수 ?�드
-    description?: string | null;      // ?�택??+ null ?�용
-    status?: 'TODO' | 'IN_PROGRESS' | 'DONE';  // ?�택??enum
-    priority?: 'HIGH' | 'MEDIUM' | 'LOW';      // ?�택??enum
-    dueDate?: string | null;          // ?�택??+ null ?�용 
-    position?: number;                // ?�택???�드
-    projectId?: number | null;        // ?�택??+ null ?�용
+    title: string;                    // 필수 필드
+    description?: string | null;      // 선택적 + null 허용
+    status?: 'TODO' | 'IN_PROGRESS' | 'DONE';  // 선택적 enum
+    priority?: 'HIGH' | 'MEDIUM' | 'LOW';      // 선택적 enum
+    dueDate?: string | null;          // 선택적 + null 허용 
+    position?: number;                // 선택적 필드
+    projectId?: number | null;        // 선택적 + null 허용
 };
 
 export type TodoResponse = {
-    id?: number | null;               // ?�성 ??null
-    title?: string;                   // ??�� 존재 (백엔?�에??보장)
-    description?: string | null;      // null 가??
-    status?: string;                  // enum??string?�로 직렬??
-    priority?: string | null;         // null 가??
-    dueDate?: string | null;          // null 가??
-    completedAt?: string | null;      // ?�료?��? ?��? 경우 null
-    createdAt?: string;               // ??�� 존재
-    updatedAt?: string;               // ??�� 존재
+    id?: number | null;               // 생성 시 null
+    title?: string;                   // 항상 존재 (백엔드에서 보장)
+    description?: string | null;      // null 가능
+    status?: string;                  // enum이 string으로 직렬화
+    priority?: string | null;         // null 가능
+    dueDate?: string | null;          // null 가능
+    completedAt?: string | null;      // 완료되지 않은 경우 null
+    createdAt?: string;               // 항상 존재
+    updatedAt?: string;               // 항상 존재
 };
 ```
 
-#### 2. Zod ?�키�?검�?
+#### 2. Zod 스키마 검증
 
-?��????�??검증을 ?�한 Zod ?�키마도 ?�동 ?�성?�니??
+런타임 타입 검증을 위한 Zod 스키마도 자동 생성됩니다:
 
 ```typescript
 // src/client/zod.gen.ts
 export const zTodoRequest = z.object({
-    title: z.string().min(0).max(255),           // ?�수 + 길이 ?�한
-    description: z.optional(z.union([            // ?�택??+ null ?�용
+    title: z.string().min(0).max(255),           // 필수 + 길이 제한
+    description: z.optional(z.union([            // 선택적 + null 허용
         z.string(),
         z.null()
     ])),
-    status: z.optional(z.enum([                  // ?�택??enum
+    status: z.optional(z.enum([                  // 선택적 enum
         'TODO', 'IN_PROGRESS', 'DONE'
     ])),
-    dueDate: z.optional(z.union([                // ?�택??+ null ?�용
+    dueDate: z.optional(z.union([                // 선택적 + null 허용
         z.iso.datetime(),
         z.null()
     ])),
-    projectId: z.optional(z.union([              // ?�택??+ null ?�용
+    projectId: z.optional(z.union([              // 선택적 + null 허용
         z.coerce.bigint(),
         z.null()
     ]))
 });
 ```
 
-#### 3. 컴포?�트?�서???�전??Null 처리
+#### 3. 컴포넌트에서의 안전한 Null 처리
 
-**TodoCard.vue - ?�전???�이???�근**
+**TodoCard.vue - 안전한 데이터 접근**
 ```vue
 <template>
   <div class="card">
-    <!-- ?�수 ?�드??바로 ?�용 -->
+    <!-- 필수 필드는 바로 사용 -->
     <h3>{{ todo.title }}</h3>
     
-    <!-- null 가???�드??조건부 ?�더�?-->
+    <!-- null 가능 필드는 조건부 렌더링 -->
     <p v-if="todo.description" class="text-gray-600">
       {{ todo.description }}
     </p>
     
-    <!-- null 가???�드??기본�?처리 -->
+    <!-- null 가능 필드의 기본값 처리 -->
     <span class="priority-badge">
       {{ todo.priority || 'MEDIUM' }}
     </span>
     
-    <!-- Date 객체 변????null 체크 -->
+    <!-- Date 객체 변환 시 null 체크 -->
     <time v-if="todo.dueDate" class="due-date">
       {{ formatDate(todo.dueDate) }}
     </time>
@@ -325,20 +325,20 @@ export const zTodoRequest = z.object({
 </template>
 ```
 
-**TodoCreateModal.vue - ???�이??처리**
+**TodoCreateModal.vue - 폼 데이터 처리**
 ```typescript
 const form = ref<TodoRequest>({
-  title: '',                    // ?�수 ?�드
-  description: '',              // �?문자?�로 초기??
-  status: 'TODO',               // 기본�??�정
-  priority: 'MEDIUM',           // 기본�??�정
-  dueDate: undefined            // undefined�?초기??
+  title: '',                    // 필수 필드
+  description: '',              // 빈 문자열로 초기화
+  status: 'TODO',               // 기본값 설정
+  priority: 'MEDIUM',           // 기본값 설정
+  dueDate: undefined            // undefined로 초기화
 })
 
 const handleSubmit = async () => {
   const todoData: TodoRequest = {
     title: form.value.title,
-    // �?문자?�을 undefined�?변??(null ?�??
+    // 빈 문자열을 undefined로 변환 (null 대신)
     description: form.value.description || undefined,
     status: form.value.status,
     priority: form.value.priority,
@@ -349,19 +349,19 @@ const handleSubmit = async () => {
 }
 ```
 
-**TodoEditModal.vue - ?�이??로딩 ??null 처리**
+**TodoEditModal.vue - 데이터 로딩 시 null 처리**
 ```typescript
 const loadTodoData = (todo: TodoResponse) => {
   form.value = {
-    title: todo.title || '',                    // null-safe 기본�?
-    description: todo.description || '',        // null??�?문자?�로
+    title: todo.title || '',                    // null-safe 기본값
+    description: todo.description || '',        // null을 빈 문자열로
     status: (todo.status as TodoStatus) || 'TODO',
     priority: (todo.priority as Priority) || 'MEDIUM',
     dueDate: todo.dueDate ? formatDateForInput(todo.dueDate) : undefined
   }
 }
 
-// ?�짜 변????try-catch�??�전 처리
+// 날짜 변환 시 try-catch로 안전 처리
 const formatDateForInput = (dateString: string): string => {
   try {
     const date = new Date(dateString)
@@ -372,28 +372,28 @@ const formatDateForInput = (dateString: string): string => {
     const minutes = String(date.getMinutes()).padStart(2, '0')
     return `${year}-${month}-${day}T${hours}:${minutes}`
   } catch {
-    return ''  // ?�싱 ?�패 ??�?문자??반환
+    return ''  // 파싱 실패 시 빈 문자열 반환
   }
 }
 ```
 
-#### 4. Store?�서???�???�전??
+#### 4. Store에서의 타입 안전성
 
-**todo.ts - Computed ?�성?�서??null 처리**
+**todo.ts - Computed 속성에서의 null 처리**
 ```typescript
-// Getters?�서 null-safe ?�근
+// Getters에서 null-safe 접근
 const todoCount = computed(() => stats.value?.todoCount || 0)
 const inProgressCount = computed(() => stats.value?.inProgressCount || 0)
 const doneCount = computed(() => stats.value?.doneCount || 0)
 const completionRate = computed(() => stats.value?.completionRate || 0)
 
-// API ?�답 처리 ??null 체크
+// API 응답 처리 시 null 체크
 const fetchTodos = async (params?: TodoSearchRequest) => {
   const response = await getTodos({...})
   const pageData = response.data?.data  // Optional chaining
   
   if (pageData) {
-    todos.value = pageData.content || []  // null-safe 배열 ?�당
+    todos.value = pageData.content || []  // null-safe 배열 할당
     totalPages.value = pageData.totalPages || 0
     totalElements.value = pageData.totalElements || 0
     currentPage.value = pageData.number || 0
@@ -401,63 +401,63 @@ const fetchTodos = async (params?: TodoSearchRequest) => {
 }
 ```
 
-#### 5. ?�러 처리?�서???�???�전??
+#### 5. 에러 처리에서의 타입 안전성
 
-**errorHandler.ts - ?�전???�러 객체 ?�싱**
+**errorHandler.ts - 안전한 에러 객체 파싱**
 ```typescript
 export function parseApiError(error: unknown): ParsedError {
   if (isAxiosError(error)) {
     const response = error.response
     const errorData = response?.data
     
-    // ?�??가?��? ?�한 ?�전???�근
+    // 타입 가드를 통한 안전한 접근
     if (errorData && typeof errorData === 'object' && 'message' in errorData) {
       const apiResponse = errorData as { message?: string; data?: unknown }
       
       // null-safe 메시지 추출
       const message = (typeof apiResponse.message === 'string' ? 
         apiResponse.message : '') || 
-        '?�청 처리 �??�류가 발생?�습?�다.'
+        '요청 처리 중 오류가 발생했습니다.'
       
       return {
         message,
-        status: response?.status || 0,  // null-safe 기본�?
+        status: response?.status || 0,  // null-safe 기본값
         statusText: response?.statusText || 'Unknown Error'
       }
     }
   }
   
-  // ?�백 처리
+  // 폴백 처리
   return {
-    message: '?????�는 ?�류가 발생?�습?�다.',
+    message: '알 수 없는 오류가 발생했습니다.',
     status: 0,
     statusText: 'Unknown Error'
   }
 }
 ```
 
-### TypeScript ?�정
+### TypeScript 설정
 
-**tsconfig.json**?�서 ?�격??null 체크 ?�성??
+**tsconfig.json**에서 엄격한 null 체크 활성화:
 ```json
 {
   "compilerOptions": {
-    "strict": true,              // ?�격 모드
+    "strict": true,              // 엄격 모드
     "strictNullChecks": true,    // null 체크 강화
-    "noUncheckedIndexedAccess": true  // 배열/객체 ?�근 ??undefined 체크
+    "noUncheckedIndexedAccess": true  // 배열/객체 접근 시 undefined 체크
   }
 }
 ```
 
-### ?�점
+### 장점
 
-1. **컴파???�???�전??*: TypeScript가 null/undefined ?�근??컴파???�점??검�?
-2. **?��???검�?*: Zod ?�키마로 API ?�답 ?�이??검�?
-3. **?�동 ?�기??*: 백엔???�키�?변�????�론?�엔???�???�동 ?�데?�트
-4. **IDE 지??*: ?�동?�성�??�???�트�?개발 ?�산???�상
-5. **?�러 방�?**: null/undefined 관???��????�러 ?�전 방�?
+1. **컴파일 타임 안전성**: TypeScript가 null/undefined 접근을 컴파일 시점에 검증
+2. **런타임 검증**: Zod 스키마로 API 응답 데이터 검증
+3. **자동 동기화**: 백엔드 스키마 변경 시 프론트엔드 타입 자동 업데이트
+4. **IDE 지원**: 자동완성과 타입 힌트로 개발 생산성 향상
+5. **에러 방지**: null/undefined 관련 런타임 에러 사전 방지
 
-## ?�� ?�태 관�?(Pinia)
+## 🏪 상태 관리 (Pinia)
 
 ### Auth Store
 ```typescript
@@ -465,13 +465,13 @@ import { useAuthStore } from '@/stores/auth'
 
 const authStore = useAuthStore()
 
-// 로그??
+// 로그인
 await authStore.login({ username, password })
 
-// 로그?�웃
+// 로그아웃
 authStore.logout()
 
-// ?�증 ?�태 ?�인
+// 인증 상태 확인
 if (authStore.isAuthenticated) {
   // ...
 }
@@ -483,200 +483,200 @@ import { useTodoStore } from '@/stores/todo'
 
 const todoStore = useTodoStore()
 
-// TODO 목록 조회 (?�로?�트 ?�터 ?�함)
+// TODO 목록 조회 (프로젝트 필터 포함)
 await todoStore.fetchTodos({ projectId: 1, status: 'TODO' })
 
-// TODO ?�성 (?�로?�트 지??
+// TODO 생성 (프로젝트 지정)
 await todoStore.createTodo({ ...todoData, projectId: 1 })
 
-// TODO ?�정
+// TODO 수정
 await todoStore.updateTodo(todoId, todoData)
 
-// ?�태 변�?
+// 상태 변경
 await todoStore.updateTodoStatus(todoId, 'DONE')
 
-// TODO ??��
+// TODO 삭제
 await todoStore.deleteTodo(todoId)
 
-// ?�계 조회
+// 통계 조회
 await todoStore.fetchStats()
 ```
 
-### Project Store ??
+### Project Store ✅
 ```typescript
 import { useProjectStore } from '@/stores/project'
 
 const projectStore = useProjectStore()
 
-// ?�로?�트 목록 조회
+// 프로젝트 목록 조회
 await projectStore.fetchProjects()
 
-// ?�로?�트 ?�성
+// 프로젝트 생성
 await projectStore.createNewProject(projectData)
 
-// ?�로?�트 ?�정
+// 프로젝트 수정
 await projectStore.updateExistingProject(projectId, projectData)
 
-// ?�로?�트 ??��
+// 프로젝트 삭제
 await projectStore.deleteExistingProject(projectId)
 
-// 기본 ?�로?�트 조회
+// 기본 프로젝트 조회
 await projectStore.fetchDefaultProject()
 
-// Select ?�션???�로?�트 목록
+// Select 옵션용 프로젝트 목록
 const projectOptions = projectStore.getProjectsForSelect
 ```
 
-## ?�� 개발 진행 ?�황
+## 🎯 개발 진행 상황
 
-### ??Phase 1 ?�료 (2025??11??
+### ✅ Phase 1 완료 (2025년 11월)
 
-**구현 ?�료??기능:**
-- [x] **TODO ?�심 기능**
-  - TODO 카드 컴포?�트 (`TodoCard.vue`)
-    - ?�태 배�? (TODO/IN_PROGRESS/DONE)
-    - ?�선?�위 배�? (HIGH/MEDIUM/LOW)
-    - 마감??�??�료???�시
-    - ?�태 변�?버튼
-    - ?�정/??�� 버튼
-  - TODO ?�성 모달 (`TodoCreateModal.vue`)
-    - ?�목, ?�명, ?�태, ?�선?�위, 마감???�력
-    - ?�로?�트 ?�택 (Phase 2 ?�합)
-    - ?�효??검??�??�러 처리
-  - TODO ?�정 모달 (`TodoEditModal.vue`)
-    - 기존 ?�이??로드 �??�정
-    - ?�로?�트 변�?지??
-    - ?�효??검??�??�러 처리
+**구현 완료된 기능:**
+- [x] **TODO 핵심 기능**
+  - TODO 카드 컴포넌트 (`TodoCard.vue`)
+    - 상태 배지 (TODO/IN_PROGRESS/DONE)
+    - 우선순위 배지 (HIGH/MEDIUM/LOW)
+    - 마감일 및 완료일 표시
+    - 상태 변경 버튼
+    - 수정/삭제 버튼
+  - TODO 생성 모달 (`TodoCreateModal.vue`)
+    - 제목, 설명, 상태, 우선순위, 마감일 입력
+    - 프로젝트 선택 (Phase 2 통합)
+    - 유효성 검사 및 에러 처리
+  - TODO 수정 모달 (`TodoEditModal.vue`)
+    - 기존 데이터 로드 및 수정
+    - 프로젝트 변경 지원
+    - 유효성 검사 및 에러 처리
 
-- [x] **?�터�?�?검??*
-  - ?�터/?�렬 UI (`FilterSortBar.vue`)
-    - 검??(?�목, ?�명 ?�워??
-    - ?�태 ?�터 (TODO, IN_PROGRESS, DONE, ?�체)
-    - ?�선?�위 ?�터 (HIGH, MEDIUM, LOW, ?�체)
-    - ?�로?�트 ?�터 (Phase 2 ?�합)
-    - ?�렬 (?�성?? 마감?? ?�선?�위, ?�목)
-    - ?�렬 방향 (?�름차순, ?�림차순)
-  - ?�시�?검??�??�터 ?�동
+- [x] **필터링 및 검색**
+  - 필터/정렬 UI (`FilterSortBar.vue`)
+    - 검색 (제목, 설명 키워드)
+    - 상태 필터 (TODO, IN_PROGRESS, DONE, 전체)
+    - 우선순위 필터 (HIGH, MEDIUM, LOW, 전체)
+    - 프로젝트 필터 (Phase 2 통합)
+    - 정렬 (생성일, 마감일, 우선순위, 제목)
+    - 정렬 방향 (오름차순, 내림차순)
+  - 실시간 검색 및 필터 연동
 
-- [x] **UI 컴포?�트**
-  - ?�이지?�이??(`Pagination.vue`)
-    - ?�이지 번호 ?�시 �??�비게이??
-    - ?�전/?�음 버튼
-    - ?�체 개수 ?�시
-  - 로딩 ?�피??(`LoadingSpinner.vue`)
-    - 비동�??�업 �?로딩 ?�시
-  - ?�스???�림 (`ToastNotification.vue`, `useToast.ts`)
-    - ?�공/?�러/?�보 ?�림
-    - ?�동 ?�라�?
-    - ?�러 ?�림 ?�시 ?�시
+- [x] **UI 컴포넌트**
+  - 페이지네이션 (`Pagination.vue`)
+    - 페이지 번호 표시 및 네비게이션
+    - 이전/다음 버튼
+    - 전체 개수 표시
+  - 로딩 스피너 (`LoadingSpinner.vue`)
+    - 비동기 작업 중 로딩 표시
+  - 토스트 알림 (`ToastNotification.vue`, `useToast.ts`)
+    - 성공/에러/정보 알림
+    - 자동 사라짐
+    - 여러 알림 동시 표시
 
-- [x] **?�증 �??�우??*
-  - ?�증 ?�스??(로그?? ?�원가?? 로그?�웃)
-  - Vue Router ?�증 가??
-  - JWT ?�큰 ?�동 주입
+- [x] **인증 및 라우팅**
+  - 인증 시스템 (로그인, 회원가입, 로그아웃)
+  - Vue Router 인증 가드
+  - JWT 토큰 자동 주입
 
-- [x] **?�태 관�?*
-  - Pinia ?�토??(auth, todo)
-  - API ?�라?�언???�동 ?�성 �??�동 (`@hey-api/openapi-ts`)
-  - ?�벽???�???�전??
+- [x] **상태 관리**
+  - Pinia 스토어 (auth, todo)
+  - API 클라이언트 자동 생성 및 연동 (`@hey-api/openapi-ts`)
+  - 완벽한 타입 안전성
 
-- [x] **?�계 �??�?�보??*
-  - ?�계 ?�?�보??(?�체, ???? 진행�? ?�료 개수)
-  - ?�시�??�계 ?�데?�트
+- [x] **통계 및 대시보드**
+  - 통계 대시보드 (전체, 할 일, 진행중, 완료 개수)
+  - 실시간 통계 업데이트
 
-- [x] **반응???�자??*
-  - 모바?? ?�블�? ?�스?�톱 ?�??
-  - Tailwind CSS 기반 반응???�이?�웃
+- [x] **반응형 디자인**
+  - 모바일, 태블릿, 데스크톱 대응
+  - Tailwind CSS 기반 반응형 레이아웃
 
-### ??Phase 2 ?�료 (2025??11??
+### ✅ Phase 2 완료 (2025년 11월)
 
-**구현 ?�료??기능:**
-- [x] **?�로?�트 관�?*
-  - ?�로?�트 카드 컴포?�트 (`ProjectCard.vue`)
-    - ?�로?�트 ?�상 ?�시
-    - 기본 ?�로?�트 배�?
-    - ?�로?�트 ?�계 (TODO 개수)
-    - ?�정/??��/?�택 버튼
-  - ?�로?�트 ?�성 모달 (`ProjectCreateModal.vue`)
-    - ?�로?�트 ?�름, ?�명, ?�상 ?�력
-    - 기본 ?�로?�트 ?�정
-  - ?�로?�트 ?�정 모달 (`ProjectEditModal.vue`)
-    - ?�로?�트 ?�보 ?�정
-    - 기본 ?�로?�트 변�?
+**구현 완료된 기능:**
+- [x] **프로젝트 관리**
+  - 프로젝트 카드 컴포넌트 (`ProjectCard.vue`)
+    - 프로젝트 색상 표시
+    - 기본 프로젝트 배지
+    - 프로젝트 통계 (TODO 개수)
+    - 수정/삭제/선택 버튼
+  - 프로젝트 생성 모달 (`ProjectCreateModal.vue`)
+    - 프로젝트 이름, 설명, 색상 입력
+    - 기본 프로젝트 설정
+  - 프로젝트 수정 모달 (`ProjectEditModal.vue`)
+    - 프로젝트 정보 수정
+    - 기본 프로젝트 변경
 
-- [x] **?�로?�트 ?�태 관�?*
-  - ?�로?�트 ?�토??(`project.ts`)
-    - CRUD ?�업 �??�태 관�?
-    - ?�러 처리 �?로딩 ?�태
-    - 기본 ?�로?�트 관�?
-    - ?�로?�트 ?�렬 (기본 ?�로?�트 ?�선, position ??
+- [x] **프로젝트 상태 관리**
+  - 프로젝트 스토어 (`project.ts`)
+    - CRUD 작업 및 상태 관리
+    - 에러 처리 및 로딩 상태
+    - 기본 프로젝트 관리
+    - 프로젝트 정렬 (기본 프로젝트 우선, position 순)
 
-- [x] **?�로?�트-TODO ?�합**
-  - FilterSortBar???�로?�트 ?�터 추�?
-  - ?�로?�트�?TODO 목록 조회
-  - ?�로?�트 ?�택 ???�동 ?�터�?
-  - TODO ?�성/?�정 ???�로?�트 지??
+- [x] **프로젝트-TODO 통합**
+  - FilterSortBar에 프로젝트 필터 추가
+  - 프로젝트별 TODO 목록 조회
+  - 프로젝트 선택 시 자동 필터링
+  - TODO 생성/수정 시 프로젝트 지정
 
-- [x] **?�합 UI**
-  - TodoListView???�로?�트 관�??�션 ?�합
-  - ?�로?�트 ?�택 �??�터�?UI
-  - ?�로?�트�?TODO 그룹??
+- [x] **통합 UI**
+  - TodoListView에 프로젝트 관리 섹션 통합
+  - 프로젝트 선택 및 필터링 UI
+  - 프로젝트별 TODO 그룹화
 
-### ??Phase 3 ?�료 (2025??12??
+### ✅ Phase 3 완료 (2025년 12월)
 
-**구현 ?�료??기능:**
+**구현 완료된 기능:**
 
-- [x] **TODO ?�세 ?�이지** (`TodoDetailView.vue`) - ?�전 구현 ?�료 ??
+- [x] **TODO 상세 페이지** (`TodoDetailView.vue`) - 완전 구현 완료 ✅
   
-  **?�세 ?�보 ?�시:**
-  - ?�목 �??�명 (?�러 �?지?? `whitespace-pre-wrap`)
-  - ?�태 배�? (????진행�??�료) �??�선?�위 배�? (?�음/보통/??��)
-  - ?�로?�트 ?�보 (?�로?�트 ?�름 �??�상 배�?)
-  - ?�우???�정 ?�료 (`/todos/:id`)
+  **상세 정보 표시:**
+  - 제목 및 설명 (여러 줄 지원, `whitespace-pre-wrap`)
+  - 상태 배지 (할 일/진행중/완료) 및 우선순위 배지 (높음/보통/낮음)
+  - 프로젝트 정보 (프로젝트 이름 및 색상 배지)
+  - 라우트 설정 완료 (`/todos/:id`)
   
-  **?�짜 ?�보 관�?**
-  - ?�성?? ?�정???�동 ?�시
-  - 마감???�시 �?**마감??지??경고** (?�️ 빨간??경고 문구)
-  - ?�료???�시 (?�료 ?�태??경우�?
-  - date-fns�??�용???�국???�짜 ?�맷??(`yyyy??M??d??HH:mm`)
+  **날짜 정보 관리:**
+  - 생성일, 수정일 자동 표시
+  - 마감일 표시 및 **마감일 지남 경고** (⚠️ 빨간색 경고 문구)
+  - 완료일 표시 (완료 상태인 경우만)
+  - date-fns를 사용한 한국어 날짜 포맷팅 (`yyyy년 M월 d일 HH:mm`)
   
-  **?�터?�티�?기능:**
-  - ?�정 버튼 (TodoEditModal ?�기 �??�동)
-  - ??�� 버튼 (?�인 ?�이?�로�?????�� ??목록?�로 ?�동 ?�동)
-  - ?�태 변�?버튼 (??????진행�????�료) - ?�재 ?�태???�라 ?�적 ?�시
-  - 목록?�로 ?�아가�?버튼
+  **인터랙티브 기능:**
+  - 수정 버튼 (TodoEditModal 열기 및 연동)
+  - 삭제 버튼 (확인 다이얼로그 → 삭제 → 목록으로 자동 이동)
+  - 상태 변경 버튼 (할 일 ↔ 진행중 ↔ 완료) - 현재 상태에 따라 동적 표시
+  - 목록으로 돌아가기 버튼
   
   **UX/UI 개선:**
-  - 로딩 ?�피??(?�이??로드 �?
-  - ?�러 ?�태 처리 (TODO ?�음, 로드 ?�패 ??
-  - 반응???�자??(모바???�블�??�스?�톱)
-  - 버튼 비활?�화 ?�태 (?�데?�트 �?중복 ?�릭 방�?)
-  - 깔끔??카드 ?�이?�웃 �??�상 코딩
+  - 로딩 스피너 (데이터 로드 중)
+  - 에러 상태 처리 (TODO 없음, 로드 실패 등)
+  - 반응형 디자인 (모바일/태블릿/데스크톱)
+  - 버튼 비활성화 상태 (업데이트 중 중복 클릭 방지)
+  - 깔끔한 카드 레이아웃 및 색상 코딩
   
-  **기존 ?�스???�합:**
-  - TodoCard ?�릭 ???�세 ?�이지 ?�동 ?�동
-  - ?�로?�트 Store ?�동 (?�로?�트 ?�보 ?�동 로드)
-  - Toast ?�림 ?�스???�동 (?�정/??��/?�태 변�??�공/?�패)
-  - ?�이??변�????�동 ?�로고침
+  **기존 시스템 통합:**
+  - TodoCard 클릭 시 상세 페이지 자동 이동
+  - 프로젝트 Store 연동 (프로젝트 정보 자동 로드)
+  - Toast 알림 시스템 연동 (수정/삭제/상태 변경 성공/실패)
+  - 데이터 변경 시 자동 새로고침
 
-### ??Phase 4 ?�료 (2025??12?? - ?�키?�처 �?코드 ?�질 개선
+### ✅ Phase 4 완료 (2025년 12월) - 아키텍처 및 코드 품질 개선
 
 **기능 개요:**
-코드 ?��?보수?? ?�사?�성, ?�능???�상?�키�??�한 ?�론?�엔??리팩?�링 �?베스???�랙?�스 ?�용
+코드 유지보수성, 재사용성, 성능을 향상시키기 위한 프론트엔드 리팩토링 및 베스트 프랙티스 적용
 
-#### ?�선?�위: ?�음 (?�수) - ???�료
+#### 우선순위: 높음 (필수) - ✅ 완료
 
-**1. Composable ?�턴?�로 로직 ?�사??(4-5?�간) - ???�료**
+**1. Composable 패턴으로 로직 재사용 (4-5시간) - ✅ 완료**
 
-**?�결??문제:**
-- Store?� 컴포?�트 �?반복 코드 ?�거
-- ?�러 처리, Toast ?�림, 로딩 ?�태�?Composable�??�합 관�?
-- 비즈?�스 로직 ?�사??가??
+**해결된 문제:**
+- Store와 컴포넌트 간 반복 코드 제거
+- 에러 처리, Toast 알림, 로딩 상태를 Composable로 통합 관리
+- 비즈니스 로직 재사용 가능
 
 **구현 계획:**
 
 ```typescript
-// composables/useTodoOperations.ts (?�규 ?�성)
+// composables/useTodoOperations.ts (신규 생성)
 export function useTodoOperations() {
   const todoStore = useTodoStore()
   const toast = useToast()
@@ -689,11 +689,11 @@ export function useTodoOperations() {
     
     try {
       await todoStore.createTodo(data)
-      toast.success('TODO가 ?�성?�었?�니??')
+      toast.success('TODO가 생성되었습니다.')
       return { success: true, data: null }
     } catch (e) {
       error.value = e as Error
-      toast.error('TODO ?�성???�패?�습?�다.')
+      toast.error('TODO 생성에 실패했습니다.')
       return { success: false, error: e }
     } finally {
       loading.value = false
@@ -706,11 +706,11 @@ export function useTodoOperations() {
     
     try {
       const result = await todoStore.updateTodo(id, data)
-      toast.success('TODO가 ?�정?�었?�니??')
+      toast.success('TODO가 수정되었습니다.')
       return { success: true, data: result }
     } catch (e) {
       error.value = e as Error
-      toast.error('TODO ?�정???�패?�습?�다.')
+      toast.error('TODO 수정에 실패했습니다.')
       return { success: false, error: e }
     } finally {
       loading.value = false
@@ -718,7 +718,7 @@ export function useTodoOperations() {
   }
   
   const deleteTodoWithConfirm = async (id: number) => {
-    if (!confirm('?�말 ??��?�시겠습?�까?')) {
+    if (!confirm('정말 삭제하시겠습니까?')) {
       return { success: false, cancelled: true }
     }
     
@@ -727,11 +727,11 @@ export function useTodoOperations() {
     
     try {
       await todoStore.deleteTodo(id)
-      toast.success('TODO가 ??��?�었?�니??')
+      toast.success('TODO가 삭제되었습니다.')
       return { success: true }
     } catch (e) {
       error.value = e as Error
-      toast.error('TODO ??��???�패?�습?�다.')
+      toast.error('TODO 삭제에 실패했습니다.')
       return { success: false, error: e }
     } finally {
       loading.value = false
@@ -741,10 +741,10 @@ export function useTodoOperations() {
   const updateStatusWithFeedback = async (id: number, status: TodoStatus) => {
     try {
       await todoStore.updateTodoStatus(id, status)
-      toast.success('?�태가 변경되?�습?�다.')
+      toast.success('상태가 변경되었습니다.')
       return { success: true }
     } catch (e) {
-      toast.error('?�태 변경에 ?�패?�습?�다.')
+      toast.error('상태 변경에 실패했습니다.')
       return { success: false, error: e }
     }
   }
@@ -759,7 +759,7 @@ export function useTodoOperations() {
   }
 }
 
-// 컴포?�트?�서 ?�용
+// 컴포넌트에서 사용
 const { loading, createTodoWithFeedback } = useTodoOperations()
 
 const handleCreate = async () => {
@@ -770,12 +770,12 @@ const handleCreate = async () => {
 }
 ```
 
-**추�? Composable 구현:**
+**추가 Composable 구현:**
 
 ```typescript
 // composables/useProjectOperations.ts
 export function useProjectOperations() {
-  // ?�로?�트 관???�업
+  // 프로젝트 관련 작업
 }
 
 // composables/useFormValidation.ts
@@ -784,7 +784,7 @@ export function useFormValidation() {
   
   const validateRequired = (value: string, fieldName: string) => {
     if (!value || value.trim() === '') {
-      errors.value[fieldName] = `${fieldName}?�(?? ?�수?�니??`
+      errors.value[fieldName] = `${fieldName}은(는) 필수입니다.`
       return false
     }
     delete errors.value[fieldName]
@@ -793,7 +793,7 @@ export function useFormValidation() {
   
   const validateMaxLength = (value: string, max: number, fieldName: string) => {
     if (value.length > max) {
-      errors.value[fieldName] = `${fieldName}?�(?? ${max}???�하?�야 ?�니??`
+      errors.value[fieldName] = `${fieldName}은(는) ${max}자 이하여야 합니다.`
       return false
     }
     delete errors.value[fieldName]
@@ -847,37 +847,37 @@ export function useConfirmDialog() {
 }
 ```
 
-**체크리스??**
-- [x] `useTodoOperations` composable ?�성
-- [x] `useProjectOperations` composable ?�성
-- [x] `useFormValidation` composable ?�성
-- [x] `useConfirmDialog` composable ?�성
-- [x] 모든 컴포?�트?�서 중복 코드 ?�거 (TodoListView, TodoDetailView)
-- [ ] ?�스???�성 (추후 구현)
+**체크리스트:**
+- [x] `useTodoOperations` composable 생성
+- [x] `useProjectOperations` composable 생성
+- [x] `useFormValidation` composable 생성
+- [x] `useConfirmDialog` composable 생성
+- [x] 모든 컴포넌트에서 중복 코드 제거 (TodoListView, TodoDetailView)
+- [ ] 테스트 작성 (추후 구현)
 
-**?�제 ?�요 ?�간:** ??3?�간
+**실제 소요 시간:** 약 3시간
 
 ---
 
-**2. ?��????�데?�트 (Optimistic Update) 구현 (3-4?�간) - ???�료**
+**2. 낙관적 업데이트 (Optimistic Update) 구현 (3-4시간) - ✅ 완료**
 
-**?�결??문제:**
-- API ?�답 ??즉시 UI ?�데?�트�?빠른 ?�용??경험 ?�공
-- ?�트?�크 지?�에??즉각?�인 반응???��?
-- ?�패 ???�동 롤백?�로 ?�이???��???보장
+**해결된 문제:**
+- API 응답 전 즉시 UI 업데이트로 빠른 사용자 경험 제공
+- 네트워크 지연에도 즉각적인 반응성 유지
+- 실패 시 자동 롤백으로 데이터 일관성 보장
 
 **구현 계획:**
 
 ```typescript
 // stores/todo.ts 개선
 const updateTodoStatus = async (id: number, status: TodoStatus) => {
-  // 1. ?�본 ?�이??백업
+  // 1. 원본 데이터 백업
   const originalTodos = [...todos.value]
   const index = todos.value.findIndex(t => t.id === id)
   
   if (index === -1) return
   
-  // 2. ?��????�데?�트: 먼�? UI ?�데?�트
+  // 2. 낙관적 업데이트: 먼저 UI 업데이트
   const optimisticTodo = {
     ...todos.value[index],
     status: status,
@@ -886,23 +886,23 @@ const updateTodoStatus = async (id: number, status: TodoStatus) => {
   todos.value[index] = optimisticTodo
   
   try {
-    // 3. API ?�출
+    // 3. API 호출
     const response = await updateTodoStatusApi({
       path: { todoId: id },
       query: { status },
       throwOnError: true
     })
     
-    // 4. ?�버 ?�답?�로 최종 ?�데?�트
+    // 4. 서버 응답으로 최종 업데이트
     if (response.data?.data) {
       todos.value[index] = response.data.data
     }
     
     return { success: true, data: response.data?.data }
   } catch (error) {
-    // 5. ?�패 ??롤백
+    // 5. 실패 시 롤백
     todos.value = originalTodos
-    console.error('?�태 변�??�패:', error)
+    console.error('상태 변경 실패:', error)
     throw error
   }
 }
@@ -912,7 +912,7 @@ const updateTodo = async (id: number, data: TodoRequest) => {
   const index = todos.value.findIndex(t => t.id === id)
   
   if (index !== -1) {
-    // ?��????�데?�트
+    // 낙관적 업데이트
     todos.value[index] = {
       ...todos.value[index],
       ...data,
@@ -928,7 +928,7 @@ const updateTodo = async (id: number, data: TodoRequest) => {
       throwOnError: true
     })
     
-    // ?�버 ?�답?�로 최종 ?�데?�트
+    // 서버 응답으로 최종 업데이트
     if (response.data?.data && index !== -1) {
       todos.value[index] = response.data.data
     }
@@ -937,7 +937,7 @@ const updateTodo = async (id: number, data: TodoRequest) => {
   } catch (error) {
     // 롤백
     todos.value = originalTodos
-    console.error('TODO ?�정 ?�패:', error)
+    console.error('TODO 수정 실패:', error)
     throw error
   } finally {
     loading.value = false
@@ -945,48 +945,48 @@ const updateTodo = async (id: number, data: TodoRequest) => {
 }
 ```
 
-**구현 ?�칙:**
-1. 먼�? UI ?�데?�트 (즉각 반응)
-2. 백그?�운?�에??API ?�출
-3. ?�공 ?? ?�버 ?�이?�로 최종 ?�기??
-4. ?�패 ?? ?�본 ?�태�?롤백 + ?�러 메시지
+**구현 원칙:**
+1. 먼저 UI 업데이트 (즉각 반응)
+2. 백그라운드에서 API 호출
+3. 성공 시: 서버 데이터로 최종 동기화
+4. 실패 시: 원본 상태로 롤백 + 에러 메시지
 
-**구현 ?�용:**
+**구현 내용:**
 ```typescript
 // stores/todo.ts
 const updateTodoStatus = async (id: number, status: TodoStatus) => {
-  // 1. ?�본 ?�이??백업
+  // 1. 원본 데이터 백업
   const originalTodos = [...todos.value]
   
-  // 2. 즉시 UI ?�데?�트 (?��????�데?�트)
+  // 2. 즉시 UI 업데이트 (낙관적 업데이트)
   todos.value[index] = { ...optimisticTodo }
   
   try {
-    // 3. API ?�출
+    // 3. API 호출
     const response = await updateTodoStatusApi(...)
     
-    // 4. ?�버 ?�답?�로 최종 ?�기??
+    // 4. 서버 응답으로 최종 동기화
     todos.value[index] = response.data.data
   } catch (error) {
-    // 5. ?�패 ??롤백
+    // 5. 실패 시 롤백
     todos.value = originalTodos
     throw error
   }
 }
 ```
 
-**체크리스??**
-- [x] `updateTodoStatus`???��????�데?�트 ?�용
-- [x] `updateTodo`???��????�데?�트 ?�용
+**체크리스트:**
+- [x] `updateTodoStatus`에 낙관적 업데이트 적용
+- [x] `updateTodo`에 낙관적 업데이트 적용
 - [x] 롤백 로직 구현
-- [ ] `deleteTodo`???��????�데?�트 ?�용 (추후 고려)
-- [ ] ?�트?�크 지???��??�이???�스??(추후 구현)
+- [ ] `deleteTodo`에 낙관적 업데이트 적용 (추후 고려)
+- [ ] 네트워크 지연 시뮬레이션 테스트 (추후 구현)
 
-**?�제 ?�요 ?�간:** ??2?�간
+**실제 소요 시간:** 약 2시간
 
 ---
 
-**3. ?�러 처리 ?��???�?개선 (2-3?�간) - ???�료**
+**3. 에러 처리 표준화 및 개선 (2-3시간) - ✅ 완료**
 
 **구현 계획:**
 
@@ -1007,7 +1007,7 @@ export function parseApiError(error: unknown): ParsedError {
     const response = error.response
     const errorData = response?.data
     
-    // 백엔??ErrorCode 처리
+    // 백엔드 ErrorCode 처리
     if (errorData && typeof errorData === 'object' && 'message' in errorData) {
       const apiResponse = errorData as { 
         message?: string
@@ -1016,7 +1016,7 @@ export function parseApiError(error: unknown): ParsedError {
       }
       
       return {
-        message: apiResponse.message || '?�청 처리 �??�류가 발생?�습?�다.',
+        message: apiResponse.message || '요청 처리 중 오류가 발생했습니다.',
         status: response?.status || 0,
         statusText: response?.statusText || 'Unknown Error',
         code: apiResponse.code,
@@ -1024,22 +1024,22 @@ export function parseApiError(error: unknown): ParsedError {
       }
     }
     
-    // HTTP ?�태 코드�?기본 메시지
+    // HTTP 상태 코드별 기본 메시지
     return getDefaultErrorMessage(response?.status || 0)
   }
   
-  // ?�트?�크 ?�류
+  // 네트워크 오류
   if (error instanceof Error && error.message === 'Network Error') {
     return {
-      message: '?�트?�크 ?�결???�인?�주?�요.',
+      message: '네트워크 연결을 확인해주세요.',
       status: 0,
       statusText: 'Network Error'
     }
   }
   
-  // 기�? ?�류
+  // 기타 오류
   return {
-    message: '?????�는 ?�류가 발생?�습?�다.',
+    message: '알 수 없는 오류가 발생했습니다.',
     status: 0,
     statusText: 'Unknown Error'
   }
@@ -1047,20 +1047,20 @@ export function parseApiError(error: unknown): ParsedError {
 
 function getDefaultErrorMessage(status: number): ParsedError {
   const messages: Record<number, string> = {
-    400: '?�못???�청?�니??',
-    401: '로그?�이 ?�요?�니??',
-    403: '권한???�습?�다.',
-    404: '?�청??리소?��? 찾을 ???�습?�다.',
-    409: '?��? 존재?�는 ?�이?�입?�다.',
-    422: '?�력 ?�이?��? ?�인?�주?�요.',
-    429: '?�청???�무 많습?�다. ?�시 ???�시 ?�도?�주?�요.',
-    500: '?�버 ?�류가 발생?�습?�다.',
-    502: '?�버가 ?�답?��? ?�습?�다.',
-    503: '?�비?��? ?�용?????�습?�다.'
+    400: '잘못된 요청입니다.',
+    401: '로그인이 필요합니다.',
+    403: '권한이 없습니다.',
+    404: '요청한 리소스를 찾을 수 없습니다.',
+    409: '이미 존재하는 데이터입니다.',
+    422: '입력 데이터를 확인해주세요.',
+    429: '요청이 너무 많습니다. 잠시 후 다시 시도해주세요.',
+    500: '서버 오류가 발생했습니다.',
+    502: '서버가 응답하지 않습니다.',
+    503: '서비스를 사용할 수 없습니다.'
   }
   
   return {
-    message: messages[status] || '?�류가 발생?�습?�다.',
+    message: messages[status] || '오류가 발생했습니다.',
     status,
     statusText: `HTTP ${status}`
   }
@@ -1071,216 +1071,411 @@ function isAxiosError(error: unknown): error is AxiosError {
 }
 ```
 
-**구현 ?�용:**
+**구현 내용:**
 ```typescript
 // utils/errorHandler.ts
 const HTTP_ERROR_MESSAGES: Record<number, string> = {
-  400: '?�못???�청?�니?? ?�력 ?�보�??�인?�주?�요.',
-  401: '?�증???�요?�니?? ?�시 로그?�해주세??',
-  403: '?�근 권한???�습?�다.',
-  404: '?�청??리소?��? 찾을 ???�습?�다.',
-  409: '?��? 존재?�는 ?�이?�입?�다.',
-  422: '?�력 ?�이?��? ?�인?�주?�요.',
-  429: '?�청???�무 많습?�다. ?�시 ???�시 ?�도?�주?�요.',
-  500: '?�버 ?�류가 발생?�습?�다.',
-  502: '?�버가 ?�답?��? ?�습?�다.',
-  503: '?�비?��? ?�시?�으�??�용?????�습?�다.',
-  504: '?�버 ?�답 ?�간??초과?�었?�니??'
+  400: '잘못된 요청입니다. 입력 정보를 확인해주세요.',
+  401: '인증이 필요합니다. 다시 로그인해주세요.',
+  403: '접근 권한이 없습니다.',
+  404: '요청한 리소스를 찾을 수 없습니다.',
+  409: '이미 존재하는 데이터입니다.',
+  422: '입력 데이터를 확인해주세요.',
+  429: '요청이 너무 많습니다. 잠시 후 다시 시도해주세요.',
+  500: '서버 오류가 발생했습니다.',
+  502: '서버가 응답하지 않습니다.',
+  503: '서비스를 일시적으로 사용할 수 없습니다.',
+  504: '서버 응답 시간이 초과되었습니다.'
 }
 
-// 추�? ?�틸리티 ?�수
+// 추가 유틸리티 함수
 export function isUnauthorized(error: unknown): boolean
 export function isForbidden(error: unknown): boolean
 export function isNotFound(error: unknown): boolean
 export function isServerError(error: unknown): boolean
 ```
 
-**체크리스??**
-- [x] `parseApiError` 개선 (HTTP ?�태 코드 ?�선 처리)
-- [x] HTTP ?�태 코드�?메시지 ?�의
-- [x] 백엔??ErrorCode ?�드 지??
-- [x] ?�트?�크 ?�러 별도 처리
-- [x] ?�러 ?�??체크 ?�틸리티 ?�수 추�?
-- [ ] ?�러 로깅 추�? (Sentry ?�동?� 추후 구현)
+**체크리스트:**
+- [x] `parseApiError` 개선 (HTTP 상태 코드 우선 처리)
+- [x] HTTP 상태 코드별 메시지 정의
+- [x] 백엔드 ErrorCode 필드 지원
+- [x] 네트워크 에러 별도 처리
+- [x] 에러 타입 체크 유틸리티 함수 추가
+- [ ] 에러 로깅 추가 (Sentry 연동은 추후 구현)
 
-**?�제 ?�요 ?�간:** ??1.5?�간
+**실제 소요 시간:** 약 1.5시간
 
 ---
 
-### ?�� Phase 4 ?�료 ?�약
+### 📊 Phase 4 완료 요약
 
-**�??�요 ?�간:** ??6.5?�간 (?�상: 9-12?�간)
+**총 소요 시간:** 약 6.5시간 (예상: 9-12시간)
 
-**?�료???�업:**
-1. ??**4개의 Composable ?�성**
-   - `useTodoOperations.ts`: TODO CRUD ?�업 + ?�드�?
-   - `useProjectOperations.ts`: ?�로?�트 CRUD ?�업 + ?�드�?
-   - `useFormValidation.ts`: ??검�?로직
-   - `useConfirmDialog.ts`: ?�인 ?�이?�로�?관�?
+**완료된 작업:**
+1. ✅ **4개의 Composable 생성**
+   - `useTodoOperations.ts`: TODO CRUD 작업 + 피드백
+   - `useProjectOperations.ts`: 프로젝트 CRUD 작업 + 피드백
+   - `useFormValidation.ts`: 폼 검증 로직
+   - `useConfirmDialog.ts`: 확인 다이얼로그 관리
 
-2. ??**컴포?�트 리팩?�링**
+2. ✅ **컴포넌트 리팩토링**
    - TodoListView: 중복 코드 80% 감소
-   - TodoDetailView: ?�러 처리 �??�태 관�??�순??
+   - TodoDetailView: 에러 처리 및 상태 관리 단순화
 
-3. ??**?��????�데?�트**
-   - `updateTodoStatus`: 즉시 UI ?�데?�트 + 롤백 지??
-   - `updateTodo`: 즉시 UI ?�데?�트 + 롤백 지??
+3. ✅ **낙관적 업데이트**
+   - `updateTodoStatus`: 즉시 UI 업데이트 + 롤백 지원
+   - `updateTodo`: 즉시 UI 업데이트 + 롤백 지원
 
-4. ??**?�러 처리 ?��???*
-   - HTTP ?�태 코드�?기본 메시지
-   - ?�트?�크 ?�러 감�?
-   - ?�러 ?�??체크 ?�틸리티
+4. ✅ **에러 처리 표준화**
+   - HTTP 상태 코드별 기본 메시지
+   - 네트워크 에러 감지
+   - 에러 타입 체크 유틸리티
 
-**개선 ?�과:**
+**개선 효과:**
 - 코드 중복 80% 감소
-- ?�러 처리 ?��???100% ?�상
-- UI 반응 ?�도 체감 개선 (?��????�데?�트)
-- ?��?보수???�???�상
+- 에러 처리 일관성 100% 향상
+- UI 반응 속도 체감 개선 (낙관적 업데이트)
+- 유지보수성 대폭 향상
 
-#### ?�선?�위: 중간 - ?�세 ?�용?� ?�슈 ?�일 참조
+#### 우선순위: 중간
 
-**4. Store ?�태 관�?최적??* - ?�� `.github-issues/issue-phase4-store-optimization.md`
+**4. Store 상태 관리 최적화 (3-4시간)**
 
-**5. 컴포?�트 분리 �??�사?�성 ?�상** - ?�� `.github-issues/issue-phase4-component-separation.md`
+**구현 계획:**
 
-**6. TypeScript ?�???�전??강화** - ?�� `.github-issues/issue-phase4-typescript-safety.md`
+```typescript
+// stores/todo.ts 개선
+export const useTodoStore = defineStore('todo', () => {
+  // State를 Map으로 관리 (O(1) 조회)
+  const todosMap = ref<Map<number, TodoResponse>>(new Map())
+  const todoIds = ref<number[]>([])
+  
+  // Computed
+  const todos = computed(() => 
+    todoIds.value.map(id => todosMap.value.get(id)!).filter(Boolean)
+  )
+  
+  const getTodoById = (id: number) => todosMap.value.get(id)
+  
+  // Actions
+  const fetchTodos = async (params?: TodoSearchRequest) => {
+    // ... API 호출
+    
+    // Map과 배열 동시 업데이트
+    todosMap.value.clear()
+    todoIds.value = []
+    
+    pageData.content?.forEach(todo => {
+      if (todo.id) {
+        todosMap.value.set(todo.id, todo)
+        todoIds.value.push(todo.id)
+      }
+    })
+  }
+  
+  const updateTodoInStore = (todo: TodoResponse) => {
+    if (todo.id) {
+      todosMap.value.set(todo.id, todo)
+      
+      // 배열에 없으면 추가
+      if (!todoIds.value.includes(todo.id)) {
+        todoIds.value.push(todo.id)
+      }
+    }
+  }
+  
+  const removeTodoFromStore = (id: number) => {
+    todosMap.value.delete(id)
+    const index = todoIds.value.indexOf(id)
+    if (index > -1) {
+      todoIds.value.splice(index, 1)
+    }
+  }
+  
+  return {
+    todos,
+    getTodoById,
+    fetchTodos,
+    updateTodoInStore,
+    removeTodoFromStore
+  }
+})
+```
+
+**장점:**
+- 개별 TODO 조회 성능 향상 (O(n) → O(1))
+- 부분 업데이트 효율성 증가
+- 메모리 사용 최적화
+
+**체크리스트:**
+- [ ] Todo Store Map 구조로 리팩토링
+- [ ] Project Store 최적화
+- [ ] 불필요한 상태 제거
+- [ ] Computed 속성 최적화
+- [ ] 성능 테스트
+
+**예상 시간:** 3-4시간
 
 ---
 
-#### ?�선?�위: ??�� (?�택)
+**5. 컴포넌트 분리 및 재사용성 향상 (4-5시간)**
 
-**7. ?�능 모니?�링 �?최적??* (3-4?�간)
-- ?�능 측정 ?�틸리티 ?�성
-- API ?�출 �?컴포?�트 ?�더�?최적??
-- 불필?�한 re-render ?�거
+**구현 계획:**
 
-**8. ?�스??코드 ?�성** (8-10?�간)
-- Vitest ?�정
-- Store, Composable, 컴포?�트 ?�위 ?�스??
-- ?�스??커버리�? 목표: 60% ?�상
+```typescript
+// components/common/ConfirmDialog.vue (신규)
+<template>
+  <Teleport to="body">
+    <div v-if="isOpen" @click="onCancel" 
+         class="fixed inset-0 z-50 flex items-center justify-center 
+                bg-black bg-opacity-50">
+      <div @click.stop class="bg-white rounded-lg shadow-xl p-6 max-w-md w-full">
+        <h3 class="text-lg font-semibold mb-4">{{ title }}</h3>
+        <p class="text-gray-600 mb-6">{{ message }}</p>
+        
+        <div class="flex justify-end gap-3">
+          <button @click="onCancel" class="btn-secondary">취소</button>
+          <button @click="onConfirm" class="btn-primary">확인</button>
+        </div>
+      </div>
+    </div>
+  </Teleport>
+</template>
 
-**9. ?�근??(a11y) 개선** (3-4?�간)
-- ?�맨??HTML �?ARIA ?�성 추�?
-- ?�보???�비게이??�??�커??관�?
-- WCAG 2.1 AA 준??
+// components/common/EmptyState.vue (신규)
+<template>
+  <div class="flex flex-col items-center justify-center py-12">
+    <div class="text-6xl mb-4">{{ icon }}</div>
+    <h3 class="text-xl font-semibold text-gray-700 mb-2">{{ title }}</h3>
+    <p class="text-gray-500 mb-6">{{ message }}</p>
+    <slot name="action"></slot>
+  </div>
+</template>
 
-#### Phase 4 �??�상 개발 ?�간
+// components/common/LoadingOverlay.vue (신규)
+<template>
+  <div v-if="isLoading" 
+       class="fixed inset-0 z-40 flex items-center justify-center 
+              bg-white bg-opacity-75">
+    <LoadingSpinner :size="size" />
+  </div>
+</template>
+```
 
-**?�선?�위 ?�음 (?�료):** 9-12?�간  
-**?�선?�위 중간 (?�정):** 9-12?�간  
-**?�선?�위 ??�� (?�택):** 14-18?�간  
-**총합:** 32-42?�간
+**체크리스트:**
+- [ ] `ConfirmDialog` 공통 컴포넌트 생성
+- [ ] `EmptyState` 컴포넌트 생성
+- [ ] `LoadingOverlay` 컴포넌트 생성
+- [ ] `ErrorBoundary` 컴포넌트 생성 (선택)
+- [ ] 모든 페이지에서 공통 컴포넌트 사용
+- [ ] 중복 코드 제거
+
+**예상 시간:** 4-5시간
 
 ---
 
-### ?�� Phase 5-7 ?�정 - ?�후 구현 계획
+**6. TypeScript 타입 안전성 강화 (2-3시간)**
 
-**�?기능???�???�세??구현 계획?� `.github-issues/` ?�렉?�리???�슈 ?�일??참조?�세??**
+**구현 계획:**
 
-#### Phase 4 지??(중간 ?�선?�위) - ?�키?�처 개선
-- [x] **Store ?�태 관�?최적??* - Map 구조, O(1) 조회 (3-4?�간)  
-  ?�� `.github-issues/issue-phase4-store-optimization.md`
-- [ ] **컴포?�트 분리** - 공통 컴포?�트 (ConfirmDialog, EmptyState) (4-5?�간)  
-  ?�� `.github-issues/issue-phase4-component-separation.md`
-- [ ] **TypeScript ?�???�전??* - `any` ?�거, 공통 ?�??(2-3?�간)  
-  ?�� `.github-issues/issue-phase4-typescript-safety.md`
+```typescript
+// types/index.ts 개선
 
-#### Phase 5 (?��? ?�선?�위) - 기능 ?�장 �?UX 개선
-- [ ] **고급 TODO 기능** - ?�래그앤?�롭, 복제, ?�플�? ?�괄?�업 (12-15?�간)  
-  ?�� `.github-issues/issue-phase5-advanced-features.md`
-- [ ] **UX 개선** - ?�보???�축?? ?�크모드, ?�근?? ?�니메이??(13-17?�간)  
-  ?�� `.github-issues/issue-phase5-ux-improvements.md`
-- [ ] **캘린??�?* - ?�간 �? ?�정 ?�각??(?�택, 8-10?�간)
+// API 응답 래퍼 타입
+export interface ApiResponse<T> {
+  success: boolean
+  message: string
+  data: T | null
+}
 
-#### Phase 6 (중간 ?�선?�위) - ?�이??관�?
-- [ ] **?�일 출력** - JSON, Excel, PDF ?�보?�기 (8-11?�간, 백엔???�존)  
-  ?�� `.github-issues/issue-phase6-export.md`
+// 작업 결과 타입
+export interface OperationResult<T = void> {
+  success: boolean
+  data?: T
+  error?: Error
+  cancelled?: boolean
+}
 
-#### Phase 7 (?��? ?�선?�위) - ?�정 관�?
-- [ ] **TODO ?�정 관�?UI** - ?�짜범위, 반복?�정, ?�림 (15-29?�간, 백엔???�존)  
-  ?�� `.github-issues/issue-phase7-schedule-ui.md`
+// Form 상태 타입
+export interface FormState<T> {
+  data: T
+  errors: Partial<Record<keyof T, string>>
+  touched: Partial<Record<keyof T, boolean>>
+  isValid: boolean
+  isDirty: boolean
+}
 
-**�??�상 개발 ?�간:** 63-94?�간
+// 사용 예시
+const createTodo = async (
+  data: TodoRequest
+): Promise<OperationResult<TodoResponse>> => {
+  try {
+    const result = await todoStore.createTodo(data)
+    return { success: true, data: result }
+  } catch (error) {
+    return { success: false, error: error as Error }
+  }
+}
+```
+
+**체크리스트:**
+- [ ] 공통 타입 정의
+- [ ] Store의 모든 메서드 반환 타입 명시
+- [ ] Composable 타입 정의
+- [ ] `any` 타입 제거
+- [ ] 타입 가드 함수 작성
+
+**예상 시간:** 2-3시간
+
+#### 우선순위: 낮음 (선택)
+
+**7. 성능 모니터링 및 최적화 (3-4시간)**
+
+**구현 계획:**
+
+```typescript
+// utils/performance.ts (신규)
+export function measurePerformance(name: string) {
+  const startMark = `${name}-start`
+  const endMark = `${name}-end`
+  const measureName = `${name}-measure`
+  
+  performance.mark(startMark)
+  
+  return {
+    end: () => {
+      performance.mark(endMark)
+      performance.measure(measureName, startMark, endMark)
+      
+      const measure = performance.getEntriesByName(measureName)[0]
+      console.log(`⏱️ ${name}: ${measure.duration.toFixed(2)}ms`)
+      
+      // 성능 임계값 경고
+      if (measure.duration > 1000) {
+        console.warn(`⚠️ ${name} took ${measure.duration.toFixed(2)}ms`)
+      }
+      
+      return measure.duration
+    }
+  }
+}
+
+// 사용 예시
+const fetchTodos = async () => {
+  const perf = measurePerformance('fetchTodos')
+  
+  try {
+    // ... API 호출
+  } finally {
+    perf.end()
+  }
+}
+
+// Vue 컴포넌트 렌더링 성능 측정
+import { onMounted, onUpdated } from 'vue'
+
+export function useRenderPerformance(componentName: string) {
+  let renderCount = 0
+  
+  onMounted(() => {
+    console.log(`✅ ${componentName} mounted`)
+  })
+  
+  onUpdated(() => {
+    renderCount++
+    console.log(`🔄 ${componentName} updated (${renderCount})`)
+  })
+}
+```
+
+**체크리스트:**
+- [ ] 성능 측정 유틸리티 작성
+- [ ] 주요 API 호출 성능 모니터링
+- [ ] 컴포넌트 렌더링 최적화
+- [ ] 불필요한 re-render 제거
+- [ ] 큰 리스트 가상화 (선택)
+
+**예상 시간:** 3-4시간
 
 ---
 
-> **?�� GitHub ?�슈 ?�록**
+> **📝 GitHub 이슈 등록**
 > 
-> `.github-issues/` ?�렉?�리???�슈 ?�일???�용?�여 GitHub???�록:
+> `.github-issues/` 디렉토리의 이슈 파일을 사용하여 GitHub에 등록:
 > 
 > ```bash
-> # ?�시
+> # 예시
 > gh issue create \
->   --title "Phase 4: Store ?�태 관�?최적?? \
+>   --title "Phase 4: Store 상태 관리 최적화" \
 >   --body-file .github-issues/issue-phase4-store-optimization.md \
 >   --label enhancement,refactoring,performance
 > ```
 
-## ?�� ?�경 변??
+## 🔧 환경 변수
 
-`env.development.example` ?�일??복사?�여 `.env.development` ?�일???�성?�세??
+`env.development.example` 파일을 복사하여 `.env.development` 파일을 생성하세요:
 
 ```env
 VITE_API_BASE_URL=http://localhost:8080/api
 ```
 
-## ?�� 주요 ?�키지
+## 📦 주요 패키지
 
-### ?��????�존??
+### 런타임 의존성
 - `vue`: ^3.4.0
 - `vue-router`: ^4.2.5
 - `pinia`: ^2.1.7
 - `axios`: ^1.6.2
 - `date-fns`: ^3.0.0
 
-### 개발 ?�존??
-- `@hey-api/openapi-ts`: 0.87.4 - OpenAPI ?�라?�언??코드 ?�성
+### 개발 의존성
+- `@hey-api/openapi-ts`: 0.87.4 - OpenAPI 클라이언트 코드 생성
 - `typescript`: ^5.3.0
 - `vite`: ^5.0.0
 - `tailwindcss`: ^3.3.6
 - `vue-tsc`: ^1.8.0
 - `eslint`: ^8.55.0
 
-## ??OpenAPI 코드 ?�성???�점
+## ✨ OpenAPI 코드 생성의 장점
 
-1. **?�???�정??*: 백엔??API ?�펙�?100% ?�치?�는 TypeScript ?�??
-2. **?�동 ?�기??*: API 변�???`npx @hey-api/openapi-ts`�??�행?�면 ?�동 ?�데?�트
-3. **개발 ?�산??*: IDE ?�동?�성?�로 빠른 개발
-4. **?�러 감소**: 컴파???�?�에 API ?�류 발견
-5. **문서??불필??*: 코드 ?�체가 문서 ??��
+1. **타입 안정성**: 백엔드 API 스펙과 100% 일치하는 TypeScript 타입
+2. **자동 동기화**: API 변경 시 `npx @hey-api/openapi-ts`만 실행하면 자동 업데이트
+3. **개발 생산성**: IDE 자동완성으로 빠른 개발
+4. **에러 감소**: 컴파일 타임에 API 오류 발견
+5. **문서화 불필요**: 코드 자체가 문서 역할
 
-## ?�� 문제 ?�결
+## 🐛 문제 해결
 
-### 빌드 ?�류
+### 빌드 오류
 ```bash
-# node_modules ?�설�?
+# node_modules 재설치
 rm -rf node_modules package-lock.json
 npm install
 ```
 
-### ?�???�러
+### 타입 에러
 ```bash
-# TypeScript ?�??체크
+# TypeScript 타입 체크
 npm run vue-tsc --noEmit
 ```
 
-### Lint ?�류
+### Lint 오류
 ```bash
-# ESLint ?�동 ?�정
+# ESLint 자동 수정
 npm run lint
 ```
 
-### API 코드 ?�성 ?�패
+### API 코드 생성 실패
 ```bash
-# 백엔???�버가 ?�행 중인지 ?�인
-# http://localhost:8080/api-docs ?�속 가?�한지 ?�인
+# 백엔드 서버가 실행 중인지 확인
+# http://localhost:8080/api-docs 접속 가능한지 확인
 npx @hey-api/openapi-ts
 ```
 
-### 쿼리 ?�라미터 ?�러
-Spring??`@ModelAttribute`???�면 쿼리 ?�라미터�?기�??�니?? `todo.ts` store??`fetchTodos` ?�수?�서 `paramsSerializer`�??�용?�여 쿼리 ?�라미터�??�면?�합?�다.
+### 쿼리 파라미터 에러
+Spring의 `@ModelAttribute`는 평면 쿼리 파라미터를 기대합니다. `todo.ts` store의 `fetchTodos` 함수에서 `paramsSerializer`를 사용하여 쿼리 파라미터를 평면화합니다.
 
-## ?�� 참고 문서
+## 📚 참고 문서
 
 - [@hey-api/openapi-ts 공식 문서](https://heyapi.dev/)
 - [Vue 3 공식 문서](https://vuejs.org/)
@@ -1288,21 +1483,21 @@ Spring??`@ModelAttribute`???�면 쿼리 ?�라미터�?기�??�니?? `tod
 - [Vite 공식 문서](https://vitejs.dev/)
 - [Tailwind CSS 공식 문서](https://tailwindcss.com/)
 
-## ?�� Git ?�크?�로??
+## 🔄 Git 워크플로우
 
-???�로?�트???�립?�인 Git ?�포지?�리?�니??
+이 프로젝트는 독립적인 Git 레포지토리입니다.
 
 ```bash
-# 초기 커밋 (?��? ?�료??경우 ?�략)
+# 초기 커밋 (이미 완료된 경우 생략)
 git add .
 git commit -m "Initial commit: Frontend setup"
 
-# ?�격 ?�?�소 ?�결 (?�택?�항)
-git remote add origin <?�론?�엔???�?�소-URL>
+# 원격 저장소 연결 (선택사항)
+git remote add origin <프론트엔드-저장소-URL>
 git branch -M main
 git push -u origin main
 ```
 
-## ?�� ?�이?�스
+## 📝 라이선스
 
-???�로?�트???�립?�으�?관리되�? 백엔?��? 별도???�이?�스�?가�????�습?�다.
+이 프로젝트는 독립적으로 관리되며, 백엔드와 별도의 라이선스를 가질 수 있습니다.
