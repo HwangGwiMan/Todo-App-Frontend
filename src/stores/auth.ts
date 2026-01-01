@@ -16,7 +16,7 @@ export const useAuthStore = defineStore('auth', () => {
   const isAdmin = computed(() => user.value?.role === 'ADMIN')
 
   // Actions
-  const login = async (credentials: LoginRequest) => {
+  const login = async (credentials: LoginRequest): Promise<AuthResponse | null> => {
     const response = await loginApi({
       body: credentials,
       throwOnError: true
@@ -30,12 +30,13 @@ export const useAuthStore = defineStore('auth', () => {
       // LocalStorage에 저장
       localStorage.setItem('token', authData.token)
       localStorage.setItem('user', JSON.stringify(authData))
+      return authData
     }
     
-    return authData
+    return null
   }
 
-  const signup = async (data: SignupRequest) => {
+  const signup = async (data: SignupRequest): Promise<AuthResponse | null> => {
     const response = await signupApi({
       body: data,
       throwOnError: true
@@ -49,12 +50,13 @@ export const useAuthStore = defineStore('auth', () => {
       // LocalStorage에 저장
       localStorage.setItem('token', authData.token)
       localStorage.setItem('user', JSON.stringify(authData))
+      return authData
     }
     
-    return authData
+    return null
   }
 
-  const logout = () => {
+  const logout = (): void => {
     token.value = null
     user.value = null
     localStorage.removeItem('token')

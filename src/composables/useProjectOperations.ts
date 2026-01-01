@@ -1,15 +1,8 @@
 import { ref } from 'vue'
 import { useProjectStore } from '@/stores/project'
 import { useToast } from '@/composables/useToast'
-import type { ProjectRequest } from '@/client'
-
-// 작업 결과 타입
-export interface OperationResult<T = void> {
-  success: boolean
-  data?: T
-  error?: Error
-  cancelled?: boolean
-}
+import type { ProjectRequest, ProjectResponse } from '@/client'
+import type { OperationResult } from '@/types/common'
 
 /**
  * 프로젝트 작업을 위한 Composable
@@ -27,7 +20,7 @@ export function useProjectOperations() {
    */
   const createProjectWithFeedback = async (
     data: ProjectRequest
-  ): Promise<OperationResult> => {
+  ): Promise<OperationResult<ProjectResponse | null>> => {
     loading.value = true
     error.value = null
 
@@ -50,7 +43,7 @@ export function useProjectOperations() {
   const updateProjectWithFeedback = async (
     projectId: number,
     data: ProjectRequest
-  ): Promise<OperationResult> => {
+  ): Promise<OperationResult<ProjectResponse | null>> => {
     loading.value = true
     error.value = null
 
@@ -114,4 +107,3 @@ export function useProjectOperations() {
     refreshProjects
   }
 }
-

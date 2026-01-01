@@ -1,5 +1,8 @@
 <template>
-  <div v-if="isLoading" class="fixed inset-0 z-40 flex items-center justify-center bg-white bg-opacity-75">
+  <div
+    v-if="isLoading"
+    class="fixed inset-0 z-40 flex items-center justify-center bg-white bg-opacity-75"
+  >
     <LoadingSpinner :size="size" />
   </div>
 </template>

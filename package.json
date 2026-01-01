@@ -8,6 +8,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix",
+    "type-check": "vue-tsc --noEmit",
     "generate:api": "openapi -i http://localhost:8080/api-docs -o src/api -c axios"
   },
   "dependencies": {

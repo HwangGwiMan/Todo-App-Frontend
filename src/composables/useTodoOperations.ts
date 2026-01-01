@@ -1,18 +1,8 @@
 import { ref } from 'vue'
 import { useTodoStore } from '@/stores/todo'
 import { useToast } from '@/composables/useToast'
-import type { TodoRequest, TodoSearchRequest } from '@/client'
-
-// 상태 타입 정의
-type TodoStatus = 'TODO' | 'IN_PROGRESS' | 'DONE'
-
-// 작업 결과 타입
-export interface OperationResult<T = void> {
-  success: boolean
-  data?: T
-  error?: Error
-  cancelled?: boolean
-}
+import type { TodoRequest, TodoSearchRequest, TodoResponse, TodoStatus } from '@/client'
+import type { OperationResult } from '@/types/common'
 
 /**
  * TODO 작업을 위한 Composable
@@ -28,14 +18,14 @@ export function useTodoOperations() {
   /**
    * TODO 생성 (피드백 포함)
    */
-  const createTodoWithFeedback = async (data: TodoRequest): Promise<OperationResult> => {
+  const createTodoWithFeedback = async (data: TodoRequest): Promise<OperationResult<TodoResponse | null>> => {
     loading.value = true
     error.value = null
 
     try {
-      await todoStore.createTodo(data)
+      const newTodo = await todoStore.createTodo(data)
       showSuccess('TODO가 생성되었습니다.')
-      return { success: true }
+      return { success: true, data: newTodo }
     } catch (e) {
       error.value = e as Error
       showError('TODO 생성에 실패했습니다.')
@@ -51,7 +41,7 @@ export function useTodoOperations() {
   const updateTodoWithFeedback = async (
     id: number, 
     data: TodoRequest
-  ): Promise<OperationResult<unknown>> => {
+  ): Promise<OperationResult<TodoResponse | null>> => {
     loading.value = true
     error.value = null
 
@@ -98,11 +88,11 @@ export function useTodoOperations() {
   const updateStatusWithFeedback = async (
     id: number, 
     status: TodoStatus
-  ): Promise<OperationResult> => {
+  ): Promise<OperationResult<TodoResponse | null>> => {
     try {
-      await todoStore.updateTodoStatus(id, status)
+      const updatedTodo = await todoStore.updateTodoStatus(id, status)
       showSuccess('상태가 변경되었습니다.')
-      return { success: true }
+      return { success: true, data: updatedTodo }
     } catch (e) {
       error.value = e as Error
       showError('상태 변경에 실패했습니다.')

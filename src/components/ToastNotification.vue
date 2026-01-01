@@ -82,8 +82,7 @@
   
   <script setup lang="ts">
   import { ref, onUnmounted } from 'vue'
-  
-  export type ToastType = 'error' | 'success' | 'info'
+  import type { ToastType } from '@/types/common'
   
   export interface Toast {
     id: number

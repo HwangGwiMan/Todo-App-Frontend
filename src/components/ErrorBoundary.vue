@@ -1,9 +1,23 @@
 <template>
-  <div v-if="hasError" class="flex flex-col items-center justify-center py-12">
-    <div class="text-6xl mb-4">⚠️</div>
-    <h3 class="text-xl font-semibold text-red-600 mb-2">오류가 발생했습니다</h3>
-    <p class="text-gray-500 mb-6">{{ errorMessage }}</p>
-    <button @click="resetError" class="btn-primary">다시 시도</button>
+  <div
+    v-if="hasError"
+    class="flex flex-col items-center justify-center py-12"
+  >
+    <div class="text-6xl mb-4">
+      ⚠️
+    </div>
+    <h3 class="text-xl font-semibold text-red-600 mb-2">
+      오류가 발생했습니다
+    </h3>
+    <p class="text-gray-500 mb-6">
+      {{ errorMessage }}
+    </p>
+    <button
+      class="btn-primary"
+      @click="resetError"
+    >
+      다시 시도
+    </button>
   </div>
   <slot v-else />
 </template>

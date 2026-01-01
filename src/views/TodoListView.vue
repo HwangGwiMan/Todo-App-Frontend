@@ -249,9 +249,8 @@ import ProjectEditModal from '@/components/ProjectEditModal.vue'
 import FilterSortBar from '@/components/FilterSortBar.vue'
 import Pagination from '@/components/Pagination.vue'
 import LoadingSpinner from '@/components/LoadingSpinner.vue'
-import ToastNotification from '@/components/ToastNotification.vue'
-import EmptyState from '@/components/EmptyState.vue'
 import type { TodoResponse, TodoRequest, TodoSearchRequest, ProjectResponse, ProjectRequest } from '@/client'
+import type { ToastNotificationInstance } from '@/types/common'
 
 const todoStore = useTodoStore()
 const projectStore = useProjectStore()
@@ -260,7 +259,7 @@ const { handleError } = useErrorHandler()
 const todoOps = useTodoOperations()
 const projectOps = useProjectOperations()
 
-const toastRef = ref<InstanceType<typeof ToastNotification> | null>(null)
+const toastRef = ref<ToastNotificationInstance | null>(null)
 const showCreateModal = ref(false)
 const showEditModal = ref(false)
 const selectedTodo = ref<TodoResponse | null>(null)

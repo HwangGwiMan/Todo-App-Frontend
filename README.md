@@ -1151,7 +1151,7 @@ export function isServerError(error: unknown): boolean
 
 #### 우선순위: 중간
 
-**4. Store 상태 관리 최적화 (3-4시간)**
+**4. Store 상태 관리 최적화 (3-4시간) - ✅ 완료**
 
 **구현 계획:**
 
@@ -1220,11 +1220,11 @@ export const useTodoStore = defineStore('todo', () => {
 - 메모리 사용 최적화
 
 **체크리스트:**
-- [ ] Todo Store Map 구조로 리팩토링
-- [ ] Project Store 최적화
-- [ ] 불필요한 상태 제거
-- [ ] Computed 속성 최적화
-- [ ] 성능 테스트
+- [x] Todo Store Map 구조로 리팩토링
+- [x] Project Store 최적화
+- [x] 불필요한 상태 제거
+- [x] Computed 속성 최적화
+- [x] 성능 테스트 (수동 테스트 완료)
 
 **예상 시간:** 3-4시간
 

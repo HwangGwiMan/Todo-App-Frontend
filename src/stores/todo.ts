@@ -50,7 +50,7 @@ export const useTodoStore = defineStore('todo', () => {
   }
 
   // Actions
-  const fetchTodos = async (params?: TodoSearchRequest) => {
+  const fetchTodos = async (params?: TodoSearchRequest): Promise<void> => {
     try {
       loading.value = true
       
@@ -107,7 +107,7 @@ export const useTodoStore = defineStore('todo', () => {
     }
   }
 
-  const fetchTodoById = async (id: number) => {
+  const fetchTodoById = async (id: number): Promise<TodoResponse | null> => {
     // Map에 이미 있는 경우 캐시된 데이터 사용 (선택적 최적화)
     const cachedTodo = todosMap.value.get(id)
     if (cachedTodo) {
@@ -124,7 +124,7 @@ export const useTodoStore = defineStore('todo', () => {
         throwOnError: true
       })
       
-      const todo = response.data?.data
+      const todo = response.data?.data || null
       
       if (todo) {
         // Map에도 저장하여 나중에 빠르게 조회 가능하도록
@@ -149,7 +149,7 @@ export const useTodoStore = defineStore('todo', () => {
     }
   }
 
-  const createTodo = async (data: TodoRequest) => {
+  const createTodo = async (data: TodoRequest): Promise<TodoResponse | null> => {
     try {
       loading.value = true
       const response = await createTodoApi({
@@ -157,7 +157,7 @@ export const useTodoStore = defineStore('todo', () => {
         throwOnError: true
       })
       
-      const newTodo = response.data?.data
+      const newTodo = response.data?.data || null
       
       if (newTodo && newTodo.id !== undefined && newTodo.id !== null) {
         // Map과 배열에 추가 (맨 앞에 추가)
@@ -173,7 +173,7 @@ export const useTodoStore = defineStore('todo', () => {
     }
   }
 
-  const updateTodo = async (id: number, data: TodoRequest) => {
+  const updateTodo = async (id: number, data: TodoRequest): Promise<TodoResponse | null> => {
     // 낙관적 업데이트: 원본 데이터 백업
     const originalMap = new Map(todosMap.value)
     const originalIds = [...todoIds.value]
@@ -204,7 +204,7 @@ export const useTodoStore = defineStore('todo', () => {
       })
       
       // 3. 서버 응답으로 최종 업데이트
-      const updatedTodo = response.data?.data
+      const updatedTodo = response.data?.data || null
       
       if (updatedTodo) {
         todosMap.value.set(id, updatedTodo)
@@ -222,7 +222,7 @@ export const useTodoStore = defineStore('todo', () => {
     }
   }
 
-  const updateTodoStatus = async (id: number, status: TodoStatus) => {
+  const updateTodoStatus = async (id: number, status: TodoStatus): Promise<TodoResponse | null> => {
     // 낙관적 업데이트: 원본 데이터 백업
     const originalMap = new Map(todosMap.value)
     const originalIds = [...todoIds.value]
@@ -255,7 +255,7 @@ export const useTodoStore = defineStore('todo', () => {
       })
       
       // 3. 서버 응답으로 최종 업데이트
-      const updatedTodo = response.data?.data
+      const updatedTodo = response.data?.data || null
       
       if (updatedTodo) {
         todosMap.value.set(id, updatedTodo)
@@ -271,7 +271,7 @@ export const useTodoStore = defineStore('todo', () => {
     }
   }
 
-  const deleteTodo = async (id: number) => {
+  const deleteTodo = async (id: number): Promise<void> => {
     try {
       loading.value = true
       await deleteTodoApi({
@@ -292,7 +292,7 @@ export const useTodoStore = defineStore('todo', () => {
     }
   }
 
-  const fetchStats = async () => {
+  const fetchStats = async (): Promise<void> => {
     try {
       const response = await getUserStats({
         throwOnError: true
@@ -318,7 +318,7 @@ export const useTodoStore = defineStore('todo', () => {
     }
   }
 
-  const clearTodos = () => {
+  const clearTodos = (): void => {
     todosMap.value.clear()
     todoIds.value = []
     currentTodo.value = null

@@ -1,16 +1,16 @@
 import { ref } from 'vue'
-import type { ToastType } from '@/components/ToastNotification.vue'
+import type { ToastNotificationInstance,  ToastType } from '@/types/common'
 
-const toastRef = ref<InstanceType<typeof import('@/components/ToastNotification.vue')> | null>(null)
+const toastRef = ref<ToastNotificationInstance | null>(null)
 
 export function useToast() {
-  const setToastRef = (ref: InstanceType<typeof import('@/components/ToastNotification.vue')> | null) => {
-    toastRef.value = ref
+const setToastRef = (instance: ToastNotificationInstance | null) => {
+    toastRef.value = instance
   }
 
   const showToast = (message: string, type: ToastType = 'info', duration = 5000) => {
     if (toastRef.value) {
-      toastRef.value.addToast(message, type, duration)
+      toastRef.value.add(message, type, duration)
     } else {
       console.warn('ToastNotification 컴포넌트가 마운트되지 않았습니다.')
     }

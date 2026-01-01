@@ -184,10 +184,8 @@ import { useTodoStore } from '@/stores/todo'
 import { useToast } from '@/composables/useToast'
 import { useErrorHandler } from '@/composables/useErrorHandler'
 import LoadingSpinner from '@/components/LoadingSpinner.vue'
-import ToastNotification from '@/components/ToastNotification.vue'
-import PieChart from '@/components/charts/PieChart.vue'
-import BarChart from '@/components/charts/BarChart.vue'
 import type { TodoDashboardStatsResponse } from '@/client'
+import type { ToastNotificationInstance } from '@/types/common'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -195,7 +193,7 @@ const todoStore = useTodoStore()
 const { setToastRef, showError } = useToast()
 const { handleError } = useErrorHandler()
 
-const toastRef = ref<InstanceType<typeof ToastNotification> | null>(null)
+const toastRef = ref<ToastNotificationInstance | null>(null)
 const loading = ref(false)
 const dashboardStats = ref<TodoDashboardStatsResponse | null>(null)
 
