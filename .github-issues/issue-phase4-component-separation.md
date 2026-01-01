@@ -54,12 +54,12 @@
 Vue 3의 에러 핸들링 개선
 
 ## ✅ 체크리스트
-- [ ] `ConfirmDialog` 공통 컴포넌트 생성
-- [ ] `EmptyState` 컴포넌트 생성
-- [ ] `LoadingOverlay` 컴포넌트 생성
-- [ ] `ErrorBoundary` 컴포넌트 생성 (선택)
-- [ ] 모든 페이지에서 공통 컴포넌트 사용
-- [ ] 중복 코드 제거
+- [x] `ConfirmDialog` 공통 컴포넌트 생성
+- [x] `EmptyState` 컴포넌트 생성
+- [x] `LoadingOverlay` 컴포넌트 생성
+- [x] `ErrorBoundary` 컴포넌트 생성 (선택)
+- [x] 모든 페이지에서 공통 컴포넌트 사용
+- [x] 중복 코드 제거
 
 ## ⏱️ 예상 소요 시간
 4-5시간

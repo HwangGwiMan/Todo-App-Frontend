@@ -131,13 +131,25 @@
       </button>
     </div>
   </div>
+
+  <!-- Confirm Dialog -->
+  <ConfirmDialog
+    :is-open="showDeleteConfirm"
+    title="TODO 삭제"
+    message="정말로 이 TODO를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다."
+    confirm-text="삭제"
+    cancel-text="취소"
+    @confirm="confirmDelete"
+    @cancel="cancelDelete"
+  />
 </template>
   
   <script setup lang="ts">
-  import { computed } from 'vue'
+  import { computed, ref } from 'vue'
   import { useRouter } from 'vue-router'
   import { format } from 'date-fns'
   import { ko } from 'date-fns/locale'
+  import ConfirmDialog from './ConfirmDialog.vue'
   import type { TodoResponse } from '@/client'
   
   interface Props {
@@ -153,6 +165,8 @@
   }>()
   
   const router = useRouter()
+  
+  const showDeleteConfirm = ref(false)
   
   const statusText = computed(() => {
     const statusMap: Record<string, string> = {
@@ -216,9 +230,18 @@
   }
   
   const handleDelete = () => {
-    if (props.todo.id && confirm('정말 삭제하시겠습니까?')) {
+    showDeleteConfirm.value = true
+  }
+  
+  const confirmDelete = () => {
+    if (props.todo.id) {
       emit('delete', props.todo.id)
     }
+    showDeleteConfirm.value = false
+  }
+  
+  const cancelDelete = () => {
+    showDeleteConfirm.value = false
   }
   
   const handleStatusChange = () => {

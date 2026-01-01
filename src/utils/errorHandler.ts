@@ -1,6 +1,22 @@
 import type { AxiosError } from 'axios'
 
 /**
+ * 백엔드 API 에러 응답의 기본 형태
+ */
+interface ApiErrorResponse {
+  message?: unknown
+  data?: unknown
+  code?: string
+}
+
+/**
+ * ApiErrorResponse 타입 가드
+ */
+function isApiErrorResponse(data: unknown): data is ApiErrorResponse {
+  return !!data && typeof data === 'object' && 'message' in data
+}
+
+/**
  * 백엔드 ApiResponse 형식의 에러 응답 파싱
  */
 export interface ParsedError {
@@ -46,21 +62,14 @@ export function parseApiError(error: unknown): ParsedError {
     const status = response?.status || 0
     
     // ApiResponse 형식인지 확인 (success, message, data 필드 존재)
-    if (errorData && typeof errorData === 'object' && 'message' in errorData) {
-      // 타입 단언을 위한 타입 가드
-      const apiResponse = errorData as { 
-        message?: string
-        data?: unknown
-        code?: string
-      }
-      
+    if (isApiErrorResponse(errorData)) {
       // 필드별 에러가 있는 경우 (validation 에러)
-      if (apiResponse.data && typeof apiResponse.data === 'object' && !Array.isArray(apiResponse.data)) {
+      if (errorData.data && typeof errorData.data === 'object' && !Array.isArray(errorData.data)) {
         const fieldErrors: Record<string, string> = {}
         let firstMessage = ''
         
         // 필드별 에러 메시지 추출
-        Object.entries(apiResponse.data).forEach(([field, message]) => {
+        Object.entries(errorData.data).forEach(([field, message]) => {
           if (typeof message === 'string') {
             fieldErrors[field] = message
             if (!firstMessage) {
@@ -70,24 +79,24 @@ export function parseApiError(error: unknown): ParsedError {
         })
 
         return {
-          message: (typeof apiResponse.message === 'string' ? apiResponse.message : '') || 
+          message: (typeof errorData.message === 'string' ? errorData.message : '') || 
                    firstMessage || 
                    getDefaultErrorMessage(status),
           fieldErrors: Object.keys(fieldErrors).length > 0 ? fieldErrors : undefined,
           status,
           statusText: response?.statusText || 'Unknown Error',
-          code: apiResponse.code
+          code: errorData.code
         }
       }
       
       // 단일 에러 메시지 (백엔드에서 제공한 메시지 우선, 없으면 HTTP 상태 코드 기본 메시지)
       return {
-        message: (typeof apiResponse.message === 'string' && apiResponse.message) 
-          ? apiResponse.message 
+        message: (typeof errorData.message === 'string' && errorData.message) 
+          ? errorData.message 
           : getDefaultErrorMessage(status),
         status,
         statusText: response?.statusText || 'Unknown Error',
-        code: apiResponse.code
+        code: errorData.code
       }
     }
     

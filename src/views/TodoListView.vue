@@ -88,12 +88,21 @@
           />
         </div>
         
-        <div
+        <EmptyState
           v-else
-          class="text-center py-8 text-gray-500"
+          icon="📁"
+          title="프로젝트가 없습니다"
+          message="새로운 프로젝트를 추가해보세요!"
         >
-          프로젝트가 없습니다. 새로운 프로젝트를 추가해보세요!
-        </div>
+          <template #action>
+            <button
+              class="btn-primary"
+              @click="showProjectCreateModal = true"
+            >
+              + 새 프로젝트
+            </button>
+          </template>
+        </EmptyState>
       </div>
 
       <!-- TODO List -->
@@ -147,12 +156,21 @@
         <LoadingSpinner :is-loading="todoStore.loading" />
         
         <!-- Empty State -->
-        <div
+        <EmptyState
           v-if="!todoStore.loading && todoStore.todos.length === 0"
-          class="text-center py-12 text-gray-500"
+          icon="📝"
+          title="TODO가 없습니다"
+          message="새로운 TODO를 추가해보세요!"
         >
-          TODO가 없습니다. 새로운 TODO를 추가해보세요!
-        </div>
+          <template #action>
+            <button
+              class="btn-primary"
+              @click="showCreateModal = true"
+            >
+              + 새 TODO
+            </button>
+          </template>
+        </EmptyState>
         
         <!-- TODO Grid -->
         <div
@@ -231,8 +249,8 @@ import ProjectEditModal from '@/components/ProjectEditModal.vue'
 import FilterSortBar from '@/components/FilterSortBar.vue'
 import Pagination from '@/components/Pagination.vue'
 import LoadingSpinner from '@/components/LoadingSpinner.vue'
-import ToastNotification from '@/components/ToastNotification.vue'
 import type { TodoResponse, TodoRequest, TodoSearchRequest, ProjectResponse, ProjectRequest } from '@/client'
+import type { ToastNotificationInstance } from '@/types/common'
 
 const todoStore = useTodoStore()
 const projectStore = useProjectStore()
@@ -241,7 +259,7 @@ const { handleError } = useErrorHandler()
 const todoOps = useTodoOperations()
 const projectOps = useProjectOperations()
 
-const toastRef = ref<InstanceType<typeof ToastNotification> | null>(null)
+const toastRef = ref<ToastNotificationInstance | null>(null)
 const showCreateModal = ref(false)
 const showEditModal = ref(false)
 const selectedTodo = ref<TodoResponse | null>(null)

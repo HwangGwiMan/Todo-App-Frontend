@@ -181,22 +181,21 @@
       </div>
 
       <!-- TODO가 없는 경우 -->
-      <div
+      <EmptyState
         v-else
-        class="card"
+        icon="🔍"
+        title="TODO를 찾을 수 없습니다"
+        message="요청하신 TODO가 존재하지 않거나 삭제되었을 수 있습니다."
       >
-        <div class="text-center py-8">
-          <p class="text-gray-600 text-lg mb-4">
-            TODO를 찾을 수 없습니다.
-          </p>
+        <template #action>
           <router-link
             to="/todos"
             class="btn-primary"
           >
             ← 목록으로 돌아가기
           </router-link>
-        </div>
-      </div>
+        </template>
+      </EmptyState>
     </div>
 
     <!-- TODO 수정 모달 -->
@@ -219,6 +218,7 @@ import { useTodoOperations } from '@/composables/useTodoOperations'
 import AppHeader from '@/components/AppHeader.vue'
 import LoadingSpinner from '@/components/LoadingSpinner.vue'
 import TodoEditModal from '@/components/TodoEditModal.vue'
+import EmptyState from '@/components/EmptyState.vue'
 import { format } from 'date-fns'
 import { ko } from 'date-fns/locale'
 

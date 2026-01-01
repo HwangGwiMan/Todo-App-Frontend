@@ -63,12 +63,12 @@ const createTodo = async (
 ```
 
 ## ✅ 체크리스트
-- [ ] 공통 타입 정의
-- [ ] Store의 모든 메서드 반환 타입 명시
-- [ ] Composable 타입 정의
-- [ ] `any` 타입 제거
-- [ ] 타입 가드 함수 작성
-- [ ] TypeScript strict 모드 검증
+- [x] 공통 타입 정의
+- [x] Store의 모든 메서드 반환 타입 명시
+- [x] Composable 타입 정의
+- [x] `any` 타입 제거
+- [x] 타입 가드 함수 작성
+- [x] TypeScript strict 모드 검증
 
 ## ⏱️ 예상 소요 시간
 2-3시간
@@ -79,4 +79,3 @@ const createTodo = async (
 
 ## 📌 관련 이슈
 - Phase 4 아키텍처 개선
-
