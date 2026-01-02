@@ -12,6 +12,7 @@ Vue 3 + TypeScript + Tailwind CSS로 구축된 TodoApp 프론트엔드입니다.
 - ✅ **Phase 2 완료** (2025년 11월): 프로젝트 관리, 프로젝트-TODO 통합, 프로젝트 필터링
 - ✅ **Phase 3 완료** (2025년 12월): TODO 상세 페이지 완전 구현 (상세 정보, 날짜 관리, 상태 변경, 수정/삭제)
 - ✅ **Phase 4 완료** (2025년 12월): 아키텍처 및 코드 품질 개선 (Composable 패턴, 낙관적 업데이트, 에러 처리 표준화, 컴포넌트 분리 및 재사용성 향상)
+- 🔄 **Phase 5 진행중** (2026년 1월): 품질 향상 및 고급 기능 (단위 테스트, 보안 강화, 성능 모니터링, 고급 TODO 기능, UX 개선)
 
 ## 🚀 시작하기
 
@@ -1341,74 +1342,6 @@ const createTodo = async (
 
 #### 우선순위: 낮음 (선택)
 
-**7. 성능 모니터링 및 최적화 (3-4시간)**
-
-**구현 계획:**
-
-```typescript
-// utils/performance.ts (신규)
-export function measurePerformance(name: string) {
-  const startMark = `${name}-start`
-  const endMark = `${name}-end`
-  const measureName = `${name}-measure`
-  
-  performance.mark(startMark)
-  
-  return {
-    end: () => {
-      performance.mark(endMark)
-      performance.measure(measureName, startMark, endMark)
-      
-      const measure = performance.getEntriesByName(measureName)[0]
-      console.log(`⏱️ ${name}: ${measure.duration.toFixed(2)}ms`)
-      
-      // 성능 임계값 경고
-      if (measure.duration > 1000) {
-        console.warn(`⚠️ ${name} took ${measure.duration.toFixed(2)}ms`)
-      }
-      
-      return measure.duration
-    }
-  }
-}
-
-// 사용 예시
-const fetchTodos = async () => {
-  const perf = measurePerformance('fetchTodos')
-  
-  try {
-    // ... API 호출
-  } finally {
-    perf.end()
-  }
-}
-
-// Vue 컴포넌트 렌더링 성능 측정
-import { onMounted, onUpdated } from 'vue'
-
-export function useRenderPerformance(componentName: string) {
-  let renderCount = 0
-  
-  onMounted(() => {
-    console.log(`✅ ${componentName} mounted`)
-  })
-  
-  onUpdated(() => {
-    renderCount++
-    console.log(`🔄 ${componentName} updated (${renderCount})`)
-  })
-}
-```
-
-**체크리스트:**
-- [ ] 성능 측정 유틸리티 작성
-- [ ] 주요 API 호출 성능 모니터링
-- [ ] 컴포넌트 렌더링 최적화
-- [ ] 불필요한 re-render 제거
-- [ ] 큰 리스트 가상화 (선택)
-
-**예상 시간:** 3-4시간
-
 ---
 
 > **📝 GitHub 이슈 등록**
@@ -1422,6 +1355,46 @@ export function useRenderPerformance(componentName: string) {
 >   --body-file .github-issues/issue-phase4-store-optimization.md \
 >   --label enhancement,refactoring,performance
 > ```
+
+### 🔄 Phase 5 진행중 (2026년 1월) - 품질 향상 및 고급 기능
+
+**Phase 5 목표:** 코드 품질 확보 후 사용자 경험 향상
+
+#### 우선순위: 높음 (품질 보증)
+**1. 단위 테스트 및 통합 테스트 (5-7시간)**
+- Composable 함수 단위 테스트
+- Store 액션 테스트
+- 주요 컴포넌트 통합 테스트
+- 유틸리티 함수 테스트
+
+**2. 보안 강화 (3-4시간)**
+- Content Security Policy 설정
+- XSS 방지 검증
+- 보안 헤더 설정
+- HTTPS 강제화
+
+**3. 성능 모니터링 및 최적화 (3-4시간)**
+- Web Vitals 측정
+- 번들 분석 및 최적화
+- Core Web Vitals 모니터링
+- API 호출 성능 모니터링
+
+#### 우선순위: 중간 (기능 확장)
+**4. 고급 TODO 기능 (12-15시간)**
+- 드래그 앤 드롭으로 순서 변경
+- TODO 복제 기능
+- TODO 템플릿 시스템
+- 일괄 작업 (다중 선택 및 일괄 처리)
+
+**5. UX 개선 (13-17시간)**
+- 키보드 단축키 지원
+- 다크 모드 구현
+- 접근성(A11y) 개선 (WCAG 2.1 AA 준수)
+- 애니메이션 및 마이크로 인터랙션
+
+**총 예상 시간:** 36-47시간
+
+---
 
 ## 🔧 환경 변수
 
