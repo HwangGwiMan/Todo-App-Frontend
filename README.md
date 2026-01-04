@@ -13,6 +13,8 @@ Vue 3 + TypeScript + Tailwind CSS로 구축된 TodoApp 프론트엔드입니다.
 - ✅ **Phase 3 완료** (2025년 12월): TODO 상세 페이지 완전 구현 (상세 정보, 날짜 관리, 상태 변경, 수정/삭제)
 - ✅ **Phase 4 완료** (2025년 12월): 아키텍처 및 코드 품질 개선 (Composable 패턴, 낙관적 업데이트, 에러 처리 표준화, 컴포넌트 분리 및 재사용성 향상)
 - 🔄 **Phase 5 진행중** (2026년 1월): 품질 향상 및 고급 기능 (단위 테스트 ✅, 보안 강화, 성능 모니터링, 고급 TODO 기능, UX 개선)
+- 📋 **Phase 7 예정**: TODO 일정 관리 및 알림 기능 UI
+- 📋 **Phase 8 예정**: 사용자 및 권한 관리 화면 (백엔드 Phase 7 연동)
 
 ## 🚀 시작하기
 
@@ -1403,6 +1405,64 @@ const createTodo = async (
 - 애니메이션 및 마이크로 인터랙션
 
 **총 예상 시간:** 36-47시간
+
+---
+
+### 📅 Phase 7 예정 - TODO 일정 관리 및 알림 기능 UI
+
+**📋 [GitHub Issue 예정]**
+
+**기능 개요:** TODO에 상세한 일정 관리 필드를 입력/수정할 수 있는 UI와 알림 설정 인터페이스를 구현합니다.
+
+**예상 소요 시간:** 15-29시간 (캘린더 뷰 포함 시 23-29시간)
+
+**주요 구현 내용:**
+- 일정 시작/종료 일시, 종일 일정 지원
+- 반복 일정 설정 (일간/주간/월간/년간)
+- 알림 설정 (이메일, SMS, 카카오톡, 브라우저 푸시)
+- 캘린더 뷰로 일정 시각화 (선택)
+
+**상세 내용:** `.github-issues/issue-phase7-schedule-ui.md` 참조
+
+---
+
+### 🔐 Phase 8 예정 - 사용자 및 권한 관리 화면
+
+**📋 [GitHub Issue 예정]**
+
+**기능 개요:** 백엔드 Phase 7의 Role & Permission 관리 시스템과 연동하여 관리자가 사용자와 역할을 관리할 수 있는 UI를 구현합니다.
+
+**예상 소요 시간:** 27-35시간
+
+**주요 구현 내용:**
+- 사용자 목록 조회 및 관리 (관리자 전용)
+- 사용자 역할 할당/제거 인터페이스
+- 역할 관리 (생성/수정/삭제/권한 할당)
+- 권한 기반 UI 접근 제어
+- 현재 사용자 권한 표시
+
+**주요 컴포넌트:**
+- `UserListView.vue`: 사용자 목록 페이지
+- `UserRoleAssignModal.vue`: 사용자 역할 할당 모달
+- `RoleListView.vue`: 역할 목록 페이지
+- `RoleCreateModal.vue` / `RoleEditModal.vue`: 역할 생성/수정 모달
+- `PermissionSelector.vue`: 권한 선택 컴포넌트
+- `stores/permission.ts`: 권한 상태 관리
+- `composables/usePermission.ts`: 권한 체크 Composable
+
+**기본 Permission:**
+- TODO 권한: `TODO_READ`, `TODO_WRITE`, `TODO_DELETE`
+- PROJECT 권한: `PROJECT_READ`, `PROJECT_WRITE`, `PROJECT_DELETE`
+- USER 권한: `USER_READ`, `USER_MANAGE`
+- ADMIN 권한: `ADMIN_ACCESS`
+
+**기본 Role:**
+- `USER`: 일반 사용자 권한 (TODO, PROJECT CRUD)
+- `ADMIN`: 모든 권한 포함
+
+**상세 내용:** `.github-issues/issue-phase8-user-role-management.md` 참조
+
+**백엔드 의존성:** Phase 7 백엔드 완료 필요
 
 ---
 
