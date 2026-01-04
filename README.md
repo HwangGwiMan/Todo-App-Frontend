@@ -12,7 +12,7 @@ Vue 3 + TypeScript + Tailwind CSS로 구축된 TodoApp 프론트엔드입니다.
 - ✅ **Phase 2 완료** (2025년 11월): 프로젝트 관리, 프로젝트-TODO 통합, 프로젝트 필터링
 - ✅ **Phase 3 완료** (2025년 12월): TODO 상세 페이지 완전 구현 (상세 정보, 날짜 관리, 상태 변경, 수정/삭제)
 - ✅ **Phase 4 완료** (2025년 12월): 아키텍처 및 코드 품질 개선 (Composable 패턴, 낙관적 업데이트, 에러 처리 표준화, 컴포넌트 분리 및 재사용성 향상)
-- 🔄 **Phase 5 진행중** (2026년 1월): 품질 향상 및 고급 기능 (단위 테스트, 보안 강화, 성능 모니터링, 고급 TODO 기능, UX 개선)
+- 🔄 **Phase 5 진행중** (2026년 1월): 품질 향상 및 고급 기능 (단위 테스트 ✅, 보안 강화, 성능 모니터링, 고급 TODO 기능, UX 개선)
 
 ## 🚀 시작하기
 
@@ -1361,11 +1361,21 @@ const createTodo = async (
 **Phase 5 목표:** 코드 품질 확보 후 사용자 경험 향상
 
 #### 우선순위: 높음 (품질 보증)
-**1. 단위 테스트 및 통합 테스트 (5-7시간)**
-- Composable 함수 단위 테스트
-- Store 액션 테스트
-- 주요 컴포넌트 통합 테스트
-- 유틸리티 함수 테스트
+**1. 단위 테스트 및 통합 테스트 (5-7시간) - ✅ 부분 완료**
+- ✅ Vitest 설정 및 환경 구성 완료
+- ✅ Composable 함수 단위 테스트 작성 완료 (useTodoOperations.test.ts)
+- ✅ Store 액션 테스트 작성 완료 (todo.test.ts - 9개 테스트 케이스 통과)
+  - fetchTodos (성공, 빈 응답 처리)
+  - createTodo (생성 및 store 추가)
+  - updateTodo (낙관적 업데이트, 롤백)
+  - updateTodoStatus (상태 변경)
+  - deleteTodo (삭제)
+  - fetchStats (통계 조회)
+  - getTodoById (ID로 조회)
+- ✅ 주요 컴포넌트 통합 테스트 작성 완료 (TodoCard.test.ts)
+- ✅ 유틸리티 함수 테스트 작성 완료 (errorHandler.test.ts)
+- ⏳ Store 테스트 추가 필요 (project.ts, auth.ts)
+- ⏳ Composable 테스트 추가 필요 (useProjectOperations 등)
 
 **2. 보안 강화 (3-4시간)**
 - Content Security Policy 설정
