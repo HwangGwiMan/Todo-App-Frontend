@@ -1,7 +1,7 @@
 import { ref } from 'vue'
 import { useTodoStore } from '@/stores/todo'
 import { useToast } from '@/composables/useToast'
-import type { TodoRequest, TodoSearchRequest, TodoResponse, TodoStatus } from '@/client'
+import type { TodoRequest, TodoSearchRequest, TodoResponse } from '@/client'
 import type { OperationResult } from '@/types/common'
 
 /**
@@ -87,7 +87,7 @@ export function useTodoOperations() {
    */
   const updateStatusWithFeedback = async (
     id: number, 
-    status: TodoStatus
+    status: 'TODO' | 'IN_PROGRESS' | 'DONE'
   ): Promise<OperationResult<TodoResponse | null>> => {
     try {
       const updatedTodo = await todoStore.updateTodoStatus(id, status)
