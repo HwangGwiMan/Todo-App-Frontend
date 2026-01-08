@@ -251,6 +251,8 @@ import Pagination from '@/components/Pagination.vue'
 import LoadingSpinner from '@/components/LoadingSpinner.vue'
 import type { TodoResponse, TodoRequest, TodoSearchRequest, ProjectResponse, ProjectRequest } from '@/client'
 import type { ToastNotificationInstance } from '@/types/common'
+import ToastNotification from "@/components/ToastNotification.vue";
+import EmptyState from "@/components/EmptyState.vue";
 
 const todoStore = useTodoStore()
 const projectStore = useProjectStore()
@@ -312,12 +314,13 @@ const handleCreate = async (todoData: TodoRequest) => {
     }
     
     const result = await todoOps.createTodoWithFeedback(todoData)
-    
+    console.log(result)
     if (result.success) {
       showCreateModal.value = false
       await todoOps.refreshTodos(filters.value)
     }
   } catch (error) {
+    console.log(error)
     handleError(error, 'TODO 생성 중 오류가 발생했습니다.')
   }
 }

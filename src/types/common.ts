@@ -67,5 +67,7 @@ export type ToastType = 'error' | 'success' | 'info';
  */
 export interface ToastNotificationInstance {
   // eslint-disable-next-line no-unused-vars
-  add: (message: string, type: ToastType, duration?: number) => void;
+  addToast: (message: string, type: ToastType, duration?: number) => void;
+  // eslint-disable-next-line no-unused-vars
+  removeToast: (id: number) => void;
 }

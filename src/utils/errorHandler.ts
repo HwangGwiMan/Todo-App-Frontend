@@ -47,7 +47,7 @@ const HTTP_ERROR_MESSAGES: Record<number, string> = {
 /**
  * HTTP 상태 코드에 대한 기본 메시지 반환
  */
-function getDefaultErrorMessage(status: number): string {
+export function getDefaultErrorMessage(status: number): string {
   return HTTP_ERROR_MESSAGES[status] || '오류가 발생했습니다.'
 }
 
