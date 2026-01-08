@@ -186,6 +186,9 @@ import { useErrorHandler } from '@/composables/useErrorHandler'
 import LoadingSpinner from '@/components/LoadingSpinner.vue'
 import type { TodoDashboardStatsResponse } from '@/client'
 import type { ToastNotificationInstance } from '@/types/common'
+import ToastNotification from '@/components/ToastNotification.vue'
+import PieChart from '@/components/charts/PieChart.vue'
+import BarChart from '@/components/charts/BarChart.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
