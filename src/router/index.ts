@@ -1,53 +1,14 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { routes } from './routes'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
-  routes: [
-    {
-      path: '/',
-      redirect: '/todos'
-    },
-    {
-      path: '/login',
-      name: 'Login',
-      component: () => import('@/views/LoginView.vue'),
-      meta: { requiresAuth: false }
-    },
-    {
-      path: '/signup',
-      name: 'Signup',
-      component: () => import('@/views/SignupView.vue'),
-      meta: { requiresAuth: false }
-    },
-    {
-      path: '/todos',
-      name: 'Todos',
-      component: () => import('@/views/TodoListView.vue'),
-      meta: { requiresAuth: true }
-    },
-    {
-      path: '/todos/:id',
-      name: 'TodoDetail',
-      component: () => import('@/views/TodoDetailView.vue'),
-      meta: { requiresAuth: true }
-    },
-    {
-      path: '/dashboard',
-      name: 'Dashboard',
-      component: () => import('@/views/DashboardView.vue'),
-      meta: { requiresAuth: true }
-    },
-    {
-      path: '/:pathMatch(.*)*',
-      name: 'NotFound',
-      component: () => import('@/views/NotFoundView.vue')
-    }
-  ]
+  routes
 })
 
 // Navigation Guard - 인증 체크
-router.beforeEach((to, from, next) => {
+router.beforeEach((to, _from, next) => {
   const authStore = useAuthStore()
   const requiresAuth = to.matched.some(record => record.meta.requiresAuth)
 
