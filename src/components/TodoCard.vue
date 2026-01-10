@@ -1,22 +1,57 @@
 <template>
   <div
-    class="card hover:shadow-md transition-shadow cursor-pointer"
-    @click="handleClick"
+    class="card hover:shadow-md transition-shadow"
+    :class="{
+      'cursor-pointer': !isSelectionMode,
+      'ring-2 ring-blue-500': selected
+    }"
+    @click="handleCardClick"
   >
     <div class="flex justify-between items-start mb-3">
-      <div class="flex-1">
-        <h3 class="text-lg font-semibold text-gray-900 mb-1">
-          {{ todo.title }}
-        </h3>
-        <p
-          class="text-sm text-gray-600 line-clamp-2 overflow-hidden"
-          style="height: 2.5rem; word-break: break-word;"
-        >
-          {{ todo.description }}
-        </p>
+      <div class="flex items-start gap-2 flex-1">
+        <!-- 체크박스 (선택 모드일 때만 표시) -->
+        <input
+          v-if="isSelectionMode"
+          type="checkbox"
+          :checked="selected"
+          class="mt-1 w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+          @click.stop="handleToggleSelect"
+        />
+        <div class="flex-1">
+          <h3 class="text-lg font-semibold text-gray-900 mb-1">
+            {{ todo.title }}
+          </h3>
+          <p
+            class="text-sm text-gray-600 line-clamp-2 overflow-hidden"
+            style="height: 2.5rem; word-break: break-word;"
+          >
+            {{ todo.description }}
+          </p>
+        </div>
       </div>
       <div class="flex gap-2 ml-4">
         <button
+          v-if="!isSelectionMode"
+          class="text-gray-500 hover:text-green-600 transition-colors"
+          title="복제"
+          @click.stop="handleDuplicate"
+        >
+          <svg
+            class="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+            />
+          </svg>
+        </button>
+        <button
+          v-if="!isSelectionMode"
           class="text-gray-500 hover:text-blue-600 transition-colors"
           title="수정"
           @click.stop="handleEdit"
@@ -36,6 +71,7 @@
           </svg>
         </button>
         <button
+          v-if="!isSelectionMode"
           class="text-gray-500 hover:text-red-600 transition-colors"
           title="삭제"
           @click.stop="handleDelete"
@@ -154,14 +190,22 @@
   
   interface Props {
     todo: TodoResponse
+    selected?: boolean
+    isSelectionMode?: boolean
   }
-  
-  const props = defineProps<Props>()
-  
+
+  const props = withDefaults(defineProps<Props>(), {
+    selected: false,
+    isSelectionMode: false
+  })
+
   const emit = defineEmits<{
     edit: [todo: TodoResponse]
     delete: [id: number]
     statusChange: [id: number, status: string]
+    duplicate: [id: number]
+    toggleSelect: [id: number]
+    click: []
   }>()
   
   const router = useRouter()
@@ -219,9 +263,30 @@
     }
   }
   
-  const handleClick = () => {
+  const handleCardClick = () => {
+    if (props.isSelectionMode) {
+      // 선택 모드일 때는 체크박스 토글
+      if (props.todo.id) {
+        emit('toggleSelect', props.todo.id)
+      }
+    } else {
+      // 일반 모드일 때는 상세 페이지로 이동
+      if (props.todo.id) {
+        router.push(`/todos/${props.todo.id}`)
+      }
+    }
+    emit('click')
+  }
+
+  const handleToggleSelect = () => {
     if (props.todo.id) {
-      router.push(`/todos/${props.todo.id}`)
+      emit('toggleSelect', props.todo.id)
+    }
+  }
+
+  const handleDuplicate = () => {
+    if (props.todo.id) {
+      emit('duplicate', props.todo.id)
     }
   }
   

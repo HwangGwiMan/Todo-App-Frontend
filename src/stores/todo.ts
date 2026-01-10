@@ -325,6 +325,110 @@ export const useTodoStore = defineStore('todo', () => {
     stats.value = null
   }
 
+  // 고급 기능: TODO 복제
+  const duplicateTodo = async (todoId: number): Promise<TodoResponse | null> => {
+    const original = todosMap.value.get(todoId)
+    if (!original) {
+      throw new Error('복제할 TODO를 찾을 수 없습니다.')
+    }
+
+    try {
+      loading.value = true
+      
+      // 복제할 데이터 준비 (제목에 "(사본)" 추가, 상태는 TODO로 초기화)
+      const duplicatedData: TodoRequest = {
+        title: `${original.title || ''} (사본)`,
+        description: original.description || undefined,
+        status: 'TODO',
+        priority: original.priority as 'HIGH' | 'MEDIUM' | 'LOW' || 'MEDIUM',
+        dueDate: original.dueDate || undefined,
+        projectId: original.projectId || undefined
+      }
+
+      const response = await createTodoApi({
+        body: duplicatedData,
+        throwOnError: true
+      })
+
+      const duplicatedTodo = response.data?.data || null
+
+      if (duplicatedTodo && duplicatedTodo.id !== undefined && duplicatedTodo.id !== null) {
+        // Map과 배열에 추가
+        todosMap.value.set(duplicatedTodo.id, duplicatedTodo)
+        todoIds.value.unshift(duplicatedTodo.id)
+      }
+
+      return duplicatedTodo
+    } catch (error) {
+      console.error('TODO 복제 실패:', error)
+      throw error
+    } finally {
+      loading.value = false
+    }
+  }
+
+  // 고급 기능: 순서 변경 (프론트엔드만, 백엔드 API 연동 필요 시 확장 가능)
+  const updateTodoPosition = (oldIndex: number, newIndex: number): void => {
+    if (oldIndex === newIndex) return
+    
+    const id = todoIds.value[oldIndex]
+    if (id === undefined) return
+
+    // 배열에서 제거 후 새 위치에 삽입
+    todoIds.value.splice(oldIndex, 1)
+    todoIds.value.splice(newIndex, 0, id)
+    
+    // TODO: 백엔드에 순서 업데이트 API 호출 (필요 시)
+    // await updateTodoPositionApi({ todoIds: todoIds.value })
+  }
+
+  // 고급 기능: 일괄 상태 변경
+  const bulkUpdateStatus = async (ids: number[], status: TodoStatus): Promise<void> => {
+    if (ids.length === 0) return
+
+    try {
+      loading.value = true
+      
+      // 모든 TODO를 병렬로 업데이트
+      await Promise.all(
+        ids.map(id => updateTodoStatus(id, status))
+      )
+    } catch (error) {
+      console.error('일괄 상태 변경 실패:', error)
+      throw error
+    } finally {
+      loading.value = false
+    }
+  }
+
+  // 고급 기능: 일괄 삭제
+  const bulkDelete = async (ids: number[]): Promise<void> => {
+    if (ids.length === 0) return
+
+    try {
+      loading.value = true
+      
+      // 모든 TODO를 병렬로 삭제
+      await Promise.all(
+        ids.map(id => deleteTodoApi({
+          path: { todoId: id },
+          throwOnError: true
+        }))
+      )
+
+      // Map과 배열에서 일괄 제거
+      ids.forEach(id => {
+        todosMap.value.delete(id)
+        todoIds.value = todoIds.value.filter(todoId => todoId !== id)
+      })
+    } catch (error) {
+      console.error('일괄 삭제 실패:', error)
+      throw error
+    } finally {
+      loading.value = false
+    }
+  }
+
   return {
     // State (기존 API 호환성 유지)
     todos, // computed 배열 (기존 코드와 호환)
@@ -350,7 +454,12 @@ export const useTodoStore = defineStore('todo', () => {
     fetchDashboardStats,
     clearTodos,
     // 새로운 최적화된 메서드
-    getTodoById
+    getTodoById,
+    // 고급 기능
+    duplicateTodo,
+    updateTodoPosition,
+    bulkUpdateStatus,
+    bulkDelete
   }
 })
 

@@ -144,12 +144,20 @@
               취소
             </button>
           </div>
-          <button
-            class="btn-primary"
-            @click="showCreateModal = true"
-          >
-            + 새 TODO
-          </button>
+          <div class="flex gap-2">
+            <button
+              class="btn-secondary"
+              @click="showTemplateModal = true"
+            >
+              📋 템플릿
+            </button>
+            <button
+              class="btn-primary"
+              @click="showCreateModal = true"
+            >
+              + 새 TODO
+            </button>
+          </div>
         </div>
         
         <!-- Loading -->
@@ -172,18 +180,90 @@
           </template>
         </EmptyState>
         
-        <!-- TODO Grid -->
+        <!-- 일괄 작업 바 -->
         <div
-          v-else-if="!todoStore.loading"
+          v-if="selectedTodos.length > 0"
+          class="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg flex items-center justify-between"
+        >
+          <span class="text-blue-800 font-medium">
+            {{ selectedTodos.length }}개 선택됨
+          </span>
+          <div class="flex gap-2">
+            <button
+              class="btn-secondary text-sm"
+              @click="handleBulkStatusChange('TODO')"
+            >
+              할 일로 변경
+            </button>
+            <button
+              class="btn-secondary text-sm"
+              @click="handleBulkStatusChange('IN_PROGRESS')"
+            >
+              진행중으로 변경
+            </button>
+            <button
+              class="btn-secondary text-sm"
+              @click="handleBulkStatusChange('DONE')"
+            >
+              완료로 변경
+            </button>
+            <button
+              class="btn-secondary text-sm text-red-600 hover:text-red-700"
+              @click="handleBulkDelete"
+            >
+              일괄 삭제
+            </button>
+            <button
+              class="btn-secondary text-sm"
+              @click="selectedTodos = []"
+            >
+              선택 해제
+            </button>
+          </div>
+        </div>
+
+        <!-- TODO 목록 헤더 (일괄 선택 모드 토글) -->
+        <div
+          v-if="!todoStore.loading && todoStore.todos.length > 0"
+          class="mb-4 flex justify-between items-center"
+        >
+          <div class="flex items-center gap-3">
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                :checked="isAllSelected"
+                :indeterminate="isIndeterminate"
+                class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                @change="handleToggleSelectAll"
+              />
+              <span class="text-sm text-gray-700">전체 선택</span>
+            </label>
+            <button
+              class="text-sm text-gray-600 hover:text-gray-900"
+              @click="isSelectionMode = !isSelectionMode"
+            >
+              {{ isSelectionMode ? '일괄 선택 모드 해제' : '일괄 선택 모드' }}
+            </button>
+          </div>
+        </div>
+
+        <!-- TODO Grid (드래그 앤 드롭 지원) -->
+        <div
+          v-if="!todoStore.loading && todoStore.todos.length > 0"
+          ref="todoListContainer"
           class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
         >
           <TodoCard
             v-for="todo in todoStore.todos"
             :key="todo.id || 0"
             :todo="todo"
+            :selected="selectedTodos.includes(todo.id || 0)"
+            :is-selection-mode="isSelectionMode"
             @edit="handleEdit"
             @delete="handleDelete"
             @status-change="handleStatusChange"
+            @duplicate="handleDuplicate"
+            @toggle-select="handleToggleSelect"
           />
         </div>
 
@@ -228,11 +308,19 @@
       @close="showProjectEditModal = false"
       @updated="handleProjectUpdate"
     />
+
+    <!-- Template Modal -->
+    <TodoTemplateModal
+      :is-open="showTemplateModal"
+      @close="showTemplateModal = false"
+      @use-template="handleUseTemplate"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, computed, nextTick } from 'vue'
+import Sortable from 'sortablejs'
 import { useTodoStore } from '@/stores/todo'
 import { useProjectStore } from '@/stores/project'
 import { useToast } from '@/composables/useToast'
@@ -243,6 +331,7 @@ import AppHeader from '@/components/AppHeader.vue'
 import TodoCard from '@/components/TodoCard.vue'
 import TodoCreateModal from '@/components/TodoCreateModal.vue'
 import TodoEditModal from '@/components/TodoEditModal.vue'
+import TodoTemplateModal from '@/components/TodoTemplateModal.vue'
 import ProjectCard from '@/components/ProjectCard.vue'
 import ProjectCreateModal from '@/components/ProjectCreateModal.vue'
 import ProjectEditModal from '@/components/ProjectEditModal.vue'
@@ -267,14 +356,32 @@ const showEditModal = ref(false)
 const selectedTodo = ref<TodoResponse | null>(null)
 const showProjectCreateModal = ref(false)
 const showProjectEditModal = ref(false)
+const showTemplateModal = ref(false)
 const selectedProject = ref<ProjectResponse | null>(null)
 const pageSize = ref(12)
+const todoListContainer = ref<HTMLElement | null>(null)
+const selectedTodos = ref<number[]>([])
+const isSelectionMode = ref(false)
+let sortableInstance: Sortable | null = null
 
 const filters = ref<TodoSearchRequest>({
   page: 0,
   size: pageSize.value,
   sortBy: 'createdAt',
   sortDirection: 'DESC'
+})
+
+// 전체 선택 관련 computed
+const isAllSelected = computed(() => {
+  if (todoStore.todos.length === 0) return false
+  return todoStore.todos.every(todo => 
+    todo.id !== undefined && selectedTodos.value.includes(todo.id)
+  )
+})
+
+const isIndeterminate = computed(() => {
+  const selectedCount = selectedTodos.value.length
+  return selectedCount > 0 && selectedCount < todoStore.todos.length
 })
 
 onMounted(async () => {
@@ -286,10 +393,43 @@ onMounted(async () => {
       todoStore.fetchStats(),
       projectStore.fetchProjects()
     ])
+    
+    // 드래그 앤 드롭 초기화
+    await nextTick()
+    initSortable()
   } catch (error) {
     handleError(error, '데이터 로딩 중 오류가 발생했습니다.')
     showError('데이터를 불러오는데 실패했습니다.')
   }
+})
+
+// 드래그 앤 드롭 초기화
+const initSortable = () => {
+  if (!todoListContainer.value || sortableInstance) return
+  
+  sortableInstance = Sortable.create(todoListContainer.value, {
+    animation: 150,
+    handle: '.drag-handle', // 드래그 핸들 (추가 시)
+    ghostClass: 'opacity-50',
+    chosenClass: 'ring-2 ring-blue-500',
+    onEnd: async (event) => {
+      const { oldIndex, newIndex } = event
+      if (oldIndex !== undefined && newIndex !== undefined && oldIndex !== newIndex) {
+        todoStore.updateTodoPosition(oldIndex, newIndex)
+        // TODO: 백엔드 API 연동 시 여기서 API 호출
+      }
+    }
+  })
+}
+
+// 드래그 앤 드롭 재초기화 (TODO 목록 변경 시)
+watch(() => todoStore.todos.length, async () => {
+  if (sortableInstance) {
+    sortableInstance.destroy()
+    sortableInstance = null
+  }
+  await nextTick()
+  initSortable()
 })
 
 watch(filters, async (newFilters) => {
@@ -455,5 +595,76 @@ const handleProjectCancel = () => {
     projectId: undefined,
     page: 0
   }
+}
+
+// 고급 기능: TODO 복제
+const handleDuplicate = async (todoId: number) => {
+  try {
+    const result = await todoOps.duplicateTodoWithFeedback(todoId)
+    if (result.success) {
+      await todoOps.refreshTodos(filters.value)
+    }
+  } catch (error) {
+    handleError(error, 'TODO 복제 중 오류가 발생했습니다.')
+  }
+}
+
+// 일괄 작업: 선택 토글
+const handleToggleSelect = (todoId: number) => {
+  const index = selectedTodos.value.indexOf(todoId)
+  if (index > -1) {
+    selectedTodos.value.splice(index, 1)
+  } else {
+    selectedTodos.value.push(todoId)
+  }
+}
+
+// 일괄 작업: 전체 선택/해제
+const handleToggleSelectAll = () => {
+  if (isAllSelected.value) {
+    selectedTodos.value = []
+  } else {
+    selectedTodos.value = todoStore.todos
+      .filter(todo => todo.id !== undefined)
+      .map(todo => todo.id!)
+  }
+}
+
+// 일괄 작업: 일괄 상태 변경
+const handleBulkStatusChange = async (status: 'TODO' | 'IN_PROGRESS' | 'DONE') => {
+  if (selectedTodos.value.length === 0) return
+
+  try {
+    const result = await todoOps.bulkUpdateStatusWithFeedback(selectedTodos.value, status)
+    if (result.success) {
+      selectedTodos.value = []
+      await todoOps.refreshTodos(filters.value)
+    }
+  } catch (error) {
+    handleError(error, '일괄 상태 변경 중 오류가 발생했습니다.')
+  }
+}
+
+// 일괄 작업: 일괄 삭제
+const handleBulkDelete = async () => {
+  if (selectedTodos.value.length === 0) return
+
+  try {
+    const result = await todoOps.bulkDeleteWithConfirm(selectedTodos.value)
+    if (result.success) {
+      selectedTodos.value = []
+      await todoOps.refreshTodos(filters.value)
+    }
+  } catch (error) {
+    handleError(error, '일괄 삭제 중 오류가 발생했습니다.')
+  }
+}
+
+// 템플릿 사용
+const handleUseTemplate = (templateData: TodoRequest) => {
+  // 템플릿 데이터로 TODO 생성 모달 열기
+  // TODO: TodoCreateModal에서 템플릿 데이터를 받을 수 있도록 수정 필요
+  showCreateModal.value = true
+  // 템플릿 데이터는 나중에 TodoCreateModal에서 직접 처리하도록 구현
 }
 </script>
