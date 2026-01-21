@@ -2,8 +2,8 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { CreateProjectData, CreateProjectErrors, CreateProjectResponses, CreateTodoData, CreateTodoResponses, DeleteProjectData, DeleteProjectErrors, DeleteProjectResponses, DeleteTodoData, DeleteTodoResponses, GetDashboardStatsData, GetDashboardStatsResponses, GetDefaultProjectData, GetDefaultProjectErrors, GetDefaultProjectResponses, GetProjectData, GetProjectErrors, GetProjectResponses, GetProjectsData, GetProjectsErrors, GetProjectsResponses, GetTodoData, GetTodoResponses, GetTodosData, GetTodosResponses, GetUserStatsData, GetUserStatsResponses, LoginData, LoginErrors, LoginResponses, SignupData, SignupResponses, TestData, TestResponses, UpdateProjectData, UpdateProjectErrors, UpdateProjectResponses, UpdateTodoData, UpdateTodoResponses, UpdateTodoStatusData, UpdateTodoStatusResponses } from './types.gen';
-import { zCreateProjectData, zCreateProjectResponse, zCreateTodoData, zCreateTodoResponse, zDeleteProjectData, zDeleteProjectResponse, zDeleteTodoData, zDeleteTodoResponse, zGetDashboardStatsData, zGetDashboardStatsResponse, zGetDefaultProjectData, zGetDefaultProjectResponse, zGetProjectData, zGetProjectResponse, zGetProjectsData, zGetProjectsResponse, zGetTodoData, zGetTodoResponse, zGetTodosData, zGetTodosResponse, zGetUserStatsData, zGetUserStatsResponse, zLoginData, zLoginResponse, zSignupData, zSignupResponse, zTestData, zTestResponse, zUpdateProjectData, zUpdateProjectResponse, zUpdateTodoData, zUpdateTodoResponse, zUpdateTodoStatusData, zUpdateTodoStatusResponse } from './zod.gen';
+import type { AssignRoleToUserData, AssignRoleToUserResponses, CreateProjectData, CreateProjectErrors, CreateProjectResponses, CreateRoleData, CreateRoleResponses, CreateTodoData, CreateTodoResponses, DeleteProjectData, DeleteProjectErrors, DeleteProjectResponses, DeleteRoleData, DeleteRoleResponses, DeleteTodoData, DeleteTodoResponses, GetAllRolesData, GetAllRolesResponses, GetDashboardStatsData, GetDashboardStatsResponses, GetDefaultProjectData, GetDefaultProjectErrors, GetDefaultProjectResponses, GetProjectData, GetProjectErrors, GetProjectResponses, GetProjectsData, GetProjectsErrors, GetProjectsResponses, GetRoleData, GetRoleResponses, GetTodoData, GetTodoResponses, GetTodosData, GetTodosResponses, GetUserRolesData, GetUserRolesResponses, GetUserStatsData, GetUserStatsResponses, LoginData, LoginErrors, LoginResponses, RemoveRoleFromUserData, RemoveRoleFromUserResponses, SignupData, SignupResponses, TestData, TestResponses, UpdateProjectData, UpdateProjectErrors, UpdateProjectResponses, UpdateRoleData, UpdateRoleResponses, UpdateTodoData, UpdateTodoResponses, UpdateTodoStatusData, UpdateTodoStatusResponses, UpdateUserRolesData, UpdateUserRolesResponses } from './types.gen';
+import { zAssignRoleToUserData, zAssignRoleToUserResponse, zCreateProjectData, zCreateProjectResponse, zCreateRoleData, zCreateRoleResponse, zCreateTodoData, zCreateTodoResponse, zDeleteProjectData, zDeleteProjectResponse, zDeleteRoleData, zDeleteRoleResponse, zDeleteTodoData, zDeleteTodoResponse, zGetAllRolesData, zGetAllRolesResponse, zGetDashboardStatsData, zGetDashboardStatsResponse, zGetDefaultProjectData, zGetDefaultProjectResponse, zGetProjectData, zGetProjectResponse, zGetProjectsData, zGetProjectsResponse, zGetRoleData, zGetRoleResponse, zGetTodoData, zGetTodoResponse, zGetTodosData, zGetTodosResponse, zGetUserRolesData, zGetUserRolesResponse, zGetUserStatsData, zGetUserStatsResponse, zLoginData, zLoginResponse, zRemoveRoleFromUserData, zRemoveRoleFromUserResponse, zSignupData, zSignupResponse, zTestData, zTestResponse, zUpdateProjectData, zUpdateProjectResponse, zUpdateRoleData, zUpdateRoleResponse, zUpdateTodoData, zUpdateTodoResponse, zUpdateTodoStatusData, zUpdateTodoStatusResponse, zUpdateUserRolesData, zUpdateUserRolesResponse } from './zod.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -24,378 +24,397 @@ export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends 
  *
  * TODO를 삭제합니다.
  */
-export const deleteTodo = <ThrowOnError extends boolean = false>(options: Options<DeleteTodoData, ThrowOnError>) => {
-    return (options.client ?? client).delete<DeleteTodoResponses, unknown, ThrowOnError>({
-        requestValidator: async (data) => await zDeleteTodoData.parseAsync(data),
-        responseType: 'json',
-        responseValidator: async (data) => await zDeleteTodoResponse.parseAsync(data),
-        security: [
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/api/todos/{todoId}',
-        ...options
-    });
-};
+export const deleteTodo = <ThrowOnError extends boolean = false>(options: Options<DeleteTodoData, ThrowOnError>) => (options.client ?? client).delete<DeleteTodoResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zDeleteTodoData.parseAsync(data),
+    responseType: 'json',
+    responseValidator: async (data) => await zDeleteTodoResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/todos/{todoId}',
+    ...options
+});
 
 /**
  * TODO 상세 조회
  *
  * 특정 TODO의 상세 정보를 조회합니다.
  */
-export const getTodo = <ThrowOnError extends boolean = false>(options: Options<GetTodoData, ThrowOnError>) => {
-    return (options.client ?? client).get<GetTodoResponses, unknown, ThrowOnError>({
-        requestValidator: async (data) => await zGetTodoData.parseAsync(data),
-        responseType: 'json',
-        responseValidator: async (data) => await zGetTodoResponse.parseAsync(data),
-        security: [
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/api/todos/{todoId}',
-        ...options
-    });
-};
+export const getTodo = <ThrowOnError extends boolean = false>(options: Options<GetTodoData, ThrowOnError>) => (options.client ?? client).get<GetTodoResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zGetTodoData.parseAsync(data),
+    responseType: 'json',
+    responseValidator: async (data) => await zGetTodoResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/todos/{todoId}',
+    ...options
+});
 
 /**
  * TODO 수정
  *
  * 기존 TODO를 수정합니다.
  */
-export const updateTodo = <ThrowOnError extends boolean = false>(options: Options<UpdateTodoData, ThrowOnError>) => {
-    return (options.client ?? client).put<UpdateTodoResponses, unknown, ThrowOnError>({
-        requestValidator: async (data) => await zUpdateTodoData.parseAsync(data),
-        responseType: 'json',
-        responseValidator: async (data) => await zUpdateTodoResponse.parseAsync(data),
-        security: [
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/api/todos/{todoId}',
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers
-        }
-    });
-};
+export const updateTodo = <ThrowOnError extends boolean = false>(options: Options<UpdateTodoData, ThrowOnError>) => (options.client ?? client).put<UpdateTodoResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zUpdateTodoData.parseAsync(data),
+    responseType: 'json',
+    responseValidator: async (data) => await zUpdateTodoResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/todos/{todoId}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * 프로젝트 삭제
  *
  * 기존 프로젝트를 삭제합니다. 기본 프로젝트는 삭제할 수 없습니다.
  */
-export const deleteProject = <ThrowOnError extends boolean = false>(options: Options<DeleteProjectData, ThrowOnError>) => {
-    return (options.client ?? client).delete<DeleteProjectResponses, DeleteProjectErrors, ThrowOnError>({
-        requestValidator: async (data) => await zDeleteProjectData.parseAsync(data),
-        responseType: 'json',
-        responseValidator: async (data) => await zDeleteProjectResponse.parseAsync(data),
-        security: [
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/api/projects/{projectId}',
-        ...options
-    });
-};
+export const deleteProject = <ThrowOnError extends boolean = false>(options: Options<DeleteProjectData, ThrowOnError>) => (options.client ?? client).delete<DeleteProjectResponses, DeleteProjectErrors, ThrowOnError>({
+    requestValidator: async (data) => await zDeleteProjectData.parseAsync(data),
+    responseType: 'json',
+    responseValidator: async (data) => await zDeleteProjectResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/projects/{projectId}',
+    ...options
+});
 
 /**
  * 프로젝트 상세 조회
  *
  * 특정 프로젝트의 상세 정보를 조회합니다.
  */
-export const getProject = <ThrowOnError extends boolean = false>(options: Options<GetProjectData, ThrowOnError>) => {
-    return (options.client ?? client).get<GetProjectResponses, GetProjectErrors, ThrowOnError>({
-        requestValidator: async (data) => await zGetProjectData.parseAsync(data),
-        responseType: 'json',
-        responseValidator: async (data) => await zGetProjectResponse.parseAsync(data),
-        security: [
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/api/projects/{projectId}',
-        ...options
-    });
-};
+export const getProject = <ThrowOnError extends boolean = false>(options: Options<GetProjectData, ThrowOnError>) => (options.client ?? client).get<GetProjectResponses, GetProjectErrors, ThrowOnError>({
+    requestValidator: async (data) => await zGetProjectData.parseAsync(data),
+    responseType: 'json',
+    responseValidator: async (data) => await zGetProjectResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/projects/{projectId}',
+    ...options
+});
 
 /**
  * 프로젝트 수정
  *
  * 기존 프로젝트의 정보를 수정합니다.
  */
-export const updateProject = <ThrowOnError extends boolean = false>(options: Options<UpdateProjectData, ThrowOnError>) => {
-    return (options.client ?? client).put<UpdateProjectResponses, UpdateProjectErrors, ThrowOnError>({
-        requestValidator: async (data) => await zUpdateProjectData.parseAsync(data),
-        responseType: 'json',
-        responseValidator: async (data) => await zUpdateProjectResponse.parseAsync(data),
-        security: [
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/api/projects/{projectId}',
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers
-        }
-    });
-};
+export const updateProject = <ThrowOnError extends boolean = false>(options: Options<UpdateProjectData, ThrowOnError>) => (options.client ?? client).put<UpdateProjectResponses, UpdateProjectErrors, ThrowOnError>({
+    requestValidator: async (data) => await zUpdateProjectData.parseAsync(data),
+    responseType: 'json',
+    responseValidator: async (data) => await zUpdateProjectResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/projects/{projectId}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * 사용자 역할 조회
+ *
+ * 특정 사용자에게 할당된 역할 목록을 조회합니다.
+ */
+export const getUserRoles = <ThrowOnError extends boolean = false>(options: Options<GetUserRolesData, ThrowOnError>) => (options.client ?? client).get<GetUserRolesResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zGetUserRolesData.parseAsync(data),
+    responseType: 'json',
+    responseValidator: async (data) => await zGetUserRolesResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/admin/users/{userId}/roles',
+    ...options
+});
+
+/**
+ * 사용자에 역할 할당
+ *
+ * 사용자에게 역할을 추가로 할당합니다.
+ */
+export const assignRoleToUser = <ThrowOnError extends boolean = false>(options: Options<AssignRoleToUserData, ThrowOnError>) => (options.client ?? client).post<AssignRoleToUserResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zAssignRoleToUserData.parseAsync(data),
+    responseType: 'json',
+    responseValidator: async (data) => await zAssignRoleToUserResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/admin/users/{userId}/roles',
+    ...options
+});
+
+/**
+ * 사용자 역할 일괄 업데이트
+ *
+ * 사용자의 역할을 일괄 업데이트합니다. 기존 역할은 모두 제거되고 새로운 역할로 교체됩니다.
+ */
+export const updateUserRoles = <ThrowOnError extends boolean = false>(options: Options<UpdateUserRolesData, ThrowOnError>) => (options.client ?? client).put<UpdateUserRolesResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zUpdateUserRolesData.parseAsync(data),
+    responseType: 'json',
+    responseValidator: async (data) => await zUpdateUserRolesResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/admin/users/{userId}/roles',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * 역할 삭제
+ *
+ * 역할을 삭제합니다. 기본 역할(USER, ADMIN)은 삭제할 수 없습니다.
+ */
+export const deleteRole = <ThrowOnError extends boolean = false>(options: Options<DeleteRoleData, ThrowOnError>) => (options.client ?? client).delete<DeleteRoleResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zDeleteRoleData.parseAsync(data),
+    responseType: 'json',
+    responseValidator: async (data) => await zDeleteRoleResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/admin/roles/{roleId}',
+    ...options
+});
+
+/**
+ * 역할 상세 조회
+ *
+ * 특정 역할의 상세 정보를 조회합니다.
+ */
+export const getRole = <ThrowOnError extends boolean = false>(options: Options<GetRoleData, ThrowOnError>) => (options.client ?? client).get<GetRoleResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zGetRoleData.parseAsync(data),
+    responseType: 'json',
+    responseValidator: async (data) => await zGetRoleResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/admin/roles/{roleId}',
+    ...options
+});
+
+/**
+ * 역할 수정
+ *
+ * 기존 역할의 정보를 수정합니다.
+ */
+export const updateRole = <ThrowOnError extends boolean = false>(options: Options<UpdateRoleData, ThrowOnError>) => (options.client ?? client).put<UpdateRoleResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zUpdateRoleData.parseAsync(data),
+    responseType: 'json',
+    responseValidator: async (data) => await zUpdateRoleResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/admin/roles/{roleId}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * TODO 목록 조회
  *
  * TODO 목록을 조회합니다. 검색, 필터링, 정렬, 페이징을 지원합니다.
  */
-export const getTodos = <ThrowOnError extends boolean = false>(options: Options<GetTodosData, ThrowOnError>) => {
-    return (options.client ?? client).get<GetTodosResponses, unknown, ThrowOnError>({
-        requestValidator: async (data) => await zGetTodosData.parseAsync(data),
-        responseType: 'json',
-        responseValidator: async (data) => await zGetTodosResponse.parseAsync(data),
-        security: [
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/api/todos',
-        ...options
-    });
-};
+export const getTodos = <ThrowOnError extends boolean = false>(options: Options<GetTodosData, ThrowOnError>) => (options.client ?? client).get<GetTodosResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zGetTodosData.parseAsync(data),
+    responseType: 'json',
+    responseValidator: async (data) => await zGetTodosResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/todos',
+    ...options
+});
 
 /**
  * TODO 생성
  *
  * 새로운 TODO를 생성합니다.
  */
-export const createTodo = <ThrowOnError extends boolean = false>(options: Options<CreateTodoData, ThrowOnError>) => {
-    return (options.client ?? client).post<CreateTodoResponses, unknown, ThrowOnError>({
-        requestValidator: async (data) => await zCreateTodoData.parseAsync(data),
-        responseType: 'json',
-        responseValidator: async (data) => await zCreateTodoResponse.parseAsync(data),
-        security: [
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/api/todos',
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers
-        }
-    });
-};
+export const createTodo = <ThrowOnError extends boolean = false>(options: Options<CreateTodoData, ThrowOnError>) => (options.client ?? client).post<CreateTodoResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zCreateTodoData.parseAsync(data),
+    responseType: 'json',
+    responseValidator: async (data) => await zCreateTodoResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/todos',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * 프로젝트 목록 조회
  *
  * 현재 로그인한 사용자의 모든 프로젝트를 정렬 순서대로 조회합니다.
  */
-export const getProjects = <ThrowOnError extends boolean = false>(options?: Options<GetProjectsData, ThrowOnError>) => {
-    return (options?.client ?? client).get<GetProjectsResponses, GetProjectsErrors, ThrowOnError>({
-        requestValidator: async (data) => await zGetProjectsData.parseAsync(data),
-        responseType: 'json',
-        responseValidator: async (data) => await zGetProjectsResponse.parseAsync(data),
-        security: [
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/api/projects',
-        ...options
-    });
-};
+export const getProjects = <ThrowOnError extends boolean = false>(options?: Options<GetProjectsData, ThrowOnError>) => (options?.client ?? client).get<GetProjectsResponses, GetProjectsErrors, ThrowOnError>({
+    requestValidator: async (data) => await zGetProjectsData.parseAsync(data),
+    responseType: 'json',
+    responseValidator: async (data) => await zGetProjectsResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/projects',
+    ...options
+});
 
 /**
  * 프로젝트 생성
  *
  * 새로운 프로젝트를 생성합니다.
  */
-export const createProject = <ThrowOnError extends boolean = false>(options: Options<CreateProjectData, ThrowOnError>) => {
-    return (options.client ?? client).post<CreateProjectResponses, CreateProjectErrors, ThrowOnError>({
-        requestValidator: async (data) => await zCreateProjectData.parseAsync(data),
-        responseType: 'json',
-        responseValidator: async (data) => await zCreateProjectResponse.parseAsync(data),
-        security: [
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/api/projects',
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers
-        }
-    });
-};
+export const createProject = <ThrowOnError extends boolean = false>(options: Options<CreateProjectData, ThrowOnError>) => (options.client ?? client).post<CreateProjectResponses, CreateProjectErrors, ThrowOnError>({
+    requestValidator: async (data) => await zCreateProjectData.parseAsync(data),
+    responseType: 'json',
+    responseValidator: async (data) => await zCreateProjectResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/projects',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * 회원가입
  *
  * 새로운 사용자를 등록합니다
  */
-export const signup = <ThrowOnError extends boolean = false>(options: Options<SignupData, ThrowOnError>) => {
-    return (options.client ?? client).post<SignupResponses, unknown, ThrowOnError>({
-        requestValidator: async (data) => await zSignupData.parseAsync(data),
-        responseType: 'json',
-        responseValidator: async (data) => await zSignupResponse.parseAsync(data),
-        security: [
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/api/auth/signup',
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers
-        }
-    });
-};
+export const signup = <ThrowOnError extends boolean = false>(options: Options<SignupData, ThrowOnError>) => (options.client ?? client).post<SignupResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zSignupData.parseAsync(data),
+    responseType: 'json',
+    responseValidator: async (data) => await zSignupResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/auth/signup',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * 로그인
  *
  * 사용자 로그인 및 JWT 토큰 발급
  */
-export const login = <ThrowOnError extends boolean = false>(options: Options<LoginData, ThrowOnError>) => {
-    return (options.client ?? client).post<LoginResponses, LoginErrors, ThrowOnError>({
-        requestValidator: async (data) => await zLoginData.parseAsync(data),
-        responseType: 'json',
-        responseValidator: async (data) => await zLoginResponse.parseAsync(data),
-        security: [
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/api/auth/login',
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers
-        }
-    });
-};
+export const login = <ThrowOnError extends boolean = false>(options: Options<LoginData, ThrowOnError>) => (options.client ?? client).post<LoginResponses, LoginErrors, ThrowOnError>({
+    requestValidator: async (data) => await zLoginData.parseAsync(data),
+    responseType: 'json',
+    responseValidator: async (data) => await zLoginResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/auth/login',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * 모든 역할 조회
+ *
+ * 시스템에 등록된 모든 역할을 조회합니다.
+ */
+export const getAllRoles = <ThrowOnError extends boolean = false>(options?: Options<GetAllRolesData, ThrowOnError>) => (options?.client ?? client).get<GetAllRolesResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zGetAllRolesData.parseAsync(data),
+    responseType: 'json',
+    responseValidator: async (data) => await zGetAllRolesResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/admin/roles',
+    ...options
+});
+
+/**
+ * 역할 생성
+ *
+ * 새로운 역할을 생성합니다.
+ */
+export const createRole = <ThrowOnError extends boolean = false>(options: Options<CreateRoleData, ThrowOnError>) => (options.client ?? client).post<CreateRoleResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zCreateRoleData.parseAsync(data),
+    responseType: 'json',
+    responseValidator: async (data) => await zCreateRoleResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/admin/roles',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * TODO 상태 변경
  *
  * TODO의 상태를 변경합니다.
  */
-export const updateTodoStatus = <ThrowOnError extends boolean = false>(options: Options<UpdateTodoStatusData, ThrowOnError>) => {
-    return (options.client ?? client).patch<UpdateTodoStatusResponses, unknown, ThrowOnError>({
-        requestValidator: async (data) => await zUpdateTodoStatusData.parseAsync(data),
-        responseType: 'json',
-        responseValidator: async (data) => await zUpdateTodoStatusResponse.parseAsync(data),
-        security: [
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/api/todos/{todoId}/status',
-        ...options
-    });
-};
+export const updateTodoStatus = <ThrowOnError extends boolean = false>(options: Options<UpdateTodoStatusData, ThrowOnError>) => (options.client ?? client).patch<UpdateTodoStatusResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zUpdateTodoStatusData.parseAsync(data),
+    responseType: 'json',
+    responseValidator: async (data) => await zUpdateTodoStatusResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/todos/{todoId}/status',
+    ...options
+});
 
 /**
  * 사용자 통계 조회
  *
  * 사용자의 TODO 통계를 조회합니다.
  */
-export const getUserStats = <ThrowOnError extends boolean = false>(options?: Options<GetUserStatsData, ThrowOnError>) => {
-    return (options?.client ?? client).get<GetUserStatsResponses, unknown, ThrowOnError>({
-        requestValidator: async (data) => await zGetUserStatsData.parseAsync(data),
-        responseType: 'json',
-        responseValidator: async (data) => await zGetUserStatsResponse.parseAsync(data),
-        security: [
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/api/todos/stats',
-        ...options
-    });
-};
+export const getUserStats = <ThrowOnError extends boolean = false>(options?: Options<GetUserStatsData, ThrowOnError>) => (options?.client ?? client).get<GetUserStatsResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zGetUserStatsData.parseAsync(data),
+    responseType: 'json',
+    responseValidator: async (data) => await zGetUserStatsResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/todos/stats',
+    ...options
+});
 
 /**
  * 대시보드 통계 조회
  *
  * 대시보드에 표시할 상세 통계를 조회합니다. 상태별, 우선순위별, 프로젝트별 통계를 포함합니다.
  */
-export const getDashboardStats = <ThrowOnError extends boolean = false>(options?: Options<GetDashboardStatsData, ThrowOnError>) => {
-    return (options?.client ?? client).get<GetDashboardStatsResponses, unknown, ThrowOnError>({
-        requestValidator: async (data) => await zGetDashboardStatsData.parseAsync(data),
-        responseType: 'json',
-        responseValidator: async (data) => await zGetDashboardStatsResponse.parseAsync(data),
-        security: [
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/api/todos/dashboard/stats',
-        ...options
-    });
-};
+export const getDashboardStats = <ThrowOnError extends boolean = false>(options?: Options<GetDashboardStatsData, ThrowOnError>) => (options?.client ?? client).get<GetDashboardStatsResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zGetDashboardStatsData.parseAsync(data),
+    responseType: 'json',
+    responseValidator: async (data) => await zGetDashboardStatsResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/todos/dashboard/stats',
+    ...options
+});
 
 /**
  * 기본 프로젝트 조회
  *
  * 현재 사용자의 기본 프로젝트를 조회합니다.
  */
-export const getDefaultProject = <ThrowOnError extends boolean = false>(options?: Options<GetDefaultProjectData, ThrowOnError>) => {
-    return (options?.client ?? client).get<GetDefaultProjectResponses, GetDefaultProjectErrors, ThrowOnError>({
-        requestValidator: async (data) => await zGetDefaultProjectData.parseAsync(data),
-        responseType: 'json',
-        responseValidator: async (data) => await zGetDefaultProjectResponse.parseAsync(data),
-        security: [
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/api/projects/default',
-        ...options
-    });
-};
+export const getDefaultProject = <ThrowOnError extends boolean = false>(options?: Options<GetDefaultProjectData, ThrowOnError>) => (options?.client ?? client).get<GetDefaultProjectResponses, GetDefaultProjectErrors, ThrowOnError>({
+    requestValidator: async (data) => await zGetDefaultProjectData.parseAsync(data),
+    responseType: 'json',
+    responseValidator: async (data) => await zGetDefaultProjectResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/projects/default',
+    ...options
+});
 
 /**
  * 인증 테스트
  *
  * JWT 토큰 인증 테스트
  */
-export const test = <ThrowOnError extends boolean = false>(options?: Options<TestData, ThrowOnError>) => {
-    return (options?.client ?? client).get<TestResponses, unknown, ThrowOnError>({
-        requestValidator: async (data) => await zTestData.parseAsync(data),
-        responseType: 'json',
-        responseValidator: async (data) => await zTestResponse.parseAsync(data),
-        security: [
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/api/auth/test',
-        ...options
-    });
-};
+export const test = <ThrowOnError extends boolean = false>(options?: Options<TestData, ThrowOnError>) => (options?.client ?? client).get<TestResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zTestData.parseAsync(data),
+    responseType: 'json',
+    responseValidator: async (data) => await zTestResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/auth/test',
+    ...options
+});
+
+/**
+ * 사용자에서 역할 제거
+ *
+ * 사용자에게 할당된 역할을 제거합니다. 사용자는 최소 1개의 역할을 가져야 합니다.
+ */
+export const removeRoleFromUser = <ThrowOnError extends boolean = false>(options: Options<RemoveRoleFromUserData, ThrowOnError>) => (options.client ?? client).delete<RemoveRoleFromUserResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zRemoveRoleFromUserData.parseAsync(data),
+    responseType: 'json',
+    responseValidator: async (data) => await zRemoveRoleFromUserResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/admin/users/{userId}/roles/{roleId}',
+    ...options
+});
