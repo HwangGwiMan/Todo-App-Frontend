@@ -28,7 +28,7 @@
     "zod": "^4.3.5"
   },
   "devDependencies": {
-    "@hey-api/openapi-ts": "0.90.2",
+    "@hey-api/openapi-ts": "0.90.3",
     "@tailwindcss/vite": "^4.1.18",
     "@types/node": "^25.0.3",
     "@typescript-eslint/eslint-plugin": "^8.52.0",
