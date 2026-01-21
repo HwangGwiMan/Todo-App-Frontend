@@ -12,7 +12,7 @@ Vue 3 + TypeScript + Tailwind CSS로 구축된 TodoApp 프론트엔드입니다.
 - ✅ **Phase 2 완료** (2025년 11월): 프로젝트 관리, 프로젝트-TODO 통합, 프로젝트 필터링
 - ✅ **Phase 3 완료** (2025년 12월): TODO 상세 페이지 완전 구현 (상세 정보, 날짜 관리, 상태 변경, 수정/삭제)
 - ✅ **Phase 4 완료** (2025년 12월): 아키텍처 및 코드 품질 개선 (Composable 패턴, 낙관적 업데이트, 에러 처리 표준화, 컴포넌트 분리 및 재사용성 향상)
-- 🔄 **Phase 5 진행중** (2026년 1월): 품질 향상 및 고급 기능 (단위 테스트 ✅, 보안 강화, 성능 모니터링, 고급 TODO 기능, UX 개선)
+- 🔄 **Phase 5 진행중** (2026년 1월): 품질 향상 및 고급 기능 (단위 테스트 ✅, 보안 강화, 성능 모니터링, 고급 TODO 기능 ✅, UX 개선)
 - 📋 **Phase 7 예정**: TODO 일정 관리 및 알림 기능 UI
 - 📋 **Phase 8 예정**: 사용자 및 권한 관리 화면 (백엔드 Phase 7 연동)
 
@@ -57,9 +57,10 @@ src/
 │   └── index.ts           # 통합 export
 │
 ├── components/            # 재사용 가능한 컴포넌트
-│   ├── TodoCard.vue       # TODO 카드 컴포넌트
+│   ├── TodoCard.vue       # TODO 카드 컴포넌트 (복제 버튼, 선택 모드 지원) ✅
 │   ├── TodoCreateModal.vue # TODO 생성 모달
 │   ├── TodoEditModal.vue  # TODO 수정 모달
+│   ├── TodoTemplateModal.vue # TODO 템플릿 관리 모달 (신규) ✅
 │   ├── ProjectCard.vue    # 프로젝트 카드 컴포넌트 ✅
 │   ├── ProjectCreateModal.vue # 프로젝트 생성 모달 ✅
 │   ├── ProjectEditModal.vue # 프로젝트 수정 모달 ✅
@@ -82,7 +83,7 @@ src/
 ├── composables/           # Vue 컴포저블 ✅
 │   ├── useErrorHandler.ts # 에러 처리 컴포저블
 │   ├── useToast.ts        # 토스트 알림 컴포저블
-│   ├── useTodoOperations.ts # TODO 작업 컴포저블 (Phase 4) ✅
+│   ├── useTodoOperations.ts # TODO 작업 컴포저블 (Phase 4, Phase 5 고급 기능 포함) ✅
 │   ├── useProjectOperations.ts # 프로젝트 작업 컴포저블 (Phase 4) ✅
 │   ├── useFormValidation.ts # 폼 검증 컴포저블 (Phase 4) ✅
 │   └── useConfirmDialog.ts # 확인 다이얼로그 컴포저블 (Phase 4) ✅
@@ -96,7 +97,9 @@ src/
 │   └── project.ts         # 프로젝트 상태 ✅
 │
 ├── types/                 # 추가 타입 정의 및 재export
-│   └── index.ts           # 타입 별칭 및 재export
+│   ├── index.ts           # 타입 별칭 및 재export
+│   ├── common.ts          # 공통 타입 정의
+│   └── template.ts        # 템플릿 타입 정의 (신규) ✅
 │
 ├── utils/                 # 유틸리티 함수
 │   └── errorHandler.ts    # 에러 처리 유틸리티
@@ -104,8 +107,9 @@ src/
 ├── views/                 # 페이지 컴포넌트
 │   ├── LoginView.vue      # 로그인 페이지
 │   ├── SignupView.vue     # 회원가입 페이지
-│   ├── TodoListView.vue   # TODO 목록 페이지 (프로젝트 관리 통합) ✅
-│   ├── TodoDetailView.vue # TODO 상세 페이지 🚧 (플레이스홀더만 존재)
+│   ├── TodoListView.vue   # TODO 목록 페이지 (드래그 앤 드롭, 일괄 작업, 템플릿 관리 포함) ✅
+│   ├── TodoDetailView.vue # TODO 상세 페이지 (템플릿 저장 기능 포함) ✅
+│   ├── DashboardView.vue  # 대시보드 페이지 (통계)
 │   └── NotFoundView.vue  # 404 페이지
 │
 ├── App.vue                # 루트 컴포넌트
@@ -1392,11 +1396,52 @@ const createTodo = async (
 - API 호출 성능 모니터링
 
 #### 우선순위: 중간 (기능 확장)
-**4. 고급 TODO 기능 (12-15시간)**
-- 드래그 앤 드롭으로 순서 변경
-- TODO 복제 기능
-- TODO 템플릿 시스템
-- 일괄 작업 (다중 선택 및 일괄 처리)
+**4. 고급 TODO 기능 (12-15시간) - ✅ 완료**
+
+**구현 완료된 기능:**
+
+- [x] **드래그 앤 드롭으로 순서 변경**
+  - Sortable.js 라이브러리 설치 및 통합
+  - TodoListView에 드래그 앤 드롭 구현
+  - 순서 변경 로직 (`updateTodoPosition` 메서드)
+  - 드래그 중 시각적 피드백 (opacity, ring 스타일)
+  - 참고: 백엔드 API 연동은 추후 구현 예정
+
+- [x] **TODO 복제 기능**
+  - Store에 `duplicateTodo` 메서드 추가
+  - useTodoOperations에 `duplicateTodoWithFeedback` 추가
+  - TodoCard에 복제 버튼 추가
+  - 복제 시 제목에 "(사본)" 자동 추가, 상태는 TODO로 초기화
+
+- [x] **TODO 템플릿 시스템**
+  - 템플릿 타입 정의 (`types/template.ts`)
+  - 템플릿 저장/불러오기/삭제 유틸리티 함수 구현
+  - TodoTemplateModal 컴포넌트 생성 (템플릿 목록, 사용, 삭제)
+  - TodoDetailView에 템플릿 저장 버튼 추가
+  - TodoListView에 템플릿 관리 버튼 추가
+  - localStorage 기반 영구 저장
+
+- [x] **일괄 작업 (다중 선택 및 일괄 처리)**
+  - TodoCard에 체크박스 및 선택 모드 지원
+  - 일괄 선택 모드 토글 기능
+  - 전체 선택/해제 기능 (indeterminate 상태 지원)
+  - 일괄 상태 변경 기능 (할 일/진행중/완료)
+  - 일괄 삭제 기능 (확인 다이얼로그 포함)
+  - 일괄 작업 바 UI (선택된 항목 수, 일괄 작업 버튼)
+  - 선택된 항목 강조 표시 (ring 스타일)
+
+**구현된 파일:**
+- `src/stores/todo.ts` - duplicateTodo, updateTodoPosition, bulkUpdateStatus, bulkDelete 메서드
+- `src/composables/useTodoOperations.ts` - 고급 기능 메서드 추가
+- `src/types/template.ts` - 템플릿 타입 및 유틸리티 (신규)
+- `src/components/TodoCard.vue` - 복제 버튼, 체크박스, 선택 모드 지원
+- `src/components/TodoTemplateModal.vue` - 템플릿 관리 모달 (신규)
+- `src/views/TodoListView.vue` - 드래그 앤 드롭, 일괄 작업 UI, 템플릿 관리 버튼
+- `src/views/TodoDetailView.vue` - 템플릿 저장 버튼
+
+**실제 소요 시간:** 약 12시간
+
+**상세 내용:** `.github-issues/issue-phase5-advanced-features.md` 참조
 
 **5. UX 개선 (13-17시간)**
 - 키보드 단축키 지원
@@ -1481,15 +1526,21 @@ VITE_API_BASE_URL=http://localhost:8080/api
 - `vue-router`: ^4.2.5
 - `pinia`: ^2.1.7
 - `axios`: ^1.6.2
-- `date-fns`: ^3.0.0
+- `date-fns`: ^4.1.0
+- `chart.js`: ^4.5.1
+- `vue-chartjs`: ^5.3.3
+- `sortablejs`: ^1.15.6 (드래그 앤 드롭 기능)
 
 ### 개발 의존성
-- `@hey-api/openapi-ts`: 0.87.4 - OpenAPI 클라이언트 코드 생성
+- `@hey-api/openapi-ts`: 0.90.2 - OpenAPI 클라이언트 코드 생성
 - `typescript`: ^5.3.0
-- `vite`: ^5.0.0
-- `tailwindcss`: ^3.3.6
-- `vue-tsc`: ^1.8.0
-- `eslint`: ^8.55.0
+- `vite`: ^7.2.7
+- `tailwindcss`: ^4.1.18
+- `vue-tsc`: ^3.2.1
+- `eslint`: ^9.39.1
+- `vitest`: ^4.0.16 - 단위 테스트 프레임워크
+- `@vue/test-utils`: ^2.4.6 - Vue 컴포넌트 테스트 유틸리티
+- `@types/sortablejs`: ^1.15.9 - Sortable.js TypeScript 타입 정의
 
 ## ✨ OpenAPI 코드 생성의 장점
 

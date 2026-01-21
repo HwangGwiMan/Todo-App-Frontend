@@ -129,6 +129,73 @@ export const zApiResponseProjectResponse = z.object({
 });
 
 /**
+ * 사용자 역할 할당 요청
+ */
+export const zUserRoleRequest = z.object({
+    roleIds: z.array(z.coerce.bigint()).min(1)
+});
+
+/**
+ * API 공통 응답
+ */
+export const zApiResponseVoid = z.object({
+    success: z.optional(z.boolean()),
+    message: z.optional(z.union([
+        z.string(),
+        z.null()
+    ])),
+    data: z.optional(z.union([
+        z.record(z.string(), z.unknown()),
+        z.null()
+    ]))
+});
+
+/**
+ * 역할 생성/수정 요청
+ */
+export const zRoleRequest = z.object({
+    name: z.string().min(1).max(50),
+    description: z.optional(z.string().min(0).max(255)),
+    permissionIds: z.optional(z.array(z.coerce.bigint()))
+});
+
+/**
+ * 권한 정보
+ */
+export const zPermissionResponse = z.object({
+    id: z.optional(z.coerce.bigint()),
+    name: z.optional(z.string()),
+    description: z.optional(z.string()),
+    resource: z.optional(z.string()),
+    action: z.optional(z.string())
+});
+
+/**
+ * 역할 정보
+ */
+export const zRoleResponse = z.object({
+    id: z.optional(z.coerce.bigint()),
+    name: z.optional(z.string()),
+    description: z.optional(z.string()),
+    permissions: z.optional(z.array(zPermissionResponse))
+});
+
+/**
+ * API 공통 응답
+ */
+export const zApiResponseRoleResponse = z.object({
+    success: z.optional(z.boolean()),
+    message: z.optional(z.union([
+        z.string(),
+        z.null()
+    ])),
+    data: z.optional(z.union([
+        zRoleResponse,
+        z.null()
+    ]))
+});
+
+/**
  * 회원가입 요청
  */
 export const zSignupRequest = z.object({
@@ -204,10 +271,7 @@ export const zTodoSearchRequest = z.object({
         'position',
         'title'
     ])),
-    sortDirection: z.optional(z.enum([
-        'ASC',
-        'DESC'
-    ])),
+    sortDirection: z.optional(z.enum(['ASC', 'DESC'])),
     page: z.optional(z.int()),
     size: z.optional(z.int()),
     projectId: z.optional(z.union([
@@ -226,8 +290,8 @@ export const zPageableObject = z.object({
     offset: z.optional(z.coerce.bigint()),
     sort: z.optional(zSortObject),
     pageSize: z.optional(z.int()),
-    paged: z.optional(z.boolean()),
     pageNumber: z.optional(z.int()),
+    paged: z.optional(z.boolean()),
     unpaged: z.optional(z.boolean())
 });
 
@@ -376,13 +440,14 @@ export const zApiResponseString = z.object({
 /**
  * API 공통 응답
  */
-export const zApiResponseVoid = z.object({
+export const zApiResponseListRoleResponse = z.object({
     success: z.optional(z.boolean()),
     message: z.optional(z.union([
         z.string(),
         z.null()
     ])),
     data: z.optional(z.union([
+        z.array(zRoleResponse),
         z.record(z.string(), z.unknown()),
         z.null()
     ]))
@@ -466,6 +531,86 @@ export const zUpdateProjectData = z.object({
  */
 export const zUpdateProjectResponse = zApiResponseProjectResponse;
 
+export const zGetUserRolesData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        userId: z.coerce.bigint()
+    }),
+    query: z.optional(z.never())
+});
+
+/**
+ * OK
+ */
+export const zGetUserRolesResponse = zApiResponseListRoleResponse;
+
+export const zAssignRoleToUserData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        userId: z.coerce.bigint()
+    }),
+    query: z.object({
+        roleId: z.coerce.bigint()
+    })
+});
+
+/**
+ * OK
+ */
+export const zAssignRoleToUserResponse = zApiResponseVoid;
+
+export const zUpdateUserRolesData = z.object({
+    body: zUserRoleRequest,
+    path: z.object({
+        userId: z.coerce.bigint()
+    }),
+    query: z.optional(z.never())
+});
+
+/**
+ * OK
+ */
+export const zUpdateUserRolesResponse = zApiResponseVoid;
+
+export const zDeleteRoleData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        roleId: z.coerce.bigint()
+    }),
+    query: z.optional(z.never())
+});
+
+/**
+ * OK
+ */
+export const zDeleteRoleResponse = zApiResponseVoid;
+
+export const zGetRoleData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        roleId: z.coerce.bigint()
+    }),
+    query: z.optional(z.never())
+});
+
+/**
+ * OK
+ */
+export const zGetRoleResponse = zApiResponseRoleResponse;
+
+export const zUpdateRoleData = z.object({
+    body: zRoleRequest,
+    path: z.object({
+        roleId: z.coerce.bigint()
+    }),
+    query: z.optional(z.never())
+});
+
+/**
+ * OK
+ */
+export const zUpdateRoleResponse = zApiResponseRoleResponse;
+
 export const zGetTodosData = z.object({
     body: z.optional(z.never()),
     path: z.optional(z.never()),
@@ -534,6 +679,28 @@ export const zLoginData = z.object({
  */
 export const zLoginResponse = zApiResponseAuthResponse;
 
+export const zGetAllRolesData = z.object({
+    body: z.optional(z.never()),
+    path: z.optional(z.never()),
+    query: z.optional(z.never())
+});
+
+/**
+ * OK
+ */
+export const zGetAllRolesResponse = zApiResponseListRoleResponse;
+
+export const zCreateRoleData = z.object({
+    body: zRoleRequest,
+    path: z.optional(z.never()),
+    query: z.optional(z.never())
+});
+
+/**
+ * OK
+ */
+export const zCreateRoleResponse = zApiResponseRoleResponse;
+
 export const zUpdateTodoStatusData = z.object({
     body: z.optional(z.never()),
     path: z.object({
@@ -596,3 +763,17 @@ export const zTestData = z.object({
  * OK
  */
 export const zTestResponse = zApiResponseString;
+
+export const zRemoveRoleFromUserData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        userId: z.coerce.bigint(),
+        roleId: z.coerce.bigint()
+    }),
+    query: z.optional(z.never())
+});
+
+/**
+ * OK
+ */
+export const zRemoveRoleFromUserResponse = zApiResponseVoid;

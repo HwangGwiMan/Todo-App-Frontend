@@ -198,6 +198,120 @@ export type ProjectResponse = {
 };
 
 /**
+ * 사용자 역할 할당 요청
+ */
+export type UserRoleRequest = {
+    /**
+     * 할당할 역할 ID 목록
+     */
+    roleIds: Array<number>;
+};
+
+/**
+ * API 공통 응답
+ */
+export type ApiResponseVoid = {
+    /**
+     * 성공 여부
+     */
+    success?: boolean;
+    /**
+     * 메시지
+     */
+    message?: string | null;
+    /**
+     * 응답 데이터
+     */
+    data?: {
+        [key: string]: unknown;
+    } | null;
+};
+
+/**
+ * 역할 생성/수정 요청
+ */
+export type RoleRequest = {
+    /**
+     * 역할명
+     */
+    name: string;
+    /**
+     * 역할 설명
+     */
+    description?: string;
+    /**
+     * 할당할 권한 ID 목록
+     */
+    permissionIds?: Array<number>;
+};
+
+/**
+ * API 공통 응답
+ */
+export type ApiResponseRoleResponse = {
+    /**
+     * 성공 여부
+     */
+    success?: boolean;
+    /**
+     * 메시지
+     */
+    message?: string | null;
+    /**
+     * 응답 데이터
+     */
+    data?: RoleResponse | null;
+};
+
+/**
+ * 권한 정보
+ */
+export type PermissionResponse = {
+    /**
+     * 권한 ID
+     */
+    id?: number;
+    /**
+     * 권한명
+     */
+    name?: string;
+    /**
+     * 권한 설명
+     */
+    description?: string;
+    /**
+     * 리소스
+     */
+    resource?: string;
+    /**
+     * 액션
+     */
+    action?: string;
+};
+
+/**
+ * 역할 정보
+ */
+export type RoleResponse = {
+    /**
+     * 역할 ID
+     */
+    id?: number;
+    /**
+     * 역할명
+     */
+    name?: string;
+    /**
+     * 역할 설명
+     */
+    description?: string;
+    /**
+     * 할당된 권한 목록
+     */
+    permissions?: Array<PermissionResponse>;
+};
+
+/**
  * 회원가입 요청
  */
 export type SignupRequest = {
@@ -355,8 +469,8 @@ export type PageableObject = {
     offset?: number;
     sort?: SortObject;
     pageSize?: number;
-    paged?: boolean;
     pageNumber?: number;
+    paged?: boolean;
     unpaged?: boolean;
 };
 
@@ -556,7 +670,7 @@ export type ApiResponseString = {
 /**
  * API 공통 응답
  */
-export type ApiResponseVoid = {
+export type ApiResponseListRoleResponse = {
     /**
      * 성공 여부
      */
@@ -568,7 +682,7 @@ export type ApiResponseVoid = {
     /**
      * 응답 데이터
      */
-    data?: {
+    data?: Array<RoleResponse> | {
         [key: string]: unknown;
     } | null;
 };
@@ -750,6 +864,137 @@ export type UpdateProjectResponses = {
 
 export type UpdateProjectResponse = UpdateProjectResponses[keyof UpdateProjectResponses];
 
+export type GetUserRolesData = {
+    body?: never;
+    path: {
+        /**
+         * 사용자 ID
+         */
+        userId: number;
+    };
+    query?: never;
+    url: '/api/admin/users/{userId}/roles';
+};
+
+export type GetUserRolesResponses = {
+    /**
+     * OK
+     */
+    200: ApiResponseListRoleResponse;
+};
+
+export type GetUserRolesResponse = GetUserRolesResponses[keyof GetUserRolesResponses];
+
+export type AssignRoleToUserData = {
+    body?: never;
+    path: {
+        /**
+         * 사용자 ID
+         */
+        userId: number;
+    };
+    query: {
+        /**
+         * 역할 ID
+         */
+        roleId: number;
+    };
+    url: '/api/admin/users/{userId}/roles';
+};
+
+export type AssignRoleToUserResponses = {
+    /**
+     * OK
+     */
+    200: ApiResponseVoid;
+};
+
+export type AssignRoleToUserResponse = AssignRoleToUserResponses[keyof AssignRoleToUserResponses];
+
+export type UpdateUserRolesData = {
+    body: UserRoleRequest;
+    path: {
+        /**
+         * 사용자 ID
+         */
+        userId: number;
+    };
+    query?: never;
+    url: '/api/admin/users/{userId}/roles';
+};
+
+export type UpdateUserRolesResponses = {
+    /**
+     * OK
+     */
+    200: ApiResponseVoid;
+};
+
+export type UpdateUserRolesResponse = UpdateUserRolesResponses[keyof UpdateUserRolesResponses];
+
+export type DeleteRoleData = {
+    body?: never;
+    path: {
+        /**
+         * 역할 ID
+         */
+        roleId: number;
+    };
+    query?: never;
+    url: '/api/admin/roles/{roleId}';
+};
+
+export type DeleteRoleResponses = {
+    /**
+     * OK
+     */
+    200: ApiResponseVoid;
+};
+
+export type DeleteRoleResponse = DeleteRoleResponses[keyof DeleteRoleResponses];
+
+export type GetRoleData = {
+    body?: never;
+    path: {
+        /**
+         * 역할 ID
+         */
+        roleId: number;
+    };
+    query?: never;
+    url: '/api/admin/roles/{roleId}';
+};
+
+export type GetRoleResponses = {
+    /**
+     * OK
+     */
+    200: ApiResponseRoleResponse;
+};
+
+export type GetRoleResponse = GetRoleResponses[keyof GetRoleResponses];
+
+export type UpdateRoleData = {
+    body: RoleRequest;
+    path: {
+        /**
+         * 역할 ID
+         */
+        roleId: number;
+    };
+    query?: never;
+    url: '/api/admin/roles/{roleId}';
+};
+
+export type UpdateRoleResponses = {
+    /**
+     * OK
+     */
+    200: ApiResponseRoleResponse;
+};
+
+export type UpdateRoleResponse = UpdateRoleResponses[keyof UpdateRoleResponses];
+
 export type GetTodosData = {
     body?: never;
     path?: never;
@@ -886,6 +1131,38 @@ export type LoginResponses = {
 
 export type LoginResponse = LoginResponses[keyof LoginResponses];
 
+export type GetAllRolesData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/admin/roles';
+};
+
+export type GetAllRolesResponses = {
+    /**
+     * OK
+     */
+    200: ApiResponseListRoleResponse;
+};
+
+export type GetAllRolesResponse = GetAllRolesResponses[keyof GetAllRolesResponses];
+
+export type CreateRoleData = {
+    body: RoleRequest;
+    path?: never;
+    query?: never;
+    url: '/api/admin/roles';
+};
+
+export type CreateRoleResponses = {
+    /**
+     * OK
+     */
+    200: ApiResponseRoleResponse;
+};
+
+export type CreateRoleResponse = CreateRoleResponses[keyof CreateRoleResponses];
+
 export type UpdateTodoStatusData = {
     body?: never;
     path: {
@@ -988,3 +1265,28 @@ export type TestResponses = {
 };
 
 export type TestResponse = TestResponses[keyof TestResponses];
+
+export type RemoveRoleFromUserData = {
+    body?: never;
+    path: {
+        /**
+         * 사용자 ID
+         */
+        userId: number;
+        /**
+         * 역할 ID
+         */
+        roleId: number;
+    };
+    query?: never;
+    url: '/api/admin/users/{userId}/roles/{roleId}';
+};
+
+export type RemoveRoleFromUserResponses = {
+    /**
+     * OK
+     */
+    200: ApiResponseVoid;
+};
+
+export type RemoveRoleFromUserResponse = RemoveRoleFromUserResponses[keyof RemoveRoleFromUserResponses];

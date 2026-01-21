@@ -46,6 +46,13 @@
             </div>
             <div class="flex flex-wrap gap-2">
               <button
+                class="btn-secondary text-sm"
+                :disabled="isUpdating"
+                @click="handleSaveAsTemplate"
+              >
+                📋 템플릿으로 저장
+              </button>
+              <button
                 class="btn-primary text-sm"
                 :disabled="isUpdating"
                 @click="handleEdit"
@@ -221,6 +228,7 @@ import TodoEditModal from '@/components/TodoEditModal.vue'
 import EmptyState from '@/components/EmptyState.vue'
 import { format } from 'date-fns'
 import { ko } from 'date-fns/locale'
+import { saveTodoAsTemplate } from '@/types/template'
 
 type TodoStatus = 'TODO' | 'IN_PROGRESS' | 'DONE'
 
@@ -228,7 +236,7 @@ const route = useRoute()
 const router = useRouter()
 const todoStore = useTodoStore()
 const projectStore = useProjectStore()
-const { showToast } = useToast()
+const { showToast, showSuccess } = useToast()
 const todoOps = useTodoOperations()
 
 const todo = computed(() => todoStore.currentTodo)
@@ -394,6 +402,17 @@ const handleDelete = async () => {
     console.error('삭제 실패:', err)
   } finally {
     isDeleting.value = false
+  }
+}
+
+// 템플릿으로 저장
+const handleSaveAsTemplate = () => {
+  if (!todo.value) return
+  
+  const templateName = prompt('템플릿 이름을 입력하세요:', todo.value.title || '')
+  if (templateName && templateName.trim()) {
+    saveTodoAsTemplate(todo.value, templateName.trim())
+    showSuccess('템플릿으로 저장되었습니다.')
   }
 }
 
